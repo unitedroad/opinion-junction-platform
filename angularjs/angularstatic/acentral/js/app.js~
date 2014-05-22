@@ -1,0 +1,32 @@
+var testApp = angular.module('testApp', ['ngRoute']);
+
+testApp.config(function($routeProvider, $locationProvider){
+       $routeProvider
+           .when('/',{
+       	       templateUrl : 'angularstatic/home/partials/index.html',
+	       controller : 'mainController'
+           })
+           .when('/article',{
+	       templateUrl : 'angularstatic/article/partials/article.html',
+	       controller : 'articleController'
+           });
+       $locationProvider.html5Mode(true);
+});
+
+
+testApp.controller('testController',function($scope){
+        $scope.totalResults = 5;
+	$scope.message = "Welcome to Opinion Junction";
+    }
+);
+	      
+testApp.controller('mainController',function($scope){
+        $scope.message = "Welcome to Opinion Junction!";
+	$scope.totalResults = 5;
+    }
+);
+
+testApp.controller('articleController',function($scope){
+        $scope.message = "Welcome to Opinion Junction's First Article";
+    }
+);

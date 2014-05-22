@@ -1,0 +1,66 @@
+<div data-spy="affix" data-offset-top="60" data-offset-bottom="200">
+  <a class="btn btn-default" ng-click="isCollapsed = !isCollapsed">Toggle collapse</a>
+  <div collapse="isCollapsed">
+    <div class="well">Some content</div> 
+  </div>
+
+<ul class="nav nav-pills nav-stacked">
+  <li id="profileli" ng-click="activateItem('profileli');setArticleDivCollapse(true);" data-ng-class="navClass('profileli')">        
+      <a ng-href=""> Profile</a>
+  </li>
+  <li id="settingsli" ng-click="activateItem('settingsli');setArticleDivCollapse(true);" data-ng-class="navClass('settingsli')">        
+      <a ng-href=""> Settings</a>
+  </li>
+  <li id="articleli" ng-click="activateItem('articleli'); isArticleDivCollapsed = !isArticleDivCollapsed" data-ng-class="navClass('articleli')">
+        
+      <a ng-href=""> Article</a>
+  </li>
+  <div collapse="isArticleDivCollapsed">
+    <div class="well well-sm">
+      <ul class="nav nav-pills nav-stacked">
+        <li id="createArticleli" ng-click="activateItem('createArticleli')" 
+        data-ng-class="navClass('createArticleli')">
+	  <a ng-href="">Create Article</a>
+	</li>
+	<li id="allArticlesli" ng-click="activateItem('allArticlesli')" 
+        data-ng-class="navClass('allArticlesli')">
+	  <a ng-href="">All Articles</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</ul>
+  <accordion close-others="true">
+    <accordion-group heading="Profile" is-open="true">
+    </accordion-group>
+    <accordion-group heading="{{capability.title}}" ng-repeat="capability in capabilities">
+      {{capability.content}}
+    </accordion-group>
+    <accordion-group heading="Articles" >
+      <ul class="nav nav-pills nav-stacked">
+	<li class="active">
+          <a href="article/create">
+            Create Article
+          </a>
+	</li>
+	<li >
+          <a href="article/create">
+            All Articles
+          </a>
+	</li>
+      </ul>
+    </accordion-group>
+    <accordion-group heading="Dynamic Body Content">
+      <p>The body of the accordion group grows to fit the contents</p>
+        <button class="btn btn-default btn-sm" ng-click="addItem()">Add Item</button>
+        Free Software
+    </accordion-group>
+    <accordion-group>
+        <accordion-heading>
+            I can have markup, too! <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isopen, 'glyphicon-chevron-right': !isopen}"></i>
+        </accordion-heading>
+        This is just some content to illustrate fancy headings.
+    </accordion-group>
+  </accordion>
+</div>
+

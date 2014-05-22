@@ -1,0 +1,26 @@
+.carousel img {
+  /*position: absolute;*/
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  height: 600px;
+  max-width: none;
+  max-height: 600px;
+}
+
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+
+#navbar-div {
+  width:100%;
+  height:10px;
+}
+
+#navbar-right {
+  margin-top:5px;
+  margin-right:5px;
+}
+
+#articlesidebar {
+    width:5%;
+    min-width:250px;
+}

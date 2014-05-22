@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+  <!-- <script src="https://code.angularjs.org/snapshot/angular.min.js"></script> -->
+  <script src="https://code.angularjs.org/1.2.10/angular.js"></script>
+  <script src="https://code.angularjs.org/1.2.10/angular-route.js"></script>
+  <script src="https://code.angularjs.org/1.2.10/angular-cookies.js"></script>
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
+
+  <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+<!--  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
+  <script src="/angularstatic/acentral/js/app.js"></script>
+  <!-- <script src="js/controllers.js"></script> -->
+  <script type="text/javascript">
+    function submitTest(){
+        alert('Testing Angular App');
+    }
+    var facebook_popup_suffix = "/accounts/login_callback";
+    $(document).ready(mainReady);
+  </script>
+  
+  <!--<base href="file:///Users/dhruwatbhagat/Documents/notw/Angular Test/">-->
+  
+</head>
+<body>
+<div ng-app="testApp" >
+<div ng-init="initFunction()" ng-controller="mainController">
+<script type="text/ng-template" id="loginModalContent.html">
+    <div class="modal-body">
+      <!-- <iframe id="iframe" src="/accounts/login?login_redirect_url={% url 'login_callback' %}" style="zoom:0.60" frameborder="0"  width="99.6%">
+      </iframe> -->  
+      <p>Don't have an account? Then please <a href="/accounts/signup/">sign up</a>.</p>
+      <form ng-submit="processLoginForm()">
+      <p>
+	<label for="id_login">Username:</label> 
+	<input autofocus="autofocus" id="id_login" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.login">
+      </p>
+      <p><label for="id_password">Password:</label> 
+	<input id="id_password" name="password" placeholder="Password" type="password" ng-model="loginFormData.password"></p>
+      <p>
+	<label for="id_remember">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
+      {{ message }}
+      {{ errorMessage }}
+      <a class="button secondaryAction" href="/accounts/password/reset/">Forgot Password?</a>
+      <button class="btn btn-primary" type="submit">Sign In</button>
+      </form>
+    </div>
+</script>
+<script type="text/ng-template" id="signinNavBar.html">
+<nav id="navbar-right" class="navbar-text navbar-right"><a class="navbar-link" ng-click="signinModal()">Sign in</a></nav>
+</script>
+
+<script type="text/ng-template" id="loggedInNavBar.html">
+<nav id="navbar-right" class="navbar-text navbar-right"><a href="/user/settings"class="navbar-link" >Settings</a></nav>
+</script>
+<div id="navbar-div" style="width:100%" >
+<ng-include src="rightNavBar"></ng-include> 
+<!--<p class="navbar-text navbar-right"><a href="signin" class="navbar-link">Sign in</a></p> -->
+<!-- <div ng-include="{{ rightNavBar }}"></div>
+<nav id="navbar-right" class="navbar-text navbar-right"><a class="navbar-link" ng-click="signinModal()">Sign in</a></nav> -->
+</div> 
+<a href="/">Test View navigation</a>
+<a href="#/">Test View navigation Old Javascript Style</a>
+<a href="/#/">Test View navigation Old Javascript Style 2</a>
+<a href="/article">ArticleView</a>
+ 
+<!--<div style="height: 600px"> -->
+<!--
+  <carousel interval="5000">
+    <slide ng-repeat="article in articles" active="article.active">
+      <img ng-src="{{article.image}}" style="margin:auto;">
+      <div class="carousel-caption">
+        <h4>Slide {{$index}}</h4>
+        <p>{{slide.text}}</p>
+      </div>
+    </slide>
+  </carousel>
+-->
+<!-- </div> -->
+<ng-view>
+
+</ng-view>
+<button onclick="submitTest()">Submit</button>
+</div>
+</div>
+</body>
+</html>
+  

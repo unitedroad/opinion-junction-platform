@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends "blocks/base-with-shared-items.html" %}
+{% load notwfilters %}
+{% block headincludes %}<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}newsfeed.js"></script>{% endblock %}
+{% block bodyattributes %} onLoad="updateNewsDiv()" {% endblock %}
+{% block regionbackslashurl %}{% url "regionbackslash" region_name %} {% endblock %}
+{% load cache %}
+{% cache 900 homepage region_name %}
+{% block headercontentgap %}
+<div id="sub-nav" class="sub-nav">
+<div style="display: table;width:100%" id="tracker">
+<div id="trackerlabel" >TRACKING NEWS</div>
+<div id="trackernews"> <b id="trackernewssitename">newsoftheworld.co</b> - <a id="trackernewsdescriptionlink" style="" href="http://www.newsoftheworld.co" taget="_TOP">News of The World Launches Global News Channel</a>
+<span id="trackernewstimestamp">20 minutes ago</span></div>
+</div>
+  <ul>
+    <li class="title">Stay in the know:</li>
+    <li><a href="#">Blogs</a></li>
+    <li>|</li>
+    <li><a href="#">Video Gallery</a></li>
+    <li>|</li>
+    <li><img alt="" src="{{ STATIC_URL }}icons/rss.png"><a href="#">Subscribe</a></li>
+    <li>|</li>
+    <li><img alt="" src="{{ STATIC_URL }}icons/twitter.png"><a href="#">Twitter</a></li>
+  </ul>
+</div>
+{% endblock %}
+<!-- END SUB NAV -->
+<!-- BEGIN CONTENT WRAPPER -->
+{% block contentwrapper %}
+<div id="content-wrapper">
+  <!-- BEGIN MAIN -->
+  <div id="main" class="main">
+    <div id="headlines" class="headlines">
+      <div id="main-headline">
+        <h2 class="heading">Featured Story</h2>
+        <img src="{{ STATIC_URL }}blank.jpg" alt="" />
+        <h1><a href="{% url "featuredstorynamebackslash" featured_story.urlString %}">{{ featured_story.name }}</a></h1>
+        <p class="author">{{ featured_story.authors|get_all_authors_fullnames }} | <span>{{ featured_story.date }}</span></p>
+        <p>{{ featured_story.excerpt }}</p>
+        <p><a href="{% url "featuredstorynamebackslash" featured_story.urlString %}">Full story &raquo;</a></p>
+        <h2 class="heading">Media</h2>
+        <object width="400" height="300">
+          <param name="movie" value="http://www.youtube.com/v/B0jhJA1Hjxk&amp;hl=en_US&amp;fs=1&" />
+          <param name="allowFullScreen" value="true" />
+          <param name="allowscriptaccess" value="never" />
+          <embed src="http://www.youtube.com/v/B0jhJA1Hjxk&amp;hl=en_US&fs=1&amp;" type="application/x-shockwave-flash" allowscriptaccess="never" allowfullscreen="true" width="400" height="300"></embed>
+        </object>
+        <h2><a href="#">Controversy surrounding the 10 billion dollar Temple of Axl Rose</a></h2>
+        <p class="author"><span>09.18.19</span></p>
+        <p><a href="#">More video &raquo;</a></p>
+      </div>
+      <div id="more-headlines">
+	{% if feeds_for_world and feeds_for_world|length > 0 %}
+        <h2 class="heading">Trending around the Globe</h2>
+        {% for feedkey_for_world in feeds_for_world %}
+        {% with feeds_for_world|get_item:feedkey_for_world as feedtuple_for_world %}
+        {% with feedtuple_for_world.0 as feed_for_world %}
+        {% if forloop.counter == 1 %}
+        <h4 ><a href="{{ feed_for_world.link }}">{{ feed_for_world.title }}</a></h3>
+        <p class="author">{{ feedtuple_for_world|getFeedAuthor }} | <span>{{ feed_for_world.published }}</span></p>
+        {% else %}
+        <h4 class="headlinesbordertop"><a href="{{ feed_for_world.link }}">{{ feed_for_world.title }}</a></h3>
+        <p class="author">{{ feedtuple_for_world|getFeedAuthor }} | <span>{{ feed_for_world.published }}</span></p>
+        {% endif %}
+        {% endwith %}
+        {% endwith %}
+        {% endfor %}
+        {% endif %}
+        {% if feeds_for_country and feeds_for_country|length > 0 %}
+        <h2 class="heading">News from {{ region_name }}</h2>
+        {% for feedkey_for_country in feeds_for_country %}
+        {% with feeds_for_country|get_item:feedkey_for_country as feedtuple_for_country %}
+        {% with feedtuple_for_country.0 as feed_for_country %}
+        {% if forloop.counter == 1 %}
+        <h4 ><a href="{{ feed_for_country.link }}">{{ feed_for_country.title }}</a></h3>
+        <p class="author">{{ feedtuple_for_country|getFeedAuthor }} | <span>{{ feed_for_country.published }}</span></p>
+        {% else %}
+        <h4 class="headlinesbordertop"><a href="{{ feed_for_country.link }}">{{ feed_for_country.title }}</a></h3>
+        <p class="author">{{ feedtuple_for_country|getFeedAuthor }} | <span>{{ feed_for_country.published }}</span></p>
+        {% endif %}
+        {% endwith %}
+        {% endwith %}
+        {% endfor %}
+        {% endif %}
+        <h2 class="heading">Podcast</h2>
+        <img src="{{ STATIC_URL }}microphone.png" alt="" class="righty" />
+        <h4><a href="#">Discussion with presidents of Libertarian and Pirate Party</a></h4>
+        <p class="author"><span>09.18.09</span></p>
+        <p>Listen to our discussion with these leaders as they debate the way forward for rise of India as a world economic power.</p>
+        <p><a href="#">More podcasts &raquo;</a></p>
+      </div>
+    </div>
+  </div>
+  <!-- END MAIN -->
+  <!-- BEGIN SIDEBARS -->
+  <div id="sidebars" class="sidebars">
+    <!-- BEGIN ADS -->
+    <!-- END ADS -->
+    {% include "blocks/includes/sidebartopicsectionhomepage.html" %}
+
+  </div>
+  <!-- END SIDEBARS -->
+</div>
+<!-- END CONTENT WRAPPER-->
+{% endblock %}
+{% endcache %}

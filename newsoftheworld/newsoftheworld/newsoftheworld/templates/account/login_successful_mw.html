@@ -1,0 +1,10 @@
+<html>
+<head>
+<script>
+var facebook_popup_suffix = "/accounts/login_callback";
+{% if request.user.is_authenticated %}
+window.location = "{% url 'login_callback' %}";
+{% else %}
+window.location = "{% url 'account_login' %}";
+{% endif %}
+</script>

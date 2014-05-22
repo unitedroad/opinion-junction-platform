@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends "blocks/base-with-shared-items.html" %}
+{% load notwfilters %}
+{% block regionbackslashurl %}{% url "regionbackslash" region_name %} {% endblock %}
+{% load cache %}
+{% cache 900 topic topic_name %}
+
+{% block headercontentgap %}
+<div id="feature-story-sub-nav" class="sub-nav">
+
+  <ul>
+    <li class="title firstcategory"><a class="selectedcategory" href="#">WORLD &raquo;</a></li>
+    <li class="selectedcategory"><a class="selectedcategory" href="#">Music</a></li>
+  </ul>
+</div>
+{% endblock %}
+<!-- END NAV -->
+<!-- BEGIN SUB NAV -->
+
+<!-- END SUB NAV -->
+<!-- BEGIN CONTENT WRAPPER -->
+{% block contentwrapper %}
+<div id="content-wrapper">
+  <!-- BEGIN MAIN -->
+  <div id="topic-main" class="main">
+    <div id="topic-headlines" class="headlines">
+      
+      <div id="topic-more-headlines">
+        {% if feeds_for_world and feeds_for_world|length > 0 %}
+        <h2 class="heading">Trending around the Globe</h2>
+        {% for feedkey_for_world in feeds_for_world %}
+        {% with feeds_for_world|get_item:feedkey_for_world as feedtuple_for_world %}
+        {% with feedtuple_for_world.0 as feed_for_world %}
+        {% if forloop.counter == 1 %}
+        <h4 ><a href="{{ feed_for_world.link }}">{{ feed_for_world.title }}</a></h3>
+        <p class="author">{{ feedtuple_for_world|getFeedAuthor }} | <span>{{ feed_for_world.published }}</span></p>
+        {% else %}
+        <h4 class="headlinesbordertop"><a href="{{ feed_for_world.link }}">{{ feed_for_world.title }}</a></h3>
+        <p class="author">{{ feedtuple_for_world|getFeedAuthor }} | <span>{{ feed_for_world.published }}</span></p>
+        {% endif %}
+        {% endwith %}
+        {% endwith %}
+        {% endfor %}
+        {% endif %}
+        <h2 class="heading">Podcast</h2>
+        <img src="{{ STATIC_URL }}microphone.png" alt="" class="righty" />
+        <h4><a href="#">Discussion with presidents of Libertarian and Pirate Party</a></h4>
+        <p class="author"><span>09.18.09</span></p>
+        <p>Listen to our discussion with these leaders as they debate the way forward for rise of India as a world economic power.</p>
+        <p><a href="#">More podcasts &raquo;</a></p>
+      </div>
+    </div>
+  </div>
+  <!-- END MAIN -->
+  <!-- BEGIN SIDEBARS -->
+  <div id="topic-sidebars" class="sidebars">
+     {% include "blocks/includes/sidebartopicsection.html" %}
+  </div>
+  <!-- END SIDEBARS -->
+</div>
+<!-- END CONTENT WRAPPER-->
+{% endblock %}
+{% endcache %}

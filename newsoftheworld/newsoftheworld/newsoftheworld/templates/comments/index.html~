@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Demo</title>
+<link href="{{ STATIC_URL }}comments.css" rel="stylesheet" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="/static/jquery.appear.js"></script>
+<script src="/static/jquery.cookie.js"></script>
+<script src="/static/comments.js"></script>
+
+</head>
+<body>
+
+
+  
+    <script>
+ 
+    var facebook_popup_suffix = "/accounts/login_callback";
+$(document).ready( function() {
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                // Send the token to same-origin, relative URLs only.
+                // Send the token only if the method warrants CSRF protection
+                // Using the CSRFToken value acquired earlier
+                var csrftoken = $.cookie('csrftoken');
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    var discussion_id = "1";
+    $("<div>", { "id" : "comments-container", "class" : "comments-container collapse", "discussion_id" : discussion_id } ).appendTo("body");
+{% if request.user.is_authenticated %}
+  if ($("#comments-container").length > 0 && $("#comment-reply-creation-container").length == 0) {    
+    $("<div>", { "id" : "comment-reply-creation-container", "class" : "comment-reply-creation-container" } ).prependTo("#comments-container");
+    $("<textarea>", { "id" : "comment-reply-creation-box", "class" : "comment-reply-creation-container" } ).appendTo("#comment-reply-creation-container").click(onTypeInReplyBox).keyup(onTypeInReplyBox);
+    $("<button>", { "id" : "comment-reply-creation-button", "class" : "comment-reply-creation-button btn btn-primary", "text" : "Submit" } ).appendTo("#comment-reply-creation-container").click(postReply);
+  }
+{% else %} 
+    $("<button>", { "id" : "login-button", "class" : "comment-reply-button btn btn-primary", "text" : "Login to Comment",
+    "data-toggle" : "modal", "data-target" : "#login-div" } ).appendTo("#comments-container");
+{% endif %}
+    $.getJSON( "/api/1.0/posts/1/comments?top=true", updateCommentsOnUi);
+
+    /*$.getJSON( "/api/1.0/posts/1/comments?top=true", function(data) {
+        $.each(data, function (i, comment) {
+	    $("<div>", { "id" : "comments-encompass-container-" + comment.id, "class" : "comments-encompass-container panel-group" } ).appendTo("#comments-container");
+            $("<div>", { "id" : "comment-content-container-"+ comment.id, "class" : "comment-content-container" } ).appendTo("#comments-encompass-container-" + comment.id);
+            $("<div>", { "id" : "comment-text-container-"+ comment.id, "class" : "comment-text-container" } ).appendTo("#comment-content-container-" + comment.id);
+            $("<button>", { "id" : "comment-reply-button-"+ comment.id, "class" : "comment-reply-button btn btn-primary", "text" : "Reply" } ).appendTo("#comment-content-container-" + comment.id);
+	    $("#comment-reply-button-" + comment.id).click(function(){
+		if ($("#comment-reply-creation-container-" + comment.id).length==0) {
+                    $("<div>", { "id" : "comment-reply-creation-container-" + comment.id, "class" : "comment-reply-creation-container" } ).appendTo("#comment-content-container-" + comment.id);
+		    $("<textarea>", { "id" : "comment-reply-creation-box-" + comment.id, "class" : "comment-reply-creation-container" } ).appendTo("#comment-reply-creation-container-" + comment.id);
+		    $("<button>", { "id" : "comment-reply-creation-button-" + comment.id, "class" : "comment-reply-creation-button btn btn-primary", "text" : "Submit" } ).appendTo("#comment-reply-creation-container-" + comment.id).click(postReply);
+                }
+            });
+	    $("<div>", { "id" : "comment-reply-container-"+ comment.id, "class" : "comment-reply-container panel-collapse collapse in" } ).appendTo("#comments-encompass-container-" + comment.id);
+            $("#comment-text-container-" + comment.id).append(comment.text);
+        });
+    });
+*/ 
+    $("#comments-container").collapse('show');
+    $(".comment-submit").click(function() {
+        $(".comment-box").append("You Submitted!");
+        
+    }); 
+$(".modal").on("shown.bs.modal",function()
+{    
+  setOffSetHeight();
+    // add loader indicator
+ 
+});
+
+
+$("#iframe").load(function() {
+  checkForLogin_iframe();
+});
+
+});
+
+</script>
+
+{% if request.user.is_authenticated %}
+{% else %}
+<div class="modal fade" id="login-div" tabindex="-1" role="dialog" aria-labelledby="modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3 id="modal-label">Log In</h3>
+      </div>
+      <div class="modal-body">
+          <iframe id="iframe"src="/accounts/login" style="zoom:0.60" frameborder="0"  width="99.6%"></iframe>
+      </div>
+      <!--<div class="modal-footer">
+        <button class="btn" data-dismiss="modal">OK</button>
+      </div> -->
+    </div>
+  </div>
+</div>
+{% endif %}
+
+</body>
+</html>

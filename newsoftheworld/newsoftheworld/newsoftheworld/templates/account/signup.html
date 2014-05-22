@@ -1,0 +1,26 @@
+{% extends "account/user_entry_base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+
+
+{% block page_heading %}{% trans "Sign Up" %}{% endblock %}
+
+
+{% block signup_login_altenator %}
+<p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+{% endblock %}
+
+{% block user_form %}
+<form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}" style="margin-bottom:0px;"><!--This doesn't get crazier than this, 
+I can't get modal iframe to look good without this dance. -->
+  {% csrf_token %}
+  {{ form.as_p }}
+  {% if redirect_field_value %}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  {% endif %}
+  <button type="submit" class="btn btn-primary">{% trans "Sign Up" %} &raquo;</button>
+</form>
+{% endblock%}
+

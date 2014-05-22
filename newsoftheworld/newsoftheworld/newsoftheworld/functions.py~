@@ -1,0 +1,7 @@
+import tweepy
+ 
+auth1 = tweepy.auth.OAuthHandler('Vd4BWsl5LyvXdFOmFyulRg','QDEEToQPO9L7dMlYh8w0Jzk6ODQQlDV2cUOkY2pXA')
+auth1.set_access_token('1077694608-WVvkz59NqIo6oz6RaH3FHlEYmeFHU3UCfTvWBX1','Uzb1gIyHPszyEWHDtYeMQN0DnOnrWHnJtx7F5c2pY')
+api = tweepy.API(auth1)
+
+api.update_status('Hello World from New Of The World')

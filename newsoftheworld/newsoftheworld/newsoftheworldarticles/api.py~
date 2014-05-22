@@ -1,0 +1,20 @@
+class ArticlesList(APIView):
+    model = Comment
+    serializer_class = CommentSerialiser
+    permission_classes = [
+        permissions.AllowAny
+    ]
+
+
+    def get(self, request, commentid, format=None):
+        #for comment in Comment.objects.all():
+        if "children" in request.GET and request.GET["children"] == "true":
+            if "after" in request.GET and request.GET["after"] is not None:
+                serialisedList = CommentSerialiser(Comment.objects(parent_id=commentid, id__gt=request.GET["after"]), many=True)
+            else:
+                serialisedList = CommentSerialiser(Comment.objects(parent_id=commentid), many=True)
+        else:
+            serialisedList = CommentSerialiser(Comment.objects(id=commentid), many=True)
+        
+        return Response(serialisedList.data)
+

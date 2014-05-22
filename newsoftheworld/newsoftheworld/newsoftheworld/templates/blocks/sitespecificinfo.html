@@ -1,0 +1,58 @@
+{% extends "blocks/base-with-shared-items.html" %}
+{% block regionbackslashurl %}{% url "regionbackslash" region_name %} {% endblock %}
+{% block headercontentgap %}
+<div id="feature-story-sub-nav" class="sub-nav">
+
+  <ul>
+    <li class="title firstcategory"><a class="selectedcategory" href="#">HELP &raquo;</a></li>
+    <li class="selectedcategory"><a class="selectedcategory" href="#">Contact Us</a></li>
+  </ul>
+</div>
+<!-- END SUB NAV -->
+{% endblock %}
+
+{% block contentwrapper %}
+<!-- BEGIN CONTENT WRAPPER -->
+<div id="content-wrapper">
+  <!-- BEGIN MAIN -->
+{% block mainfunctionalblock %}
+
+{% endblock %}
+  <!-- BEGIN SIDEBARS -->
+  {% include "blocks/includes/sidebarfeaturedstories.html" %}
+<!--  <div id="featured-story-sidebars" class="sidebars">
+ <h2 class="heading">Past Stories</h2>
+      <ul>
+      <li><a href="#">How libertarianism can solve India's socio-political ills</a></li>
+      <li><a href="#">Controversy surrounding the 10 billion dollar Temple of Axl Rose</a></li>
+      <li><a href="#">Thailand joining Republic of Punjab is  win-win situation for everyone</a></li>
+      <li class="last"><a href="#">Impending Global Recession can be avoided if Indian Rupee becomes De-facto Global Currency</a></li> -->
+    
+    </ul>
+    <!-- BEGIN ADS -->
+    <!--<div class="border-top border-bottom adsdiv">
+    <a href="#" class="hidden"><img src="{{ STATIC_URL }}side-ad.png" alt="" class="ad"></a> <a class="hidden" href="#"><img src="{{ STATIC_URL }}side-ad.png" alt="" class="ad-right"></a> <a class="" href="#"><img src="{{ STATIC_URL }}side-ad.png" alt="" class="ad border-top"></a> <a class="" href="#"><img src="{{ STATIC_URL }}side-ad.png" alt="" class="ad-right"></a>
+    </div> -->
+    <!-- END ADS -->
+    <!--<h2 class="heading-blue">Most Read</h2>
+    <ul>
+      <li><a href="#">Guns n’ Roses rock Delhi</a></li>
+      <li><a href="#">How libertarianism can solve India's socio-political ills</a></li>
+      <li><a href="#">Ludhiana is now the real Silicon Capital of the World</a></li>
+      <li class="last"><a href="#">Thailand joining Republic of Punjab is  win-win situation for everyone</a></li> 
+    </ul>
+
+    <img class="hidden" src="{{ STATIC_URL }}wayne.jpg" alt="" />
+    <h3 class="hidden" ><a href="#">FC United of Manchester mauls Manchester City 8-0</a></h3>
+    <p class="hidden" >Baichung Bhutia and IM Vijayan score hat tricks as Manchester City are relegated from Football Conference.</p>
+    <p class="hidden"><a href="#">More headlines &raquo;</a></p>
+    <h2 class="heading hidden">Celebrity Sightings</h2>
+    <img class="hidden" src="{{ STATIC_URL }}casey.jpg" alt="" class="ad hidden" /> <img class="hidden" src="{{ STATIC_URL }}hobo.jpg" alt="" class="ad-right" />
+    <h2 class="heading hidden">In the Community</h2>
+    <h4 class="hidden"><a href="#">Lorem ipsum dolor sit amet eget, consectetur adipiscing elit</a></h4>
+    <h4 class="hidden"><a href="#">Lorem ipsum dolor sit amet eget, consectetur adipiscing elit</a></h4>
+  </div> -->
+  <!-- END SIDEBARS -->
+</div>
+<!-- END CONTENT WRAPPER-->
+{% endblock %}

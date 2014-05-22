@@ -1,0 +1,7 @@
+    {% if feed_for_sports_section %}
+    <h2 class="heading-blue">Sports Headlines</h2>
+      <h3><a href="#">{{ feed_for_sports_section.title_display }}</a></h3>
+    <img src="{{ MEDIA_URL }}{{ feed_image_location }}" alt="" />
+    <p>{{ feed_for_sports_section.summary }}</p>
+
+    {% endif %}

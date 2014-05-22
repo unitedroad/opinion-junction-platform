@@ -1,0 +1,33 @@
+{% extends "blocks/base.html" %}
+{% block extras %}
+<!-- BEGIN EXTRAS -->
+<div id="extras">
+  <div id="recommended">
+    <h2 class="heading">Links</h2>
+    <ul>
+      <li><a href="#">If more people heard Guns n' Roses, world peace could be acheived &raquo;</a></li>
+      <li><a href="#">India should play a larger role at international stage - Dave Mustaine &raquo;</a></li>
+      <li><a href="#">India can win the next Football World Cup - Sir Alex Fergusson &raquo;</a></li>
+      <li class="last"><a href="#">Mexico and India should increase bilateral trade &raquo;</a></li>
+    </ul>
+  </div>
+<div id="programs">
+    <h2 class="heading">Trending on the Net ...</h2>
+    <img src="{{ STATIC_URL }}rick.jpg" alt="" class="hidden"> <img src="{{ STATIC_URL }}cbc.png" alt="" class="hidden">
+<ul>
+<li><a href="http://www.twitter.com" class="tweethandle"><b>@hetfield</b></a><div class="tweetmaindiv"> I wish we learnt to play music from Guns n' Roses during our formative years </div><a href="http:/
+/www.twitter.com">#chidem2</a>
+</li>
+<li><a href="http://www.twitter.com" class="tweethandle"><b>@tevez</b></a> <div class="tweetmaindiv" >City cheated me with the managerial contract so I went on a vacation while they got  </div><a href="
+http://www.twitter.com">#citygotrelegated</a></li>
+<li><a href="http://www.twitter.com" class="tweethandle"><b>@snp </b></a> <div class="tweetmaindiv">Scotland should join Punjab as a consituent state</div><a href="http://www.twitter.com">#scotlandengland</a></li>
+<li class="last"><a href="http://www.twitter.com" class="tweethandle"><b>@eurozone </b></a> <div class="tweetmaindiv">We should ask for more aid from India</div><a href="http://www.twitter.com">#eurocrisis</a></li>
+</ul></div>
+  <div id="cartoon" class="hidden">
+    <h2 class="heading">Humour</h2>
+    <img src="{{ STATIC_URL }}cartoon.jpg" alt="" /> </div>
+</div>
+<!-- END EXTRAS -->
+{% endblock %}
+
+</html>

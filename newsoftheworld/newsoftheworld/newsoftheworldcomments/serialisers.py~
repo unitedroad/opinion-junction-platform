@@ -1,0 +1,40 @@
+from rest_framework import serializers
+
+from .models import Comment
+
+class Post(object):
+    def __init__(self):
+        self.id=1
+        self.content="First Generic Comment"
+        
+class PostSerialiser(serializers.Serializer):
+    content=serializers.CharField(max_length=200)
+
+    def restore_object(self, attrs, instance=None):
+        if instance is not None:
+            instance.id=1
+            instance.content=attrs.content
+            return instance
+        
+        return Post()
+    
+class CommentSerialiser(serializers.Serializer):
+    id = serializers.CharField(required=True,max_length=50)
+    discussion_id = serializers.CharField()
+    parent_id = serializers.CharField()
+    slug = serializers.CharField()
+    full_slug= serializers.CharField()
+    posted = serializers.DateTimeField()
+    text = serializers.CharField()
+    
+    def restore_object(self, attrs, instance=None):
+        if instance:
+            instance.id = attrs.get('id', instance.id)
+            instance.discussion_id = attrs.get('discussion_id', instance.discussion_id)
+            instance.text = attrs.get('parent_id', instance.parent_id)
+            instance.text = attrs.get('slug', instance.slug)
+            instance.text = attrs.get('full_slug', instance.full_slug)
+            instance.text = attrs.get('posted', instance.posted)
+            instance.text = attrs.get('text', instance.text)
+            return instance
+        return Comment(**attrs)

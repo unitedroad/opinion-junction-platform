@@ -1,0 +1,24 @@
+{% load url from future %}
+{% load i18n %}
+{% load socialaccount %}
+{% providers_media_js %}
+<html>
+<head>
+<script>
+allauth.facebook.onLoginCanceled = function(response) {}
+</script>
+<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">                                                                                
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>                                                                                                
+<script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
+<title>{% block head_title %}{% endblock %}</title>
+</head>
+<body id="user-content" style="overflow:auto">
+<h2 style="margin-bottom:0px;margin-top:0px;padding-bottom:10px;padding-top:20px;">{% block page_heading %}{% endblock %}</h2>
+<a href="{% provider_login_url 'facebook' method='js_sdk' next='/accounts/login_callback' %}" class="btn btn-primary">{% trans "Sign in With Facebook" %}</a>
+
+{% block signup_login_altenator %}{% endblock %}
+
+{% block user_form %}{% endblock%}
+
+</body>
+</html>

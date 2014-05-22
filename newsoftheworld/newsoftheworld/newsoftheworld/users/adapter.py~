@@ -1,0 +1,9 @@
+from django.conf import settings
+from allauth.account.adapter import DefaultAccountAdapter
+
+class notwAccountAdapter(DefaultAccountAdapter):
+
+    def get_login_redirect_url(self, request):
+        if request.method == "POST" and request.POST["login_redirect_url"] is not None:
+            return request.POST["login_redirect_url"]
+        else return super(DefaultAccountAdapter, self).get_login_redirect_url(request)
