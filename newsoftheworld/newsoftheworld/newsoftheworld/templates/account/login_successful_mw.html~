@@ -1,7 +1,0 @@
-<html>
-<head>
-<script>
-var facebook_popup_suffix = "/accounts/login_callback";
-{% if request.user.is_authenticated %}
-window.location.href = facebook_popup_suffix;
-</script>
