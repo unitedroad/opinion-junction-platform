@@ -1,0 +1,10 @@
+<div class="col col-lg-12" >
+  <div id="submiterror" class="alert alert-danger" ng-show="showError">
+    {{ errorMessage }}
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideError()">&times;</button>
+  </div>
+  <div id="submitSuccess" class="alert alert-success" ng-show="showSuccess">
+    {{ successMessage }}
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideSuccess()">&times;</button>
+  </div>
+</div>

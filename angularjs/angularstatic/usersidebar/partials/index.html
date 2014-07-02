@@ -1,0 +1,33 @@
+<div class="col col-md-2 center-block">
+
+ <div id="usersidebar" data-spy="affix" data-offset-top="60" data-offset-bottom="200" class="col-md-12 col-lg-8">
+
+    <ul class="nav nav-pills nav-stacked">
+      <li id="profileli" ng-click="activateItem('profileli');setArticleDivCollapse(true);isArticleDivCollapsed = true" data-ng-class="navClass('profileli')">        
+          <a ng-href=""> Profile</a>
+      </li>
+      <li id="settingsli" ng-click="activateItem('settingsli');isArticleDivCollapsed = true" data-ng-class="navClass('settingsli')">        
+          <a ng-href=""> Settings</a>
+      </li>
+      <li id="articleli" ng-click="activateItem('articleli'); isArticleDivCollapsed = !isArticleDivCollapsed" data-ng-class="navClass('articleli')">
+            
+          <a ng-href=""> Article</a>
+      </li>
+    
+      <div collapse="isArticleDivCollapsed">
+        <div class="well well-sm">
+          <ul class="nav nav-pills nav-stacked" ng-repeat="capability in sidebarArticleCapabilities">
+            <li id="{{capability.id}}" ng-click="activateItem(capability.id)" 
+            data-ng-class="navClass(capability.id)">
+    	  <a ng-href="{{capability.url}}">{{capability.title}}</a>
+    	</li>
+          </ul>
+        </div>
+      </div>
+    </ul>
+  </div>
+
+</div>
+<div class="col">
+<ui-view></ui-view>
+</div>

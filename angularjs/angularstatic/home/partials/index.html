@@ -1,2 +1,43 @@
 <ng-include src="'/angularstatic/acentral/partials/carousel.html'"></ng-include>
-{{ message }}
+<section class="container">
+  <div class="col-md-10 col-lg-9">
+  <h4 class="text-center">Latest Opinions</h4>
+  <article ng-repeat="article in articleInfos" class="col col-lg-12">
+      <div class="col-md-2 col-lg-2">
+	<a href="#" class="thumbnail">
+	  <img data-src="holder.js/100%x180" src="http://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Aircraft_Rescue_Firefighting_training.jpg/320px-Aircraft_Rescue_Firefighting_training.jpg" alt="...">
+	</a>
+      </div>
+      <div >
+	<div><small>{{get_category_friendly_name_string(article)}}</small></div>
+	<div>
+	  <h4 class="articlepreviewheadline"><a ng-href="/article/{{article.id}}/{{article.slug}}" class="articleheaderlink">{{article.title}}</a></h4>
+	</div>
+	<div>
+	  <h4><small><p>{{article.excerpt}}</p></small></h4>
+	</div>
+	<div>
+	  <small><p>{{article.author.first_name}}{{article.author.last_name}}</p></small>
+	</div>
+      </div>      
+   
+  </article>
+  </div>
+  <div>
+  <h4 >Latest Comments</h4>
+  <article ng-repeat="comment in latest_comments">
+
+	<div>
+	  <h5 >
+	    <a ng-href="/article/{{comment.discussion_id}}/comment-{{comment.id}}" class="articleheaderlink">{{comment.text}}</a>
+	  </h5>
+	</div>
+	<div>
+	  <small><p>{{comment.author.name}}</p></small>
+	</div>
+            
+   
+  </article>
+  </div>
+
+</section>

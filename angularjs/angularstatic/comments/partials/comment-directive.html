@@ -1,0 +1,15 @@
+<div id="comments-encompass-container-{{comment.id}}" class="comments-encompass-container panel-group" >
+  <div id="comment-content-container-{{comment.id}}" class="comment-content-container" >
+    <div id="comment-text-container-{{comment.id}}" class="comment-text-container comment-form-group" >
+      <p style="white-space: pre;">{{comment.text}}</p>
+    </div>
+    <div class="comment-button-container">
+      <button id="comment-reply-button-{{comment.id}}" class="comment-reply-button btn btn-primary" ng-click="loadToggleReplyContainer(comment)">
+	Reply
+      </button>
+    </div>
+  </div>
+  <div class="comment-form-group">
+  <a id="comments-reply-toggle-link-{{comment.id}}" class="comments-reply-toggle-link" ng-click="toggleOrGetRepliesForParent(comment)">Toggle {{comment.num_replies}} Replies</a>
+  <div id="comment-reply-container-{{comment.id}}" class="comment-reply-container" collapse="comment.replyContainerCollapsed || comment.replyContainerCollapsed == undefined"></div>
+</div>

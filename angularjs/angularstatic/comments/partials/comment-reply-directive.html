@@ -1,0 +1,9 @@
+<div id="comment-reply-creation-container-{{comment.id}}"  class="comment-reply-creation-container" collapse="comment.replyCreationContainerCollapsed || comment.replyCreationContainerCollapsed == undefined">
+  <div id="comment-reply-creation-box-form-group-{{comment.id}}" class="comment-box-container" >
+    <textarea id="comment-reply-creation-box-{{comment.id}}" class="comment-reply-creation-container form-control" ng-click="onTypeInReplyBox"
+	      ng-model="comment.replyText" tooltip="{{comment.tooltip}}" tooltip-trigger="focus"></textarea>
+  </div>
+  <div id="comment-reply-creation-button-form-group-{{comment.id}}" class="comment-button-container" >
+    <button id="comment-reply-creation-button-{{comment.id}}" class="comment-reply-creation-button btn btn-primary" ng-click="postReply(comment)">Submit</button>
+  </div>
+</div>

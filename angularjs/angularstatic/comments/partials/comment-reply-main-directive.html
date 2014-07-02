@@ -1,0 +1,9 @@
+<div id="comment-reply-creation-container" class="comment-reply-creation-container">
+  <div id="comment-reply-creation-box-form-group" class="comment-box-container" >
+    <textarea id="comment-reply-creation-box" class="comment-reply-creation-container form-control"
+	      ng-model="commentMetaData.replyText" tooltip="{{commentMetaData.tooltip}}" tooltip-trigger="focus"></textarea>
+  </div>
+  <div id="comment-reply-creation-button-form-group" class="comment-button-container" >
+    <button id="comment-reply-creation-button" class="comment-reply-creation-button btn btn-primary" ng-click="postReply(commentMetaData)">Submit</button>
+  </div>
+</div>

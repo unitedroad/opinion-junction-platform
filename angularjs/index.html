@@ -4,14 +4,18 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
   <!-- <script src="https://code.angularjs.org/snapshot/angular.min.js"></script> -->
   <script src="https://code.angularjs.org/1.2.10/angular.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
   <script src="https://code.angularjs.org/1.2.10/angular-route.js"></script>
   <script src="https://code.angularjs.org/1.2.10/angular-cookies.js"></script>
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
-
+  <link rel="stylesheet" href="/static/comments.css">
   <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.js"></script>
 <!--  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
+  <script src="https://connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
   <script src="/angularstatic/acentral/js/app.js"></script>
   <!-- <script src="js/controllers.js"></script> -->
   <script type="text/javascript">
@@ -29,44 +33,95 @@
 <div ng-app="testApp" >
 <div ng-init="initFunction()" ng-controller="mainController">
 <script type="text/ng-template" id="loginModalContent.html">
+  <!--<script src="//connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
+  <script type="text/javascript" src="/static/facebook/js/fbconnect.js"></script>
+  <script type="text/javascript">allauth.facebook.init({ appId: '648103061911848',
+    locale: 'en_US',
+    loginOptions: {"scope": "email,publish_stream"},
+    loginByTokenUrl: '/accounts/facebook/login/token/',
+    channelUrl : 'http://www.newsoftheworld.lo/accounts/facebook/channel/',
+    cancelUrl: '/accounts/social/login/cancelled/',
+    logoutUrl: '/accounts/logout/',
+    errorUrl: '/accounts/social/login/error/',
+    csrfToken: 'zzIMKt3qAbjNQ8naRGppPzVC9TZsZTKc' });
+  </script>
+  <script>allauth.facebook.onLoginCanceled = function(response) {}</script>-->
+  <a ng-click="fbLogin('/accounts/login_callback', 'authenticate', 'login')" class="btn btn-primary">Sign in With Facebook</a>
     <div class="modal-body">
       <!-- <iframe id="iframe" src="/accounts/login?login_redirect_url={% url 'login_callback' %}" style="zoom:0.60" frameborder="0"  width="99.6%">
       </iframe> -->  
-      <p>Don't have an account? Then please <a href="/accounts/signup/">sign up</a>.</p>
-      <form ng-submit="processLoginForm()">
-      <p>
-	<label for="id_login">Username:</label> 
-	<input autofocus="autofocus" id="id_login" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.login">
-      </p>
-      <p><label for="id_password">Password:</label> 
-	<input id="id_password" name="password" placeholder="Password" type="password" ng-model="loginFormData.password"></p>
-      <p>
-	<label for="id_remember">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
-      {{ message }}
-      {{ errorMessage }}
-      <a class="button secondaryAction" href="/accounts/password/reset/">Forgot Password?</a>
-      <button class="btn btn-primary" type="submit">Sign In</button>
-      </form>
+      <div collapse="signinCollapse">
+	<p>Don't have an account? Then please <a ng-click="openSignup()">sign up</a>.</p>
+	<form ng-submit="setAllFormFields('signin') && processForm('signin')">
+	  <p>
+	    <label for="id_login">Username:</label> 
+	    <input autofocus="autofocus" id="id_login" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.login" ui-event="{ keyup : 'modalKeyUp($event)' }" >
+	  </p>
+	  <p><label for="id_password">Password:</label> 
+	    <input id="id_password" name="password" placeholder="Password" type="password" ng-model="loginFormData.password" ui-event="{ keyup : 'modalKeyUp($event)' }"></p>
+	  <p>
+	    <label for="id_remember">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
+	  <p>{{ messageSignin }}</p>
+	  <p class="text-danger">{{ errorMessageSignin }}</p>
+	  <a class="button secondaryAction" href="/accounts/password/reset/">Forgot Password?</a>
+	  <button class="btn btn-primary" type="submit">Sign In</button>
+	</form>
+      </div>
+      <div collapse="signupCollapse">
+	<p>Already have an account? Then please <a ng-click="openSignin()">sign in</a>.</p>
+	<form ng-submit="setAllFormFields('signup') && processForm('signup')">
+	  <p>
+	    <label for="id_login">Username:</label> 
+	    <input autofocus="autofocus" id="id_login_signup" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.username" auto-fill-sync>
+	  </p>
+	  <p><label for="id_password">Password:</label> 
+	    <input id="id_password_signup" name="password" placeholder="Password" type="password" ng-model="loginFormData.password1" auto-fill-sync></p>
+	  <p>
+	  <p><label for="id_password_verify">Password:</label> 
+	    <input id="id_password_verify_signup" name="password" placeholder="Confirm Password" type="password" ng-model="loginFormData.password2" auto-fill-sync></p>
+	  <p>
+	    <label for="id_remember_signup">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
+	  <p>{{ messageSignup }}</p>
+	  <p class="text-danger">{{ errorMessageSignup }}</p>
+	  <button class="btn btn-primary" type="submit">Sign Up</button>
+	</form>
+      </div>
+
     </div>
 </script>
 <script type="text/ng-template" id="signinNavBar.html">
-<nav id="navbar-right" class="navbar-text navbar-right"><a class="navbar-link" ng-click="signinModal()">Sign in</a></nav>
+<ul id="navbar-right" class="nav navbar-nav navbar-right"><li id="navbar-right-lastchild"><a class="navbar-link" ng-click="signinModal()">Sign in</a></li></ul>
 </script>
 
 <script type="text/ng-template" id="loggedInNavBar.html">
-<nav id="navbar-right" class="navbar-text navbar-right"><a href="/user/settings"class="navbar-link" >Settings</a></nav>
+<ul id="navbar-right" class="nav navbar-nav navbar-right"><li><a href="/user/settings" class="navbar-link" >Settings</a></li></ul>
 </script>
-<div id="navbar-div" style="width:100%" >
-<ng-include src="rightNavBar"></ng-include> 
-<!--<p class="navbar-text navbar-right"><a href="signin" class="navbar-link">Sign in</a></p> -->
-<!-- <div ng-include="{{ rightNavBar }}"></div>
-<nav id="navbar-right" class="navbar-text navbar-right"><a class="navbar-link" ng-click="signinModal()">Sign in</a></nav> -->
-</div> 
-<a href="/">Test View navigation</a>
-<a href="#/">Test View navigation Old Javascript Style</a>
-<a href="/#/">Test View navigation Old Javascript Style 2</a>
-<a href="/article">ArticleView</a>
- 
+
+<nav id="navbar-div" class="navbar navbar-inverse  navbar-fixed-top">
+  <div class="container" >
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">Opinion Junction</a>
+      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse" ng-click="navbarCollapsed=!navbarCollapsed">
+	<span class="sr-only">Toggle navigation</span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse oj-navbar-main" collapse="navbarCollapsed">
+      <ul class="nav navbar-nav">
+	<li class="active"><a href="/">Home</a></li>
+	<li ng-repeat="category in categories" ui-event="{hover : 'hoverCategory($event)', click : 'hoverCategory($event)'}" }><a ng-href="/{{category.name}}" >{{category.friendly_name}}</a></li>
+	<li><a href="/about">About</a></li>
+      </ul>
+
+      <ng-include src="rightNavBar"></ng-include> 
+      <ul id="navbar-right" class="nav navbar-nav navbar-right"><li><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li></ul>
+      <!--<ul id="navbar-right" class="nav navbar-right ng-scope"><li><a href="/user/settings" class="navbar-link">Settings</a></li></ul>-->
+    </div>
+  </div>
+</nav>
+
 <!--<div style="height: 600px"> -->
 <!--
   <carousel interval="5000">
@@ -80,10 +135,10 @@
   </carousel>
 -->
 <!-- </div> -->
-<ng-view>
+<ui-view>
 
-</ng-view>
-<button onclick="submitTest()">Submit</button>
+</ui-view>
+{{category}}
 </div>
 </div>
 </body>

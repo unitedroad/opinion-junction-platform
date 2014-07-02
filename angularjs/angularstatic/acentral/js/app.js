@@ -1,35 +1,98 @@
-var testApp = angular.module('testApp', ['ngRoute', 'ui.bootstrap', 'ngCookies']);
+var testApp = angular.module('testApp', ['ui.router', 'ui.bootstrap', 'ngCookies', 'ui.config', 'ui.tinymce', 'ui.directives', 'ngSanitize']);
 
-testApp.config(function($routeProvider, $locationProvider, $httpProvider, $interpolateProvider) {
+tooltipTriggerMap = {
+    'mouseenter': 'mouseleave',
+    'click': 'click',
+    'focus': 'blur',
+    'never': 'mouseleave' // <- This ensures the tooltip will go away on mouseleave
+};
+
+
+testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, $interpolateProvider, $tooltipProvider) {
     $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
     $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
         
-  $routeProvider
-	.when('/', {
+    $tooltipProvider.setTriggers(tooltipTriggerMap);
+
+  $stateProvider
+	.state('home', {
+	    url: "/",
 	    templateUrl: '/angularstatic/home/partials/index.html',
-	    controller: 'mainController'
+	    controller: 'mainPageController'
 	})
-	.when('/article', {
+	.state('politics', {
+	    url: "/{category:politics}",
+	    templateUrl: '/angularstatic/home/partials/index.html',
+	    controller: 'mainPageController'
+	})
+	.state('technology', {
+	    url: "/{category:technology}",
+	    templateUrl: '/angularstatic/home/partials/index.html',
+	    controller: 'mainPageController'
+	})
+    	.state('hoist', {
+	    url: "/{category:hoist}",
+	    templateUrl: '/angularstatic/home/partials/index.html',
+	    controller: 'mainPageController'
+	})
+	.state('art', {
+	    url: "/{category:art}",
+	    templateUrl: '/angularstatic/home/partials/index.html',
+	    controller: 'mainPageController'
+	})
+	.state('identities', {
+	    url: "/{category:identities}",
+	    templateUrl: '/angularstatic/home/partials/index.html',
+	    controller: 'mainPageController'
+	})
+
+	.state('article', {
+	    url : "/article/:articleId",
 	    templateUrl: '/angularstatic/article/partials/article.html',
 	    controller: 'articleController'
 	})
-	.when('/signin', {
+    	.state('article.text', {
+	    url : "/:text",
+	    templateUrl: '/angularstatic/article/partials/article.html',
+	    controller: 'articleController'
+	})
+	.state('signin', {
+	    url : "/signin",
 	    templateUrl: '/angularstatic/signin/partials/index.html',
 	    controller: 'signinController'
 	})
-    	.when('/user/settings', {
+    	.state('user', {
+	    url : "/user",
+	    templateUrl: '/angularstatic/usersidebar/partials/index.html',
+	    controller: 'userController'
+	})
+    	.state('userSettings', {
+	    url : "/user/settings",
 	    templateUrl: '/angularstatic/usersettings/partials/index.html',
 	    controller: 'userSettingsController'
 	})
-	.when('/user/createarticle', {
+	.state('user.createarticle', {
+	    url: "/createarticle",
 	    templateUrl: '/angularstatic/createarticle/partials/index.html',
 	    controller: 'createArticleController'
-	}).when('/user/articles', {
+	}).state('user.articles', {
+	    url: "/articles",
 	    templateUrl: '/angularstatic/articleslist/partials/index.html',
 	    controller: 'viewArticlesController'
-	}).when('/user/editarticle', {
+	}).state('user.editarticle', {
+	    url: "/editarticle/:articleId",
 	    templateUrl: '/angularstatic/createarticle/partials/index.html',
 	    controller: 'createArticleController'
+	}).state('default', {
+	    url: "/default",
+	    templateUrl: '/angularstatic/default/partials/index.html',
+	    controller: 'createArticleController'
+	}).state('message', {
+	    url: "/message",
+	    templateUrl: '/angularstatic/message/partials/index.html',
+	    controller: 'messageViewController'
 	});
     $locationProvider.html5Mode(true);
 
@@ -39,10 +102,11 @@ testApp.config(function($routeProvider, $locationProvider, $httpProvider, $inter
 }).
     run([
 	'$http', 
-	'$cookies', 
-	function($http, $cookies) {
+	'$cookies',
+	'commonOJService',
+	function($http, $cookies, commonOJService) {
             $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
-	    
+	    commonOJService.getCategories();
 	}]);
 
 
@@ -65,6 +129,10 @@ function initSidebarCapabilities(commonOJService, scope) {
 testApp.factory('commonOJService', function($http, $location) {
     var serviceInstance = {};
 
+    id = 0;
+
+    serviceInstance.id = id++;
+
     serviceInstance.userData = null;
 
 
@@ -72,6 +140,9 @@ testApp.factory('commonOJService', function($http, $location) {
 	{"create_articles" : {"id" : "create_articles", "title" : "Create Article", "content" : "Create Article", "url" : "/user/createarticle" }
 	 ,"edit_articles" : {"id" : "edit_articles", "title" : "View Articles", "content" : "View Articles", "url" : "/user/articles"}};
 
+    serviceInstance.isUserLoggedIn = function() {
+	return serviceInstance.userData && (serviceInstance.userData.id || (serviceInstance.userData.code === "user_not_setup_for_oj"));
+    }
 
     serviceInstance.getKeys = function(obj) {
 	var keys = [];
@@ -112,34 +183,125 @@ testApp.factory('commonOJService', function($http, $location) {
 	
     }
 
+    serviceInstance.callablesMapForEveryChange = {};
 
-    serviceInstance.controllerInit = function() {
 
-	$http.get('/api/1.0/authors/loggedin/self/').then(function(response) {
-	    if (response.data.ok && response.data.ok === "false") {
+    copyFields = function(object1, object2) {
+	for (var k in object1) object2[k]=object1[k];
+    }
 
-	    } else if (response.data.id && response.data.id!=null){
-		serviceInstance.userData = response.data;
+    invokeCallablesInMap = function(callablesMap) {
+	for (var k in callablesMap) {
+	    callable = callablesMap[k];
+	    if (callable != null) {
+		callable();
 	    }
+	} 
+    }
+
+    removeCallablesFromEveryChangeMap = function(key, valueArray) {
+	callablesMap = serviceInstance.callablesMapForEveryChange["userData"];
+	if (callablesMap!=null) {
+	    var arrayLength = valueArray.length;
+	    for (i = 0; i < arrayLength; i++) {
+		value = valueArray[i];
+		if (value) {
+		    callablesMap[value] = null;
+		}
+	    }
+	}
+    }
+
+    pushAndInvokeCallables = function(callablesMapForController) {
+	callablesMap = serviceInstance.callablesMapForEveryChange["userData"];
+	if (callablesMapForController!=null) {
+	    if (callablesMap==null) {
+		callablesMap = {};
+		serviceInstance.callablesMapForEveryChange["userData"] = callablesMap;
+	    }
+
+	    copyFields(callablesMap, callablesMapForController);
+	}
+	
+	invokeCallablesInMap(callablesMap);
+    }
+
+
+    //serviceInstance.controllerInit
+    serviceInstance.controllerInit = function(arrayCallables, scope, arrayCallablesFailure, callablesMapForController) {
+
+	$http.get('/api/1.0/authors/loggedin/self/').success(function(data) {
+	    //alert(JSON.stringify(data));
+	    serviceInstance.userData = data;
+	    if (data.id && data.id!=null){
+		if (arrayCallables != null ) {
+		    for (var i = 0; i < arrayCallables.length; i++) {
+			arrayCallables[i](serviceInstance, scope);
+		    }
+		}
+		//scope.$apply();
+
+	    }
+
+
+	}).error (function(data) {
+	    serviceInstance.userData = data;
+	    if (arrayCallablesFailure && arrayCallablesFailure != null) {
+		for (var i = 0; i < arrayCallablesFailure.length; i++) {
+		    arrayCallablesFailure[i](serviceInstance, scope);
+		}
+	    }
+	    
 	});
+
+	pushAndInvokeCallables(callablesMapForController);
+//	$http.get('/api/1.0/authors/loggedin/self/').then(function(response) {
+//	    if (response.data.ok && response.data.ok === "false") {
+//
+//	    } else if (response.data.id && response.data.id!=null){
+//		serviceInstance.userData = response.data;
+//	    }
+//	});
 
     }
 
-    serviceInstance.controllerInitOrRedirect = function(arrayCallables, scope) {
 
-	$http.get('/api/1.0/authors/loggedin/self/').then(function(response) {
-	    if (response.data.ok && response.data.ok === "false") {
-		window.location.href="/accounts/login?next=" + $location.path();		
-	    } else if (response.data.id && response.data.id!=null){
-		serviceInstance.userData = response.data;
-		for (var i = 0; i < arrayCallables.length; i++) {
-		    arrayCallables[i](serviceInstance, scope);
+    
+    serviceInstance.controllerInitOrRedirect = function(arrayCallables, scope, arrayCallablesFailure, callablesMapForController) {
+
+	$http.get('/api/1.0/authors/loggedin/self/').success(function(data) {
+	    serviceInstance.userData = data;
+	    //alert(JSON.stringify(data));
+	    if (data.id && data.id!=null){
+		if (arrayCallables != null) {
+		    for (var i = 0; i < arrayCallables.length; i++) {
+			arrayCallables[i](serviceInstance, scope);
+		    }
 		}
+
 	    }  else {
 		window.location.href="/accounts/login?next=" + $location.path();
 	    }
+	}).error(function(data) {
+	    serviceInstance.userData = data;
+	    if (data.ok && data.ok === "false") {
+		
+		if (data.code && data.code == "user_not_setup_for_oj") {
+		    //serviceInstance.userData = data;
+		    if (data.message) {
+			serviceInstance.messageForControllers.messageViewErrorMessage = data.message;
+		    } else {
+			serviceInstance.messageForControllers.messageViewErrorMessage = "Your account is not set up for Opinion Junction";
+		    }
+		    $location.path("/message");
+
+		    return;
+		}
+		window.location.href="/accounts/login?next=" + $location.path();		
+	    } 
 	});
 
+	pushAndInvokeCallables(callablesMapForController);
     }
 
     serviceInstance.unique = function(dataArray) {
@@ -154,11 +316,60 @@ testApp.factory('commonOJService', function($http, $location) {
 	return a;
     };
 
+    serviceInstance.categories = null;
+
     serviceInstance.messageForViewArticlesController = "";
+
+    serviceInstance.messageForControllers = {};
 
     serviceInstance.getPath = function(fullUrl) {
 	var baseLen = $location.absUrl().length - $location.url().length;
 	return fullUrl.substring(baseLen);
+    }
+
+    serviceInstance.getAllObjectValues = function(object) {
+	listOfValues = [];
+	for (key in object) {
+	    listOfValues.push(object[key]);
+	}
+	
+    }
+
+    serviceInstance.getObjectValue = function(object, key) {
+	
+	return object[key];
+	
+	
+    }
+
+    serviceInstance.categoryListeners = [];
+    serviceInstance.registerCategoryListener = function(listener) {
+	if (serviceInstance.categories != null) {
+	    listener();
+	}
+	serviceInstance.categoryListeners.push(listener);
+    }
+
+    serviceInstance.getCategories = function(){
+	if (serviceInstance.categories == null) {
+	    $http.get('/api/1.0/categories/').success(function(response) {
+		if (response.data && response.data.ok && response.data.ok === "false") {
+		    
+		} else {
+		    serviceInstance.categories = response;
+
+		    var numListeners = serviceInstance.categoryListeners.length;
+
+		    for (i = 0; i < numListeners; i++) {
+			listener = serviceInstance.categoryListeners[i];
+			listener();
+		    }
+		}
+	    });	    
+	}
+
+
+
     }
 
     return serviceInstance;
@@ -170,28 +381,566 @@ testApp.factory('commonOJService', function($http, $location) {
 
 });
 
+testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q, $compile) {
+
+    serviceInstance = {};
+
+    serviceInstance.commentsMap = {};
+    
+    serviceInstance.getCommentMetaDataForReplyMain = function(scope) {
+	metaData = {};
+	metaData.discussion_id = scope.articleId;
+	metaData.replyText = '';
+	return metaData;
+    }
+
+    serviceInstance.addCommentsToMap = function(article_id, comments) {
+	if (comments == null) {
+	    return;
+	}
+
+	if (serviceInstance.commentsMap[article_id] == null) {
+	    serviceInstance.commentsMap[article_id] = {};
+	}
+	
+	commentsMap = serviceInstance.commentsMap[article_id];
+
+	numComments = comments.length;
+
+	for (var i = 0; i < numComments; i++) {
+	    commentsMap[comments[i].id] = comments[i];
+	}
+    }
+
+    serviceInstance.isReplyContainerCollapsing = function(comment) {
+	commentReplyContainer = $('#comment-reply-container-' + comment.id);
+	if (commentReplyContainer.length <=0) {
+	    return false;
+	}
+
+	var classList = commentReplyContainer[0].className.split(/\s+/);
+	for (var i = 0; i < classList.length; i++) {
+	    if (classList[i] === 'collapsing') {
+		return true;
+	    }
+	}
+	return false;
+    }
+
+    serviceInstance.updateReplies = function(comment) {
+
+	url = null;
+
+	if (comment.id) {
+	    url = "/api/1.0/comments/" + comment.id + "?children=true";
+	} else {
+	    url = "/api/1.0/posts/" + comment.discussion_id + "/comments?top=true";
+	}
+
+	if (comment.latest_child) {
+	    url = url + "&after=" + comment.latest_child;
+	}
+
+	$http.get(url).success(function (data) {updateCommentsOnUiCS(data, comment); 
+						/*commentsService.addCommentsToMap(comment.discussion_id, data);*/
+					       });
+
+    }
+
+
+    serviceInstance.updateRepliesAndHandleShow = function(comment, showReplies) {
+	serviceInstance.updateReplies(comment);
+	if (showReplies!=null) {
+	    toggleCollapseOnReply(comment, showReplies);
+	}
+    }
+
+    serviceInstance.createCommentObject = function(comment) {
+	replyComment = {};
+
+	replyComment.text = comment.replyText;
+	replyComment.discussion_id = comment.discussion_id;
+	if (comment.id) {
+	    replyComment.parent_id = comment.id;
+	}
+	replyComment.author = {};
+	//replyComment.author.id = "";
+	replyComment.author.id = commonOJService.userData.id;
+	replyComment.author.name = commonOJService.userData.first_name + commonOJService.userData.last_name;
+	
+	return replyComment;
+    };
+
+    focusReply = function (comment) {
+	replyCreationBox = null;
+	if (comment.id) {
+	    replyCreationBox = $("#comment-reply-creation-box-" + comment.id)
+	} else {
+	    replyCreationBox = $("#comment-reply-creation-box")
+	}
+	
+	replyCreationBox.focus();
+    }
+
+    serviceInstance.postReply = function(comment, postSubmitCallables) {
+	if (!comment.replyText) {
+	    comment.tooltip="Comment is Blank";
+	    $timeout(function() {focusReply(comment);}, 100);
+	    return;
+	} else {
+	    comment.tooltip="";
+	    
+	    replyComment = serviceInstance.createCommentObject(comment);
+
+	    commentPostPromise = $http.post("/api/1.0/posts/" + comment.discussion_id + "/comments", JSON.stringify(replyComment),
+					    {headers: {"Content-Type": "application/json"}})
+		.then( function(result) {
+		    
+		});
+
+
+	    //$q.all([commentPostPromise]).then(postSubmitCallables[0]());
+	    $q.all([commentPostPromise]).then(serviceInstance.updateRepliesAndHandleShow(comment, true));
+	}
+    }
+
+
+    hasCommentsChildElements = function(element) {
+	console.log("hasCommentsChildElements: " + element.children("div").length > 0);
+	return element.children("div").length > 0;
+    }
+    
+    updateCommentsOnUiCS = function(data, comment) {
+	if (comment.id) {
+	    commentReplyContainer = $('#comment-reply-container-' + comment.id);
+	} else {
+	    commentReplyContainer = $('#comments-container');
+	}
+	scope = commentReplyContainer.scope();
+	numChildren = data.length
+
+	if (comment.latest_child) {
+	    scope.commentChildren = scope.commentChildren.concat(data);
+	    comment.num_replies = comment.num_replies + numChildren; //having this here
+	    //requires the guarantee that  
+	    //comment.latest_child is blank 
+	    //when we first get the comment 
+	    //and we initialise it only 
+	    //when we have fetched the children 
+            //the first time, which is done later
+
+	} else {
+	    comment.num_replies = numChildren;
+	    scope.commentChildren = data;
+	}
+
+	if (!hasCommentsChildElements(commentReplyContainer)) {
+	    $compile('<div comment="commentChild" ng-repeat="commentChild in commentChildren" ng-class="{firstcomment:$first}"></div>')
+	    (scope, function(cloned, $scope) {
+		commentReplyContainer.append(cloned);
+	    });	    
+	}
+
+	if (numChildren > 0) {
+	    //do this on our own as we arn't making another ajax call just to get the new num_replies
+	    comment.latest_child = data[numChildren-1].id;
+	}
+	
+//	if (!("commentChildren" in scope) || (scope.commentChildren == null) && comment.latest_child) {
+//	    scope.commentChildren = data;
+//	} else {
+//	    scope.commentChildren = scope.commentChildren.concat(data);
+//	}
+//
+//	if (comment.latest_child) {
+//	    comment.num_replies = comment.num_replies + numChildren; //having this here
+//	    //requires the guarantee that  
+//	    //comment.latest_child is blank 
+//	    //when we first get the comment 
+//	    //and we initialise it only 
+//	    //when we have fetched the children 
+//            //the first time, which is done later
+//
+//	} else {
+//	    comment.num_replies = numChildren;
+//	}
+
+
+    }
+
+
+
+    toggleCollapseOnReply = function(comment, showReplies) {
+	if (serviceInstance.isReplyContainerCollapsing(comment)) { //there seems to be a bug with Bootstrap collapse 
+	                                                           //when used with AngularUI 
+	                                                           //https://github.com/angular-ui/bootstrap/issues/1240
+	    $timeout(function() { comment.replyContainerCollapsed = showReplies }, 50);
+	}
+	$timeout(function() { comment.replyContainerCollapsed = !showReplies }, 100);
+    }
+
+
+    return serviceInstance;
+
+});
+
+
+testApp.factory('fbService', function($window, $http, $location, $cookies) {
+
+    function postForm(action, data, arrayCallables) {
+        var f = document.createElement('form');
+        f.method = 'POST';
+        f.action = action;
+	$http.post(action, $.param(data))
+	    .success( function(respCnt) {
+		//alert("success " + JSON.stringify(respCnt));
+		console.log(data);
+		if (arrayCallables != null ) {
+		    for (var i = 0; i < arrayCallables.length; i++) {
+			arrayCallables[i](respCnt);
+		    }
+		}
+
+	    })
+	    .error( function(respCnt) {
+		//alert("error " + JSON.stringify(respCnt));
+		console.log(data);
+	    });
+    }
+
+    function setLocationHref(url) {
+        if (typeof(url) == "function") {
+            // Deprecated -- instead, override
+            // allauth.facebook.onLoginError et al directly.
+            url();
+        } else {
+            window.location.href = url;
+        }
+    }
+
+    var serviceInstance = {
+	
+	init: function(opts) {
+            this.opts = opts;
+
+            //window.fbAsyncInit = function() {
+                FB.init({
+                    appId      : opts.appId,
+                    channelUrl : opts.channelUrl,
+                    status     : true,
+                    cookie     : true,
+                    oauth      : true,
+                    xfbml      : true
+                });
+                this.onInit();
+            //};
+
+            (function(d){
+                var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+                js = d.createElement('script'); js.id = id; js.async = true;
+                js.src = "//connect.facebook.net/"+opts.locale+"/all.js";
+                d.getElementsByTagName('head')[0].appendChild(js);
+            }(document));
+        },
+
+        onInit: function() {
+        },
+
+        login: function(nextUrl, action, process, arrayCallables) {
+            var self = this;
+            if (typeof(FB) == 'undefined') {
+                return;
+            }
+            if (action == 'reauthenticate') {
+                this.opts.loginOptions.auth_type = action;
+            }
+
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    self.onLoginSuccess.call(self, response, nextUrl, process, arrayCallables);
+                } else if (response && response.status && ["not_authorized", "unknown"].indexOf(response.status) > -1) {
+                    self.onLoginCanceled.call(self, response);
+                } else {
+                    self.onLoginError.call(self, response);
+                }
+            }, self.opts.loginOptions);
+        },
+
+        onLoginCanceled: function(response) {
+            //setLocationHref(this.opts.cancelUrl);
+        },
+
+        onLoginError: function(response) {
+            //setLocationHref(this.opts.errorUrl);
+        },
+
+        onLoginSuccess: function(response, nextUrl, process, arrayCallables) {
+            var data = {
+                next: nextUrl || '',
+                process: process,
+                access_token: response.authResponse.accessToken,
+                expires_in: response.authResponse.expiresIn,
+                csrfmiddlewaretoken: this.opts.csrfToken
+            };
+
+            postForm(this.opts.loginByTokenUrl, data, arrayCallables);
+        },
+
+        logout: function(nextUrl) {
+            var self = this;
+            if (typeof(FB) == 'undefined') {
+                return;
+            }
+            FB.logout(function(response) {
+                self.onLogoutSuccess.call(self, response, nextUrl);
+            });
+        },
+
+        onLogoutSuccess: function(response, nextUrl) {
+            var data = {
+                next: nextUrl || '',
+                csrfmiddlewaretoken: this.opts.csrfToken
+            };
+
+            postForm(this.opts.logoutUrl, data);
+        }
+    };
+    //get FB from the global (window) variable.
+    var FB = $window.FB;
+
+    // gripe if it's not there.
+    if(!FB) throw new Error('Facebook not loaded');
+
+    
+    //FB.init();
+
+    //make sure FB is initialized.
+    serviceInstance.init({
+	appId : '1433556806914281',
+	locale: 'en_US',
+	loginOptions: {"scope": "email,publish_stream"},
+	loginByTokenUrl: '/accounts/facebook/login/token/',
+	channelUrl : 'http://www.newsoftheworld.lo/accounts/facebook/channel/',
+	cancelUrl: '/accounts/social/login/cancelled/',
+	logoutUrl: '/accounts/logout/',
+	errorUrl: '/accounts/social/login/error/',
+	csrfToken: $cookies.csrftoken
+    });
+    return serviceInstance;
+
+});
+
 testApp.controller('testController', function($scope) {
     $scope.totalResults = 5;
     $scope.message = "Welcome to Opinion Junction";
 });
 
-testApp.controller('mainController', function($scope, $http, $modal, commonOJService) {
+testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, $stateParams) {
+    $scope.category = $stateParams.category;
 
+    setCategories = function() {
+	$scope.categories = commonOJService.categories;
+    }
+
+    $scope.message = "Axl is finding lasting success";
+ 
+    $scope.allCategories = false;
+
+    if (!$scope.category) {
+	commonOJService.registerCategoryListener(setCategories);	
+	$scope.allCategories = true;
+    } else {
+	$scope.categories = [$scope.category];
+    }
+
+    $scope.categoriesMapCreated = false;
+
+    $scope.articleIds = [];
+
+    if ($scope.allCategories) {
+		$http.get("/api/1.0/comments/?limit=5", {headers: {"Content-Type": "application/json"}})
+		    .success( function(data) {
+			$scope.latest_comments = data;
+		    });
+    }
+
+    $scope.$watch('categories', function(){
+	if($scope.categories && $scope.categories!=null) {
+	    numCategories = $scope.categories.length;
+	    $scope.articleInfos = [];
+	    num_articles_per_request = 5;
+	    if ($scope.categories.length==1) {
+		num_articles_per_request = 30;
+	    }
+	    for (i = 0; i < numCategories; i++) {
+		category = $scope.categories[i];
+		$http.get("/api/1.0/categories/" + getCategoryName(category) + "/articles?limit=" + num_articles_per_request, {headers: {"Content-Type": "application/json"}}) 
+		    .success( function(data) {
+			$.each(data, function (index, item) {
+			    if (commonOJService.indexOf($scope.articleIds, item.id) <= -1 ) {
+				$scope.articleIds.push(item.id);
+				$scope.articleInfos.push(item);
+			    }
+			});
+			//$scope.articleInfos = $scope.articleInfos.concat(data);
+		    });
+	    }	    
+	}
+    });
+
+    getCategoryName = function(category) {
+	if (!category) {
+	    return category;
+	}
+
+	if ((typeof category) === "string") {
+	    return category;
+	}
+
+	return category.name;
+    }
+
+    numCalls = 0;
+
+    $scope.get_category_friendly_name_string  = function(article){
+	if (article.category_friendly_names) {
+	    return article.category_friendly_names;
+	}
+	articleCategories = article.categories;
+	numArticleCategories = articleCategories.length;
+
+	if ($scope.categories == null) {
+
+	    return;
+	}
+	if (!$scope.categoriesMapCreated) {
+	    $scope.categoriesMap = createCategoriesMap($scope.categories);
+	    $scope.categoriesMapCreated = true;
+	}
+	
+	category_friendly_names = "";
+	if (numArticleCategories > 0) {
+	    category_friendly_names = $scope.categoriesMap[articleCategories[0]].friendly_name;
+	}
+	
+	for (i = 1; i < numArticleCategories; i++) {
+	    category_friendly_names = category_friendly_names + "," + $scope.categoriesMap[articleCategories[i].friendly_name];
+	    //if (category.localCompare
+	}
+
+	article.category_friendly_names = category_friendly_names;
+
+	return category_friendly_names;
+
+    }
+
+    createCategoriesMap = function(categories) {
+	categoriesMap = {};
+	numCategories = categories.length;
+	for (i = 0; i < numCategories; i++) {
+	    category = categories[i];
+	    categoriesMap[category.name] = category;
+	}
+	return categoriesMap;
+    }
+
+    
+});
+
+testApp.controller('mainController', function($scope, $http, $modal, commonOJService, $stateParams) {
+
+    $scope.category = $stateParams.category;
+    
+    $scope.navSubmenuCollapsed = true;
+
+    $scope.hoverCategory = function(event) {
+	$scope.navSubmenuCollapsed = false;
+    }
+
+    $scope.articles = 
+	[ {"title" : "Celine's Third Law",
+	   "image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Rummu_aherainem%C3%A4gi2.jpg/1024px-Rummu_aherainem%C3%A4gi2.jpg",
+	   "author" : { 
+               "user_image": "", 
+               "first_name": "Vineet", 
+               "last_name": "Saini", 
+               "num_draft": null, 
+               "user_role": "SuperEditor", 
+               "author_name": "vineetsaini", 
+               "invitation_count": 0, 
+               "user_bio": null, 
+               "email_address": "vineetsaini84@gmail.com", 
+               "id": "10"
+	   },
+	   "categories" : ["Politics"]
+	  },{"title" : "Price of Freedom",
+	     "image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Prinzenbau%2C_24.jpg/1024px-Prinzenbau%2C_24.jpg",
+	     "author" : {
+               "user_image": "", 
+               "first_name": "Dhruwat", 
+               "last_name": "Bhagat", 
+               "num_draft": null, 
+               "user_role": "administrator", 
+               "author_name": "ranubhai", 
+               "invitation_count": 0, 
+               "user_bio": null, 
+               "email_address": "unitedronaldo@yahoo.com", 
+               "id": "1"
+	     },
+	     "categories" : ["Identities"]
+	   }];
+    setCategories = function() {
+	$scope.categories = commonOJService.categories;
+    }
+
+    commonOJService.registerCategoryListener(setCategories);
+    
     $scope.rightNavBar = "signinNavBar.html";
     $scope.message = "Welcome to Opinion Junction!";
+    $scope.navbarCollapsed = true;
     $scope.totalResults = 5;
     $scope.userData = null;
-    $scope.articles = [{
-	"name": "Article 1",
-	"text": "Article 1 text",
-	"image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Rummu_aherainem%C3%A4gi2.jpg/1024px-Rummu_aherainem%C3%A4gi2.jpg"
-    }, {
-	"name": "Article 2",
-	"text": "Article 2 text",
-	"image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Prinzenbau%2C_24.jpg/1024px-Prinzenbau%2C_24.jpg"
-    }];
+//    $scope.articles = [{
+//	"name": "Article 1",
+//	"text": "Article 1 text",
+//	"image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Rummu_aherainem%C3%A4gi2.jpg/1024px-Rummu_aherainem%C3%A4gi2.jpg"
+//    }, {
+//	"name": "Article 2",
+//	"text": "Article 2 text",
+//	"image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Prinzenbau%2C_24.jpg/1024px-Prinzenbau%2C_24.jpg"
+//    }];
 
-    $scope.signinModal = function() {
+    setUserData = function(commonOJService, scope) {
+	$scope.userData = commonOJService.userData;
+    }
+
+    setNavBarOnSigninUnConfUser = function(serviceInstance, scope) {
+	if (serviceInstance.userData.code && serviceInstance.userData.code == "user_not_setup_for_oj") {
+	    setUserData(serviceInstance);
+	    setNavBarOnSignin(serviceInstance, $scope);
+	    //$scope.userData = serviceInstance.userData;
+	} else {
+	    $scope.userData = null;
+	    //setSigninModalToOpen();
+	}
+	
+    }
+
+    
+    setNavBarOnSignin = function(commonOJService, scope) {
+	if ($scope.userData!=null) {
+	    $scope.rightNavBar = "loggedInNavBar.html";
+	    if ($scope.$parent != null) {   
+		$scope.$parent.rightNavBar = "loggedInNavBar.html";
+	    }
+	}
+
+    };
+
+    openSigninModal = function() {
+	if ($scope.userData!=null) {
+	    return;
+	}
 	var modalInstance = $modal.open({
 	    templateUrl: 'loginModalContent.html',
 	    controller: ModalInstanceCtrl,
@@ -204,17 +953,51 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 
         modalInstance.result.then(function (isLoggedIn) {
     	    if (isLoggedIn) {
-		$scope.rightNavBar = "loggedInNavBar.html";
+	//	$scope.rightNavBar = "loggedInNavBar.html";
+	//	if ($scope.$parent != null) {   
+	//	    $scope.$parent.rightNavBar = "loggedInNavBar.html";
+	//	}
+		//scope.rightNavBar = "loggedInNavBar.html"; //some crazy work, can't figure out why scope != %scope !!
+		//commonOJService.controllerInit(arrayCallables, $scope, null);
+		commonOJService.controllerInit([setUserData, setNavBarOnSignin], $scope, [setNavBarOnSigninUnConfUser], null);
 	    }
         });
+    }
+
+    arrayCallables = [setUserData, setNavBarOnSignin ];
+
+    arrayCallablesFailure = [openSigninModal];
+
+    $scope.$watch('signinModalToBeOpened', function() {
+	signinModalToOpen = $scope.signinModalToBeOpened;
+	$scope.signinModalToBeOpened = false;
+	if ($scope.userData == null && signinModalToOpen) {
+	    openSigninModal();
+	}
+	
+    });
+
+    setSigninModalToOpen = function() {
+	$scope.signinModalToBeOpened = true;
+    }
+
+    $scope.signinModal = function() {
+	commonOJService.controllerInit(arrayCallables, $scope, [setNavBarOnSigninUnConfUser, setSigninModalToOpen], null);
+	//commonOJService.controllerInit(arrayCallables, $scope, arrayCallablesFailure, {"setNavBarOnSignin" : setNavBarOnSignin});
+	if ($scope.userData!=null) {
+	    $scope.rightNavBar = "loggedInNavBar.html";
+	    return;
+	}
 
     };
 
+    $scope.$on('$destroy', function() {
+	removeCallablesFromEveryChangeMap("userData", ["setNavBarOnSignin"]);
+    });
 
     $scope.initFunction = function() {
-
-
-	    $http.get('/api/1.0/authors/loggedin/self/').then(function(response) {
+	commonOJService.controllerInit([setUserData, setNavBarOnSignin], $scope, [setNavBarOnSigninUnConfUser], null);
+	    /*$http.get('/api/1.0/authors/loggedin/self/').then(function(response) {
 		if (response.data.ok && response.data.ok === "false") {
 
 		} else if (response.data.id && response.data.id!=null){
@@ -222,41 +1005,175 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 		    $scope.userData = response.data;
 		    commonOJService.userData = response.data;
 		}
-	    });
+	    });*/
 	
     };
 
 });
 
-testApp.controller('articleController', function($scope) {
+
+testApp.controller('articleController', function($scope, $http, $stateParams, commonOJService) {
     $scope.message = "Welcome to Opinion Junction's First Article";
+    $scope.articleId = $stateParams.articleId;
+    $http.get("/api/1.0/articles/" + $scope.articleId, {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) {
+		if (data.length > 0) {
+		    $scope.article = data[0];
+		}
+	    });
+
+    $scope.comments_init = function () {
+        $('iframe_comments').height($('iframe_comments').contents().height());
+        //$(this).width($(this).contents().width());
+    }
+
+    $scope.isUserLoggedIn = function() {
+	return commonOJService.userData && (commonOJService.userData.id || (commonOJService.userData.code === "user_not_setup_for_oj"));
+    }
 });
 
 testApp.controller('signinController', function($scope) {
     $scope.message = "Welcome to Opinion Junction's First Article";
 });
 
-testApp.controller('createArticleController', function($scope, $http, commonOJService, $location, $rootScope) {
+testApp.controller('createArticleController', function($scope, $http, commonOJService, $location, $rootScope, $stateParams) {
+
+    fieldsAccessForEditMode = {"topic" : ""};
+
+    $scope.articleFields = ["topic","slug"];
+
+    $scope.articleAuthor = null;
+
+    $scope.editEnabled = true;
+
+    $scope.articleInitialised = false;
+    $scope.isEditEnabled = function(fieldName) {
+	if ($scope.articleAuthor == null) {
+	    return false;
+	}
+	if (commonOJService.userData.id == $scope.articleAuthor.id) {
+	    if (commonOJService.indexOf(commonOJService.userData.user_permissions, "edit_articles") <= -1 ||
+		commonOJService.userData.num_drafts <= 0){
+		return false;
+	    }
+	    
+	};
+	if (commonOJService.indexOf(commonOJService.userData.user_permissions, "edit_others_articles") <= -1) {
+	    return false;
+	} 
+
+	return true;
+    }
+
+    $scope.tinymceOptions = {
+      // General options
+      theme : "modern",
+      width : "800px",
+      height : "800px",
+      plugins : ["advlist","autoresize","autosave","fullscreen","image","media","paste","preview",
+		 "searchreplace","spellchecker","visualblocks","visualchars","wordcount"]
+
+
+    };
+
+    check_create_allowed = function() {
+	if (commonOJService.indexOf(commonOJService.userData.user_permissions,"create_articles") <= -1 ) {
+    	    return false;
+    	}
+	return true;
+    }
+
+    $scope.setupEditModeOnInit = function(scope) {
+        if ($location.path().indexOf("/user/editarticle/") == 0) {
+    	    scope.articleId = $stateParams.articleId;
+    	    getArticleForEditMode();
+    	    scope.mode = "edit";
+        } else {
+	    scope.mode = "create";
+	    if (!check_create_allowed()) {
+
+		commonOJService.messageForControllers.messageViewErrorMessage = "You don't have permissions to create articles";
+		
+		scope.pageLeaveBehaviourDisabled = true;
+
+		$location.path("/message");
+
+	    }
+	    scope.authorWhoCanEditId = -1;
+	}
+    };
+
+    setupEditModeOnInitOJWrapper = function(commonOJService, scope) {
+	$scope.setupEditModeOnInit(scope);
+    }
+
+    getArticleForEditMode = function() {
+	$http.get("/api/1.0/articles/" + $scope.articleId, {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) {
+		if (data.length > 0) {
+		    article = data[0];
+		    $scope.topic = article.title;
+		    $scope.slug= article.slug;
+		    $scope.excerpt = article.excerpt;
+		    $scope.articleAuthor = article.author;
+		    $scope.content = article.storytext;
+		    
+		} else {
+		    $scope.errorMessage="Opinion not found";
+		    $scope.submitError = true;
+		    $scope.showError = true;
+		}
+		
+	    }).error( function(data) {
+		$scope.errorMessage="Opinion not found";
+		$scope.submitError = true;
+		$scope.showError = true;
+	    });
+    };
+
+    $scope.mode = "edit";
     $scope.message = "Welcome to Opinion Junction's First Article";
     $scope.sidebarArticleCapabilities = [];
 
     $scope.invitationDivCollapse = false;
 
     $scope.popularTags = [];
-    $scope.categories = [];
 
+    setCategories = function() {
+
+	$scope.categories = commonOJService.categories;
+    }
+
+    commonOJService.registerCategoryListener(setCategories);
+    $scope.categories = commonOJService.categories;
     $scope.showPopularTags = false;
     $scope.popularTagsDivCollapse = true;
 
     createArticleModeDict = { "create" : { "articlePostUrl" : "" }, "edit" : { "articlePostUrl" : "" } };
 
+    $scope.setPageLeaveBehaviour = function (commonOJService, scope) {
+
+            scope.$on('$locationChangeStart', function (event, next, current) {
+		if (scope.pageLeaveBehaviourDisabled != true) {
+		    var answer = confirm("Are you sure you want to leave this page?")
+		    if (!answer) {
+    			event.preventDefault();
+		    }
+		}
+            });
+	
+
+
+    };
+
     $scope.init = function() {
-	arrayCallables = [initSidebarCapabilities];
+	arrayCallables = [initSidebarCapabilities, setupEditModeOnInitOJWrapper,  $scope.setPageLeaveBehaviour];
 	commonOJService.controllerInitOrRedirect(arrayCallables,$scope);
 	//$scope.getPopularTags();
-	$scope.getCategories();
+	//$scope.getCategories();
 
     }
+
 
     
 
@@ -276,15 +1193,16 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	}
     };
 
-    $scope.getCategories = function(){
-	$http.get('/api/1.0/categories/').success(function(response) {
-	    if (response.data && response.data.ok && response.data.ok === "false") {
-		
-	    } else {
-		    $scope.categories = response;
-	    }
-	});
-    }
+    
+//    $scope.getCategories = function(){
+//	$http.get('/api/1.0/categories/').success(function(response) {
+//	    if (response.data && response.data.ok && response.data.ok === "false") {
+//		
+//	    } else {
+//		    $scope.categories = response;
+//	    }
+//	});
+//    }
 
 
     $scope.init();
@@ -304,7 +1222,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     $scope.content = "";
 
-    $scope.mode = "create";
+
 
     $scope.activateItem = function(id) {
             
@@ -315,8 +1233,60 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     $scope.status = "draft";
 
-    $scope.allowedStatusValuesMap = ["draft,Draft", "pending_review,Pending Review", "published,Published" ]; 
+    $scope.allStatusValues = {"draft" : "draft,Draft", "pending_review" : "pending_review,Pending Review", "published" : "published,Published" }; 
+    $scope.permissionStatusValuesMapForSelf = { "edit_articles" : ["draft,Draft","pending_review,Pending Review"], 
+					     "publish_articles": ["published,Published"] }; 
 
+    $scope.permissionStatusValuesMapForOthers = {"publish_others_articles" : ["draft,Draft", "published,Published"] , 
+				     /*"edit_others_article" : ["pending_review,Pending Review"]*/ }; 
+
+   
+    $scope.allowedStatusValuesMap =  commonOJService.getAllObjectValues($scope.allStatusValues);
+ 
+    getAllowedStatusValuesMap = function() {
+	allowedStatusValuesMap = [];
+	if ($scope.articleAuthor == null || commonOJService.userData.id == $scope.articleAuthor.id) {
+      	    for (permission in $scope.permissionStatusValuesMapForSelf) {
+    		if (commonOJService.indexOf(commonOJService.userData.user_permissions,permission) > -1 ) {
+    		    allowedStatusValuesMap = allowedStatusValuesMap.concat($scope.permissionStatusValuesMapForSelf[permission]);
+    		}
+    	    }
+	} else {
+	    for (permission in $scope.permissionStatusValuesMapForOthers) {
+		if (commonOJService.indexOf(commonOJService.userData.user_permissions,permission) > -1 ) {
+		    allowedStatusValuesMap = allowedStatusValuesMap.concat($scope.permissionStatusValuesMapForOthers[permission]);
+		}
+	    }
+	}
+	
+	if ($scope.status) {
+	    allowedStatusValuesMap = allowedStatusValuesMap.concat(commonOJService.getObjectValue($scope.allStatusValues, $scope.status));
+	}
+	
+	return commonOJService.unique(allowedStatusValuesMap);
+    }
+
+    $scope.showStatusDropDown = function() {
+	if ($scope.mode == "edit") {
+	    if (commonOJService.userData == null || $scope.articleAuthor == null) {
+		return false;
+	    }
+
+	    if (commonOJService.userData != null && commonOJService.userData.id != $scope.articleAuthor.id) {
+		if (commonOJService.indexOf(commonOJService.userData.user_permissions, 
+					     "edit_others_articles") <= -1 && 
+		    commonOJService.indexOf(commonOJService.userData.user_permissions, "publish_others_articles") <= -1) {
+		    return false;
+		}
+	    }
+	}
+	return true;
+    }
+
+    $scope.statusDropDownVisible = $scope.showStatusDropDown();
+
+
+ 
     $scope.getStatus = function(statusStatusValue){
 	return statusStatusValue.split(",")[0];
     }
@@ -342,6 +1312,30 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
             
     $scope.$watch("slug", function() {
         $scope.slug = $scope.slug.replace(new RegExp("[^a-zA-Z0-9-]", "g"),'');
+    });
+
+    setPageLeaveBehaviourForEdit = function() {
+	if($scope.articleAuthor != null && !$scope.editEnabled && !$scope.statusDropDownVisible) {
+	    commonOJService.messageForControllers.messageViewErrorMessage = "You don't have permissions to edit articles";
+	    
+	    $scope.pageLeaveBehaviourDisabled = true;
+
+	    $location.path("/message");
+
+	}
+    }
+
+    $scope.$watchCollection("[mode, articleAuthor]", function() {
+	if ($scope.mode == "edit") {
+	    $scope.editEnabled = $scope.isEditEnabled("");
+	    if ($scope.editEnabled) {
+		$scope.authorWhoCanEditId = article.author.id;
+	    }
+	    $scope.allowedStatusValuesMap = getAllowedStatusValuesMap();
+	    $scope.statusDropDownVisible = $scope.showStatusDropDown();
+	    $scope.articleInitialised = true;
+	    setPageLeaveBehaviourForEdit();
+	}
     });
 
     $scope.checkboxClicked = function(row) {
@@ -416,9 +1410,12 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	article.storytext = $scope.content;
 	article.tags = $scope.getAllSelectedTags($scope.selectedTags, $scope.getSelectedValues($scope.popularTags));
 
-	article.categories = $scope.getSelectedValues($scope.categories);
+	article.categories = $scope.getSelectedValues(commonOJService.categories);
 
 	article.status = $scope.status;
+
+
+	permission_logic = {};
 
 	if ($scope.mode === "create") {
 
@@ -508,12 +1505,6 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	$scope.showSuccess = false;
     }
 
-    $scope.$on('$locationChangeStart', function (event, next, current) {
-        var answer = confirm("Are you sure you want to leave this page?")
-        if (!answer) {
-	    event.preventDefault();
-        }
-    });
 
     
 
@@ -670,6 +1661,63 @@ testApp.controller('viewArticlesController', function($scope, commonOJService, $
 
 });
 
+testApp.controller('userController', function($scope, $location, commonOJService) {
+
+    $scope.sidebarArticleCapabilities = [];
+
+    $scope.init = function() {
+	arrayCallables = [initSidebarCapabilities];
+	commonOJService.controllerInitOrRedirect(arrayCallables,$scope);
+
+        if (commonOJService.userData == null) {
+        	//$location.path("/accounts/login?login_redirect_url=/"); 
+        } else {
+
+	}
+    }
+
+    
+
+
+    $scope.init();
+    $scope.testBoundData = "hello";
+    $scope.message = "Welcome to your User Settings";
+    $scope.capabilities = getCapabilities();
+    $scope.isArticleDivCollapsed = true;
+    $scope.activeItem = "";
+
+    function getCapabilities(){
+	capabilities = [{"title" : "Create Article", "content" : "Create Article" }];
+	return capabilities;
+    }
+
+    function getArticleCapabilities(){
+
+
+    }
+
+//    $scope.$on('$viewContentLoaded', function() {
+//	if (commonOJService.userData == null) {
+//	    $location.path("/route"); 
+//	}
+//    });
+
+    $scope.navClass = function(page) {
+        return page === $scope.activeItem ? "active" : "";
+    };
+            
+    $scope.activateItem = function(id) {
+            
+        $scope.activeItem = id;
+    };
+            
+    $scope.setArticleDivCollapse = function(collapse) {
+               
+        $scope.isArticleDivCollapsed = collapse;
+    }
+
+});
+
 testApp.controller('userSettingsController', function($scope, $location, commonOJService) {
 
     $scope.sidebarArticleCapabilities = [];
@@ -727,18 +1775,51 @@ testApp.controller('userSettingsController', function($scope, $location, commonO
 
 });
 
-var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, commonOJService) {
+testApp.controller('defaultViewController', function($scope, $location, commonOJService) {
+    
+});
+
+testApp.controller('messageViewController', function($scope, $location, commonOJService) {
+    if (commonOJService.messageForControllers.messageViewErrorMessage) {
+	$scope.showError = true;
+	$scope.errorMessage = commonOJService.messageForControllers.messageViewErrorMessage;
+	commonOJService.messageForControllers.messageViewErrorMessage = "";
+    }
 
 
+    $scope.hideError = function() {
+	$scope.showError = false;
+    };
+
+    $scope.hideSuccess = function() {
+	$scope.showSuccess = false;
+    }
+});
+
+var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, commonOJService, fbService) {
+
+    $scope.fbLogin = function(nextUrl, action, process) {
+	fbService.login(nextUrl, action, process, [onSuccess]);
+    }
     $scope.message="";
     $scope.errorMessage = "";
     $scope.loginFormData = {};
+    $scope.signinCollapse = false;
+    $scope.signupCollapse = true;
 
+    $scope.formFields = {"signinForm": [{"id":"id_login"},
+				       {"id":"id_password"}]};
+
+    $scope.modeMap = {"signin" : {"ajaxUrl" : '/accounts/login/', "errorMessage" : "errorMessageSignin", 
+				  "fields": [{"id":"id_login"},{"id":"id_password"}]}, 
+		      "signup" : {"ajaxUrl" : '/accounts/signup/', "errorMessage" : "errorMessageSignup",
+				  "fields": [{"id":"id_login_signup"},{"id":"id_password_signup"},
+					    {"id":"id_password_verify_signup"},]}};
   // process the form
-    $scope.processLoginForm = function() {
+    $scope.processForm = function(mode) {
 	$http({
 	    method: 'POST',
-	    url: '/accounts/login/',
+	    url: $scope.modeMap[mode].ajaxUrl,
 	    data: $.param($scope.loginFormData) + '&csrfmiddlewaretoken=' + $cookies.csrftoken, // pass in data as strings
 	    headers: {
 		'Content-Type': 'application/x-www-form-urlencoded',
@@ -747,30 +1828,130 @@ var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, common
 	    } // set the headers so angular passing info as form data (not request payload)
 	})
 	    .success(function(data) {
-		console.log(data);
-
-		if (!data.success) {
-          // if not successful, bind errors to error variables
-		    $scope.errorMessage = data.form_errors;
+		onSuccess(data);
+	    }).error(function(data) {
+		data = getJsonFromResult(data);
+		if ("form_errors" in data) {
+		    form_errors = data["form_errors"];
+		    for( key in form_errors) {
+			errorMessage = form_errors[key].length > 0? form_errors[key][0] : "Error while authenticating";
+			$scope[$scope.modeMap[mode].errorMessage] = errorMessage;
+			break;
+		    }
+		} else if ("message" in data) {
+		    $scope[$scope.modeMap[mode].errorMessage] = data["message"];
 		} else {
-          // if successful, bind success message to message
-		    $scope.message = data.html;
-		}
-
-		try {
-		    resultJson = JSON.parse(data.html);
-		    commonOJService.userData = resultJson;
-		    isLoggedIn = resultJson.code!=null && resultJson.code === "login_successful";
-		    $modalInstance.close(isLoggedIn);
-		} catch (exception) {
-		 //log exception, probably becasue double sign in which we haven't handled properly   
+		    $scope[$scope.modeMap[mode].errorMessage] = "Error while authenticating";
 		}
 	    });
     };
+    
+    getJsonFromResult = function(data) {
+	jsonData = data;
+
+	if (!data) {
+	    return {};
+	}
+	try {
+	    if ((typeof data) === "string" || data instanceof String) {
+		data = JSON.parse(data);
+	    }
+	} catch(exception) {
+	    return {};
+	}
+
+	if ("form_errors" in data) {
+	    return data;
+	}
+
+	if ("html" in data) {
+	    jsonData = data.html;
+	}
+	
+	try {
+	    if ((typeof jsonData) === "string" || jsonData instanceof String) {
+		resultJson = JSON.parse(jsonData);
+	    } else {
+		resultJson = jsonData;
+	    }
+	} catch (e) {
+	    return data;
+	}
+	
+	return resultJson;
+    };
+
+    onSuccess = function (data) {
+	console.log(data);
+
+	if (!data.success) {
+            // if not successful, bind errors to error variables
+	    $scope.errorMessage = data.form_errors;
+	} else {
+            // if successful, bind success message to message
+	    $scope.message = data.html;
+	}
+
+	resultJson = getJsonFromResult(data);
+	if (resultJson == null) {
+	    resultJson = {};
+	}
+
+	try {	 		
+	    //commonOJService.userData = resultJson;
+	    isLoggedIn = resultJson.code!=null && (resultJson.code === "login_successful" || resultJson.code === "already_logged_in");
+	    $modalInstance.close(isLoggedIn);
+	} catch (exception) {
+	    //log exception, probably becasue double sign in which we haven't handled properly   
+	}
+    }
+
+
+    $scope.openSignup = function() {
+	$scope.signinCollapse=true;
+	$scope.signupCollapse=false;
+    }
+
+    $scope.openSignin = function() {
+	$scope.signinCollapse=false;
+	$scope.signupCollapse=true;
+    }
+
+
+    $scope.setAllFormFields = function(formName) {
+	formFields = $scope.modeMap[formName].fields;
+	numFields = formFields.length;
+	for (i = 0; i < numFields; i++) {
+	    fieldRef = $("#" + formFields[i].id);
+	    setNestedProperty($scope, fieldRef.attr("ng-model"), fieldRef.val());
+	}
+	return true;
+    };
+
+    $scope.modalKeyUp = function(event) {
+	setNestedProperty($scope, $(event.target).attr("ng-model"), $(event.target).val());
+	//$scope[$(event.target).attr("ng-model")] = $(event.target).val();
+	//alert($(event.target).val());
+	//$scope.errorMessageSignin = JSON.stringify("hello");
+    }
 };
 
 
-
+setNestedProperty = function(object, name, value) {
+    frags = name.split(".");
+    numFrags = frags.length;
+    propParent = null;
+    prop = object;
+    for (var i = 0; i < numFrags; i++) {
+	propParent = prop;
+	prop = propParent[frags[i]];
+	if (prop == null) {
+	    prop = {};
+	    propParent[frags[i]] = prop;
+	}
+    }
+    propParent[frags[numFrags-1]] = value;
+}
 
 
 //JQuery signin modal functions - start
@@ -818,3 +1999,443 @@ function mainReady() {
 }
 
 //JQuery signin modal functions - end
+
+//tinymce
+// taken from http://embed.plnkr.co/fPubiQ/preview
+
+/**
+ * Binds a TinyMCE widget to <textarea> elements.
+ */
+angular.module('ui.tinymce', [])
+.value('uiTinymceConfig', {})
+.directive('uiTinymce', ['uiTinymceConfig', function(uiTinymceConfig) {
+    uiTinymceConfig = uiTinymceConfig || {};
+    var generatedIds = 0;
+    return {
+	require: 'ngModel',
+	/*scope : {
+	    enabled: "=",
+	    options: "=",
+	    articleContent: "=",
+	    authorId: "="
+	  
+	},*/
+	link: function(scope, elm, attrs, ngModel) {
+	    var expression, options, tinyInstance;
+    // generate an ID if not present
+	    if (!attrs.id) {
+		attrs.$set('id', 'uiTinymce' + generatedIds++);
+	    }
+	    options = {
+        // Update model when calling setContent (such as from the source editor popup)
+		setup: function(ed) {
+		    ed.on('init', function(args) {
+			ngModel.$render();
+		    });
+            // Update model on button click
+		    ed.on('ExecCommand', function(e) {
+			ed.save();
+			ngModel.$setViewValue(elm.val());
+			if (!scope.$$phase) {
+			    scope.$apply();
+			}
+		    });
+            // Update model on keypress
+		    ed.on('KeyUp', function(e) {
+			console.log(ed.isDirty());
+			ed.save();
+			ngModel.$setViewValue(elm.val());
+			if (!scope.$$phase) {
+			    scope.$apply();
+			}
+		    });
+		},
+		mode: 'exact',
+		elements: attrs.id,
+		height : "800px",
+		plugins : "advlist autoresize autosave fullscreen image media paste preview searchreplace spellchecker visualblocks visualchars wordcount"
+
+	    };
+	    if (attrs.uiTinymce) {
+		expression = scope.$eval(attrs.uiTinymce);
+	    } else {
+		expression = {};
+	    }
+	    angular.extend(options, uiTinymceConfig, expression);
+	    scope.$watch(attrs.uiTinymce, function(value) {
+		if (value){
+		    setTimeout(function() {
+			//if (scope.enabled) {
+			    tinymce.init(options);
+			//}
+		
+		    });
+		}
+	    });
+
+
+
+	    ngModel.$render = function() {
+		if (!tinyInstance) {
+		    tinyInstance = tinymce.get(attrs.id);
+		}
+		if (tinyInstance) {
+		    tinyInstance.setContent(ngModel.$viewValue || '');
+		}
+	    };
+	}
+    };
+}]); 
+testApp.directive('autoFillSync', function($timeout) {
+   return {
+      require: 'ngModel',
+      link: function(scope, elem, attrs, ngModel) {
+          var origVal = elem.val();
+          $timeout(function () {
+              var newVal = elem.val();
+              if(ngModel.$pristine && origVal !== newVal) {
+                  ngModel.$setViewValue(newVal);
+              }
+          }, 500);
+      }
+   }
+});
+
+testApp.directive('commentReplyMain', function($compile, commentsService) {
+       return {
+	   scope: {commentMetaData: "=commentMetaData" },
+           templateUrl: '/angularstatic/comments/partials/comment-reply-main-directive.html',
+	   compile: function(elem, attrs) {
+               return function(scope,elem,attrs) {
+		   scope.postReply = function(commentMetaData) {
+		       commentsService.postReply(commentMetaData); 
+		       console.log(scope);
+		       //commentsService.postReply($("#comment-reply-creation-box").scope()); 
+			   //odd why $("#comment-reply-creation-box").scope() != scope
+		   }
+	       }
+	   }
+       }
+});
+
+testApp.directive('commentReply', function($compile, $timeout, $http, $q, commonOJService) {
+       return {
+	   scope: true,
+           templateUrl: '/angularstatic/comments/partials/comment-reply-directive.html',
+	   require: '^comment',
+	   compile: function(elem, attrs) {
+               return function(scope,elem,attrs, commentController) {
+		   focusReply = function (comment) {
+		       
+		       $("#comment-reply-creation-box-" + comment.id).focus();
+		   }
+
+		   scope.createCommentObject = function(comment) {
+		       replyComment = {};
+
+		       replyComment.text = comment.replyText;
+		       replyComment.discussion_id = comment.discussion_id;
+		       if (comment.id) {
+			   replyComment.parent_id = comment.id;
+		       }
+		       replyComment.author = {};
+		       //replyComment.author.id = "";
+		       replyComment.author.id = commonOJService.userData.id;
+		       replyComment.author.name = commonOJService.userData.first_name + commonOJService.userData.last_name;
+		       
+		       return replyComment;
+		   };
+
+		   scope.postReply = function(comment) {
+		       if (!comment.replyText) {
+			   comment.tooltip="Comment is Blank";
+			   comment.replyText = "";
+			   $timeout(function() {focusReply(comment);}, 100);
+			   return;
+		       } else {
+			   comment.tooltip="";
+			   
+			   replyComment = scope.createCommentObject(comment);
+
+			   commentPostPromise = $http.post("/api/1.0/posts/" + comment.discussion_id + "/comments", JSON.stringify(replyComment),
+							  {headers: {"Content-Type": "application/json"}})
+			       .then( function(result) {
+				   
+			       });
+
+
+			   $q.all([commentPostPromise]).then(commentController.updateRepliesAndHandleShow(comment, true));
+		       }
+		   }
+
+	       }
+	   }
+       }
+});
+
+testApp.directive('comment', function($compile, $timeout, $http, commonOJService, commentsService) {
+       return {
+	   scope: {comment: "="},
+           templateUrl: '/angularstatic/comments/partials/comment-directive.html',
+	   require: ['^comment','^commentsRoot'],
+	   controller: function ($scope, $element, $attrs) {
+
+	       //http://stackoverflow.com/questions/13743058/how-to-access-the-angular-scope-variable-in-browsers-console
+	       //https://docs.angularjs.org/api/ng/function/angular.element
+	       //https://docs.angularjs.org/api/ng/service/$compile
+	       //https://docs.angularjs.org/guide/compiler
+	       updateCommentsOnUi = function(data, comment) {
+		   commentReplyContainer = $('#comment-reply-container-' + comment.id);
+		   scope = commentReplyContainer.scope();
+		   numChildren = data.length
+		       
+		   if (!("commentChildren" in scope) || (scope.commentChildren == null)) {
+		       scope.commentChildren = data;
+		       $compile('<div comment="commentChild" ng-repeat="commentChild in commentChildren" ng-class="{firstcomment:$first}"></div>')
+		       (scope, function(cloned, $scope) {
+			   commentReplyContainer.append(cloned);
+		       });
+		       
+		   } else {
+		       scope.commentChildren = scope.commentChildren.concat(data);
+		   }
+
+		   if (comment.latest_child) {
+		       comment.num_replies = comment.num_replies + numChildren; //having this here
+		                                                                //requires the guarantee that  
+		                                                                //comment.latest_child is blank 
+		                                                                //when we first get the comment 
+		                                                                //and we initialise it only 
+		                                                                //when we have fetched the children 
+                                                                                //the first time, which is done later
+
+		   } else {
+		       comment.num_replies = numChildren;
+		   }
+
+		   if (numChildren > 0) {
+		        //do this on our own as we arn't making another ajax call just to get the new num_replies
+		       comment.latest_child = data[numChildren-1].id;
+		   }
+	       }
+
+	       updateReplies = function(comment) {
+
+		   url = "/api/1.0/comments/" + comment.id + "?children=true";
+
+		   if (comment.latest_child) {
+		       url = url + "&after=" + comment.latest_child;
+		   }
+
+		   $http.get(url).success(function (data) {updateCommentsOnUi(data, comment); 
+							   /*commentsService.addCommentsToMap(comment.discussion_id, data);*/
+							  });
+
+	       }
+
+	       this.updateReplies = updateReplies;
+
+	       this.updateRepliesAndHandleShow = function(comment, showReplies) {
+		   updateReplies(comment);
+		   if (showReplies!=null) {
+		       toggleCollapseOnReply(comment, showReplies);
+		   }
+	       }
+
+	       toggleCollapseOnReply = function(comment, showReplies) {
+		   if (commentsService.isReplyContainerCollapsing(comment)) { //there seems to be a bug with Bootstrap collapse when used with AngularUI https://github.com/angular-ui/bootstrap/issues/1240
+		       $timeout(function() { comment.replyContainerCollapsed = showReplies }, 50);
+		   }
+		   $timeout(function() { comment.replyContainerCollapsed = !showReplies }, 100);
+	       }
+
+	       this.toggleCollapseOnReply = toggleCollapseOnReply;
+	   },
+
+	   compile: function(elem, attrs) {
+               return function(scope,elem,attrs, controllerArray) {
+
+		   controller = controllerArray[0];
+		   commentsRootController = controllerArray[1];
+
+		   focusReplyCreationContainer = function(comment) {
+		       $("#comment-reply-creation-box-" + comment.id).focus();
+		   };
+		   
+
+		   toggleRCCollapse = function(comment) {
+		       comment.replyCreationContainerCollapsed = !comment.replyCreationContainerCollapsed;
+		   };
+
+		   toggleCollapse = function(comment) {
+		       comment.replyContainerCollapsed = !comment.replyContainerCollapsed;
+
+		       //if (comment.replyContainerCollapsed == undefined) {
+		       //    comment.replyContainerCollapsed = false;
+		       //} else {   
+		       //    comment.replyContainerCollapsed = !comment.replyContainerCollapsed;
+		       //}
+		   };
+
+		   toggleRCCollapseFocusReply = function(comment) {
+		       toggleRCCollapse(comment);
+		       if (!comment.replyCreationContainerCollapsed) {
+			   $timeout(function() {focusReplyCreationContainer(comment);}, 100);
+		       }
+		   }		   
+
+		   //toggleCollapseFocusReply = function(comment) {
+		   //    toggleCollapse(comment);
+		   //    if (!comment.replyContainerCollapsed) {
+		   //	   $timeout(function() {focusReplyContainer(comment);}, 100);
+		   //    }
+		   //}		   
+
+		   scope.toggleOrGetRepliesForParent = function(comment) {
+		       if (!comment.gotChildren) {
+			   
+			   if (!("replyContainerCollapsed" in comment)) {
+			       comment.replyContainerCollapsed = true;
+			   }
+			   controller.updateReplies(comment);
+		       } else {
+
+		       }
+		       $timeout(function() {toggleCollapse(comment);}, 100);
+		   };
+
+
+		   scope.loadToggleReplyContainer = function(comment) {
+		       if (!commonOJService.isUserLoggedIn()) {
+			   commentsRootController.openSigninModal([function() {scope.toggleReplyContainer(comment);}]);
+			   return;
+		       } else {
+			   scope.toggleReplyContainer(comment);
+		       }
+
+		       
+
+		   };
+
+		   scope.toggleReplyContainer = function(comment) {
+		       if (!comment.replyCreationContainerCreated) {
+			   $compile('<div comment-reply></div>')(scope, function(cloned, $scope) {
+			       commentReplyContainer = $('#comment-content-container-' + comment.id);
+			       commentReplyContainer.append(cloned);
+			       //comment.replyContainerCollapsed = true;
+			       comment.replyCreationContainerCollapsed = true;
+			       comment.replyCreationContainerCreated = true;
+			   });
+		       } 
+		       
+		       //comment.replyContainerCollapsed = !comment.replyContainerCollapsed;
+		       //$timeout(function() {toggleCollapseFocusReply(comment);}, 100);
+
+		       $timeout(function() {toggleRCCollapseFocusReply(comment);}, 100);
+		   }
+
+	       }
+	   }
+       }
+});
+
+testApp.directive('commentsRoot', function($compile, $http, $modal, commonOJService, commentsService) {
+    return {
+	scope: true,
+        templateUrl: '/angularstatic/comments/partials/comments-body-directive.html',
+	controller: function($scope, $element, $attrs) {
+	    
+	    modalLoggedIn = function() {
+		$scope.loginDiv.remove();
+		$scope.loginDiv = null;
+		$scope.commentMetaData = commentsService.getCommentMetaDataForReplyMain($scope);
+		$compile('<div comment-meta-data="commentMetaData" comment-reply-main></div>')($scope, function(cloned, $scope) {
+		    $element.prepend(cloned);
+		});
+
+            }
+	    
+	    this.modalLoggedIn = modalLoggedIn;
+	    
+	    this.openSigninModal = function(callablesArray) {
+
+		    var modalInstance = $modal.open({
+			templateUrl: 'loginModalContent.html',
+			controller: ModalInstanceCtrl,
+			resolve: {
+			    items: function () {
+				return $scope.items;
+			    }
+			}
+		    });
+
+		    modalInstance.result.then(function (isLoggedIn) {
+    			if (isLoggedIn) {
+                            //alert(isLoggedIn);
+			    commonOJService.controllerInit(null, $scope, null, null);
+                            modalLoggedIn();
+			    if (callablesArray != null) {
+				numCallables = callablesArray.length;
+				for (i = 0; i < numCallables; i++) {
+				    callablesArray[i]();
+				}
+			    }
+			    
+			}
+		    });
+	    };
+
+	},
+
+	compile: function(elem, attrs) {
+            return function(scope,elem,attrs) {
+
+		scope.commentMetaData = commentsService.getCommentMetaDataForReplyMain(scope);
+		if (!scope.isUserLoggedIn()) {
+		    $compile('<div comments-login></div>')(scope, function(cloned, scope) {
+			scope.loginDiv = cloned;
+			elem.prepend(cloned);
+		    });
+		} else {
+		    $compile('<div comment-reply-main comment-meta-data="commentMetaData"></div>')(scope, function(cloned, $scope) {
+			elem.prepend(cloned);
+		    });
+		    
+		}
+
+		$http.get('/api/1.0/posts/' + scope.articleId + '/comments/?top=true').success(function(data) {
+		    scope.commentMetaData.commentChildren = data;
+		    scope.commentChildren = data;
+		    if (data!=null && data.length > 0) {
+			scope.commentMetaData.latest_child = data[data.length-1].id;
+		    }
+		    //commentsService.addCommentsToMap('1', data);
+		});
+
+		$compile('<div ng-repeat="commentChild in commentChildren" comment="commentChild" ng-class="{firstcomment:$first}"></div>')(scope, function(cloned, scope) {
+		    $("#comments-container").append(cloned);
+		});
+
+            }
+	}
+    }
+
+});
+
+
+testApp.directive('commentsLogin', function() {
+   return {
+       scope: {},
+       templateUrl: '/angularstatic/comments/partials/comments-login-directive.html',
+       require:"^commentsRoot", 
+       compile: function(elem, attrs) {
+
+           return function(scope,elem,attrs, commentsRootController) {
+		scope.openSigninModal = function() {
+		    commentsRootController.openSigninModal();
+		}
+		
+	    }
+	}
+   }
+});

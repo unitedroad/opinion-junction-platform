@@ -1,2 +1,18 @@
-<ng-include src="'/angularstatic/acentral/partials/carousel.html'"></ng-include>
-{{ message }}
+<div class="container">
+  <article>
+    <header >
+      <div class="page-header">
+      <h1> {{article.title}}</h1>
+      <h4 class="articlepreviewheadline"><small><i><em>{{article.excerpt}}</em></i></small></h4>
+      </div>
+      <h5><small>By - {{article.author.first_name}} {{article.author.last_name}}</small></h5>
+    </header>
+    <div ng-bind-html="article.storytext">
+    </div>
+  </article>
+  <div>
+    <div comments-root discussion_id="{{article.id}}"></div>
+    <!--<iframe id="iframe_comments" width="100%" frameborder="0" ng-init="comments_init" src="/comments" scrolling="no" style="overflow:visible" >-->
+  </div>
+
+</div>
