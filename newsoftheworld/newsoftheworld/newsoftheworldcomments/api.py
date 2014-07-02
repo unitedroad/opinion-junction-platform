@@ -17,6 +17,8 @@ import logging
 
 import traceback, sys
 
+from .util import Comments_Save_Handler, csh_obj, increment_reply_count
+
 #class PostList(generics.ListCreateAPIView):
 #    model = Post
 #    serializer_class = PostSerialiser
@@ -51,6 +53,11 @@ class PostCommentsList(APIView):
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly
     ]
+
+    #handler_obj = csh_obj
+
+    #view_name = 'post-comment-list'
+    #handler_obj.add_handler(view_name + '.get', comment_update_article_info) 
 
     def get(self, request, postid, format=None):
         logging.error("request.GET: " + str(request.GET))
@@ -87,8 +94,13 @@ class PostCommentsList(APIView):
             author.id= request.DATA[u"author"][u"id"]
             author.author_name = request.DATA[u"author"][u"name"]
             comment.author = author
+            comment.num_replies = 0
+            if u"metadata_string" in request.DATA and request.DATA[u"metadata_string"] is not None:
+                comment.metadata_string = request.DATA[u"metadata_string"]
             comment.save()
 
+            if parent_id is not None:
+                increment_reply_count(parent_id, 1)
             return Response({"ok" : "true", "parent_id" : parent_id })
         except BaseException as e:
             append_error_string = ""
@@ -121,3 +133,29 @@ class CommentsList(APIView):
         
         return Response(serialisedList.data)
 
+class CommentsAll(APIView):
+    model = Post
+    serializer_class = PostSerialiser
+    permission_classes = [
+        permissions.AllowAny
+    ]
+    
+    def get(self, request, format=None):
+        #for comment in Comment.objects.all():
+        comments = Comment.objects()
+        
+        if "metadata_string" in request.GET and request.GET["metadata_string"] is not None:
+            comments = comments.filter(metadata_string__contains=request.GET['metadata_string'])
+        if 'sortBy' in request.GET and request.GET['sortBy'] is not None:
+            comments = comments.order_by(request.GET['sortBy'])
+        else:
+            comments = comments.order_by("-id")
+
+        if "limit" in request.GET and request.GET["limit"] is not None:
+            comments = comments.limit(int(request.GET["limit"]))
+
+        serialisedList = CommentSerialiser(comments, many=True)
+        return Response(serialisedList.data)
+
+    def post(self, request, format=None):
+        pass

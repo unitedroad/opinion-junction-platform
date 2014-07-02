@@ -103,4 +103,5 @@ class AuthorSerialiser(serializers.Serializer):
 
 class MetadataSerialiser(serializers.Serializer):
     name = serializers.CharField()
+    friendly_name = serializers.CharField()
     entry_type = serializers.CharField()

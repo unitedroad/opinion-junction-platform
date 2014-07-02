@@ -20,8 +20,11 @@ class Comment(Document):
 
     upvotes = ListField(StringField())
     downvotes = ListField(StringField())
+
+    num_replies = IntField()
+    metadata_string = StringField()
     meta = {
-        'indexes': [ {'fields' : ['parent_id', 'id'] }]
+        'indexes': [ {'fields' : ['parent_id', 'id'] }, {'fields' : ['metadata_string', 'id']} ]
     }
 #class Comment(object):
 #    def __init__(self, id, discussion_id, parent_id, slug, full_slug, posted, text):

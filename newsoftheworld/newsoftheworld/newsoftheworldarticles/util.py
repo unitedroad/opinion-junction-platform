@@ -1,8 +1,19 @@
 import sys
+import re
 from .models import Article
 from .models import Author
 from .models import STATUS_VALUE_DICT
+from .models import Metadata
 from rest_framework import status
+from allauth.account.signals import user_logged_in
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+
+def check_valid_object_id(**kwargs):
+    if "id" in kwargs:
+        return re.match("^[0-9a-fA-F]{24}$", kwargs["id"]) != None
+    return False
+     
 
 def check_article_create_permissions(user, DATA):
     user_permissions = user.user_permissions
@@ -102,7 +113,7 @@ edit_article_dict = {
 
 def has_values_changed(article, DATA, skipattrs):
     for attr in DATA:
-        print attr + DATA[attr]
+        print attr + str(DATA[attr])
         if attr in skipattrs:
             continue
         if DATA[attr] != getattr(article, attr):
@@ -155,3 +166,73 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+def check_error_for_logged_in_user(request):
+    if request.user and request.user.id:
+        pass
+    else:
+        return {"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in", 
+                         "status" : status.HTTP_401_UNAUTHORIZED  }
+    
+    author_list = Author.objects(id=str(request.user.id))
+        
+    if len (author_list) < 1:
+        return {"ok" : "false", "code" : "user_not_setup_for_oj", 
+                "message" : "Your account has not been configured for Opinion Junction, please contact administrator",
+                "status" : status.HTTP_400_BAD_REQUEST }
+
+    else:
+        return {"ok" : "true", "result": author_list }
+        
+def get_categories():
+    return Metadata.objects.filter(entry_type="category")
+
+def get_articles_by_categories(categories, GET):
+    articlesByCategories = []
+    
+    for category in categories:
+        print "category.name: " + category.name
+        articlesByCategory = Article.objects(categories__contains=category.name)
+        if 'limit_pc' in GET and is_number(GET['limit_pc']):
+           articlesByCategory = articlesByCategory.limit(int(GET['limit_pc']))
+        articlesByCategories.extend(articlesByCategory)
+
+    return articlesByCategories
+
+def get_articles_by_category(category, GET):
+    articlesByCategory = Article.objects(categories__contains=category).filter(status='published').exclude("storytext","storyplaintext","tags")
+    if 'after' in GET:
+        articlesByCategory = articlesByCategory.filter(id__gt=GET['after'])
+
+    if 'limit' in GET and is_number(GET['limit']):
+        articlesByCategory = articlesByCategory.limit(int(GET['limit']))
+
+    return articlesByCategory
+
+default_created_user_permissions = []
+
+@receiver(user_logged_in, dispatch_uid="101")
+def create_oj_user_in_nosql(request, user, sociallogin=None, **kwargs):
+
+#    pass
+    author = Author()
+    
+    if len(Author.objects(id=str(user.id))) > 0:
+        return
+    permissions = default_created_user_permissions
+    if 'permissions' in kwargs:
+        permissions = kwargs['permissions']
+    
+    author.id = str(user.id)
+    author.author_name = user.username
+    author.first_name = user.first_name
+    author.last_name = user.last_name
+    author.email_address = user.email
+    role = 'Subscriber'
+    if 'role' in kwargs:
+        role = kwargs['role']
+    author.user_role = role
+    author.user_permissions = permissions
+
+    print "axl gives users true access by giving them identities of authors" 
+    author.save()

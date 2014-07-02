@@ -73,6 +73,7 @@ class User_Activity(Document):
 
 class Metadata(models.Model):
     name=models.CharField(max_length=511)
+    friendly_name = models.CharField(max_length=511, blank=True)
     ENTRY_TYPE_CHOICES = (("tag","tag"),("category","Category"))
     entry_type=models.CharField(max_length=511,choices=ENTRY_TYPE_CHOICES)
     num_user = models.IntegerField(db_index=True)

@@ -55,7 +55,8 @@ class CommentSerialiser(serializers.Serializer):
     posted = serializers.DateTimeField()
     text = serializers.CharField()
     author = AuthorSerialiser(required=False)
-
+    num_replies = serializers.IntegerField(default=0)
+    metadata_string = serializers.CharField()
 
     
     def restore_object(self, attrs, instance=None):

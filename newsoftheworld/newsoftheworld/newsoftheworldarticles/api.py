@@ -1,3 +1,4 @@
+import datetime
 from .models import Article
 from .models import Author
 from .models import Metadata
@@ -13,6 +14,9 @@ from rest_framework.response import Response
 
 from rest_framework import status
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 import bson
 
 class ArticlesList(APIView):
@@ -26,15 +30,18 @@ class ArticlesList(APIView):
 
     def get(self, request, articleid, format=None):
         #for comment in Comment.objects.all():
+        if util.check_valid_object_id(id=articleid) is not True:
+            return Response({"ok" : "false", "code" : "incorrect_id", "message" : "Incorrect Article Id", "status" : status.HTTP_400_BAD_REQUEST }, status = status.HTTP_400_BAD_REQUEST)
         serialisedList = ArticleSerialiser(Article.objects(id=articleid).select_related())
         
         return Response(serialisedList.data)
 
     def post(self, request, articleid, format=None):
+        if util.check_valid_object_id(id=articleid) is not True:
+            return Response({"ok" : "false", "code" : "incorrect_id", "message" : "Incorrect Article Id", "status" : status.HTTP_400_BAD_REQUEST }, status = status.HTTP_400_BAD_REQUEST)
         articles = Article.objects(id=articleid)
         if len (articles) <= 0:
-            return {"ok" : "false", "code" : "article_does_not_exist", "message" : "Option with this id does not exist, try Create Opinion Option instead",
-                    "status" : status.HTTP_400_BAD_REQUEST }
+            return Response({"ok" : "false", "code" : "article_does_not_exist", "message" : "Opinion with this id does not exist, try Create Opinion Option instead", "status" : status.HTTP_400_BAD_REQUEST }, status = status.HTTP_400_BAD_REQUEST)
     
         article = articles[0]
      
@@ -106,29 +113,35 @@ class ArticlesList(APIView):
 class ArticlesPost(APIView):
     def get(self, request, format=None):
 
-        serialisedList = None
-        articleslist = None
-        if "fromId" in request.GET and request.GET["fromId"]:
-            articlesList =  Article.objects(id__gt=bson.objectid.ObjectId(request.GET["fromId"]))
-        else:
-            articlesList = Article.objects().all()
+        try:
 
-        if "authorId" in request.GET and request.GET["authorId"]:
-            articlesList = articlesList.filter(author=request.GET["authorId"])
-        #return Response({"ok" : "False", "Message" : "Get is not supported for this API" })
-        if "no_content" in request.GET and request.GET["no_content"] == "true":
-            articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
+            serialisedList = None
+            articleslist = None
+            if "fromId" in request.GET and request.GET["fromId"]:
+                articlesList =  Article.objects(id__gt=bson.objectid.ObjectId(request.GET["fromId"]))
+            else:
+                articlesList = Article.objects()
 
-        if "limit" in request.GET and util.is_number(request.GET["limit"]):
-            articlesList = articlesList.limit(int(request.GET["limit"]))
-
-
-        serialisedList = ArticleSerialiser(articlesList.select_related())
-        return Response(serialisedList.data)
-
-
+            articlesList = articlesList.order_by("id")
+    
+            if "authorId" in request.GET and request.GET["authorId"]:
+                articlesList = articlesList.filter(author=request.GET["authorId"])
+            #return Response({"ok" : "False", "Message" : "Get is not supported for this API" })
+            if "no_content" in request.GET and request.GET["no_content"] == "true":
+                articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
+    
+            if "limit" in request.GET and util.is_number(request.GET["limit"]):
+                articlesList = articlesList.limit(int(request.GET["limit"]))
+    
+    
+            serialisedList = ArticleSerialiser(articlesList.select_related())
+            return Response(serialisedList.data)
+        except Exception as e:
+            "Exception in ArticlesPost: " + str(e)
+            return Response({"ok":"false", "message": str(e)})
     
 
+    
     def post(self, request, format=None):
 
         try:
@@ -180,8 +193,27 @@ class ArticlesPost(APIView):
             return Response(permission_check, status = status.HTTP_200_OK)
             
         except Exception as e:
-            print str(e) 
+            print "Exception in articlespost: " + str(e)
+            return Response({"ok" : "false" }, status = status.HTTP_500_INTERNAL_SERVER_ERROR )
     
+
+class ArticlesByCategory(APIView):
+    def get(self, request, format=None):
+        categories = util.get_categories()
+
+        articlesByCategories = util.get_articles_by_categories(categories, request.GET)
+
+        serialisedList = ArticleSerialiser(articlesByCategories)
+        
+        return Response(serialisedList.data)
+    
+class ArticlesByEachCategory(APIView):
+    def get(self, request, category, format=None):
+        articlesByCategories = util.get_articles_by_category(category, request.GET)
+
+        serialisedList = ArticleSerialiser(articlesByCategories)
+        
+        return Response(serialisedList.data)
 
 class AuthorsList(APIView):
     model = Article
@@ -236,7 +268,7 @@ class AuthorListCurrent(APIView):
         author_list = Author.objects(id=str(request.user.id))
         
         if len (author_list) < 1:
-            return Response({"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in" })
+            return Response({"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in" }, status = status.HTTP_401_UNAUTHORIZED)
         
         
         serialisedList = AuthorSerialiser(author_list[0], many=False)
@@ -268,16 +300,17 @@ class AuthorsPostPut(APIView):
 
     def post(self, request, authorid, format=None):
 
-
+        if util.check_valid_object_id(id=authorid) is not True:
+            return Response({"ok" : "false", "code" : "incorrect_id", "message" : "Incorrect Author Id", "status" : status.HTTP_400_BAD_REQUEST }, status = status.HTTP_400_BAD_REQUEST)
         author_list = Author.objects(id=str(request.user.id))
         
         if len (author_list) < 1:
-            return Response({"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in" })
+            return Response({"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in" }, status = status.HTTP_401_UNAUTHORIZED)
     
         author = author_list[0]
 
         if "assign_permissions" not in user.user_permissions:
-            return Response({"ok" : "false", "message" : "You are not allowed to assign permissions!" })
+            return Response({"ok" : "false", "message" : "You are not allowed to assign permissions!" }, status = status.HTTP_403_FORBIDDEN)
 
         if "user_permissions" in request.DATA and "user_permissions" is not None:
             print request.DATA["user_permissions"]
@@ -294,19 +327,29 @@ class LoggedInUserDetails(APIView):
     ]
 
 
-
+    @method_decorator(ensure_csrf_cookie)
     def get(self, request,  format=None):
 
-        author_list = Author.objects(id=str(request.user.id))
-        
-        if len (author_list) < 1:
-            return Response({"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in" })
-        
-        
-        serialisedList = AuthorSerialiser(author_list[0], many=False)
-        
-        return Response(serialisedList.data)
-
+        try:
+            author_result = util.check_error_for_logged_in_user(request)
+    
+            author_list = []
+            if ("ok" in author_result and author_result["ok"] == "true"):
+                author_list = author_result["result"]
+            else:
+                if "status" in author_result:
+                    return Response(author_result, status = author_result["status"])
+                else:
+                    return Response(author_result, status = status.HTTP_403_FORBIDDEN)
+            
+            serialisedList = AuthorSerialiser(author_list[0], many=False)
+            
+            return Response(serialisedList.data)
+    
+        except Exception as e:
+            print "exception in LoggedInUserDetails: " +  str(e)
+            return Response({"ok" : "false", "status" : status.HTTP_500_INTERNAL_SERVER_ERROR }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
 class TagsList(APIView):
 
     def get(self, request,  format=None):
@@ -346,18 +389,20 @@ class CategoriesList(APIView):
         author_list = Author.objects(id=str(request.user.id))
         
         if len (author_list) < 1:
-            return Response({"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in" })
+            return Response({"ok" : "false", "code" : "user_not_logged_in", "message" : "You are currently not logged in" }, status = status.HTTP_401_UNAUTHORIZED)
         
         author = author_list[0]
     
         user_permissions = author.user_permissions
 
         if "create_categories" not in user_permissions:
-            return Response({"ok" : "false", "code" : "no_permission", "message" : "You don't have permission to create categories" })
+            return Response({"ok" : "false", "code" : "no_permission", "message" : "You don't have permission to create categories" }, status = status.HTTP_403_FORBIDDEN)
 
         metadata = Metadata()
         metadata.entry_type = "category"
         metadata.name = request.DATA["name"]
+        if "friendly_name" in request.DATA:
+            metadata.friendly_name = request.DATA["friendly_name"]
         metadata.num_user = 0
         metadata.save()
         return Response({"ok":"true"})
