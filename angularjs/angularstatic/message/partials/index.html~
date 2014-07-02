@@ -1,8 +1,0 @@
-  <div id="submiterror" class="alert alert-danger" ng-show="submitError && showError">
-    {{ errorMessage }}
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideError()">&times;</button>
-  </div>
-  <div id="submitSuccess" class="alert alert-success" ng-show="submitSuccess && showSuccess">
-    {{ successMessage }}
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideSuccess()">&times;</button>
-  </div>
