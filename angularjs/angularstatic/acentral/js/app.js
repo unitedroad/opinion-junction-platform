@@ -427,7 +427,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	return false;
     }
 
-    serviceInstance.updateReplies = function(comment) {
+    serviceInstance.updateReplies = function(comment, timeoutFunction) {
 
 	url = null;
 
@@ -441,7 +441,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	    url = url + "&after=" + comment.latest_child;
 	}
 
-	$http.get(url).success(function (data) {updateCommentsOnUiCS(data, comment); 
+	$http.get(url).success(function (data) {updateCommentsOnUiCS(data, comment, timeoutFunction); 
 						/*commentsService.addCommentsToMap(comment.discussion_id, data);*/
 					       });
 
@@ -449,9 +449,11 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 
 
     serviceInstance.updateRepliesAndHandleShow = function(comment, showReplies) {
-	serviceInstance.updateReplies(comment);
+	
 	if (showReplies!=null) {
-	    toggleCollapseOnReply(comment, showReplies);
+	    serviceInstance.updateReplies(comment, function() { toggleCollapseOnReply(comment, showReplies); });
+	} else {
+	    serviceInstance.updateReplies(comment);
 	}
     }
 
@@ -466,7 +468,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	replyComment.author = {};
 	//replyComment.author.id = "";
 	replyComment.author.id = commonOJService.userData.id;
-	replyComment.author.name = commonOJService.userData.first_name + commonOJService.userData.last_name;
+	replyComment.author.name = commonOJService.userData.first_name + " " + commonOJService.userData.last_name;
 	
 	return replyComment;
     };
@@ -482,7 +484,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	replyCreationBox.focus();
     }
 
-    serviceInstance.postReply = function(comment, postSubmitCallables) {
+    serviceInstance.postReply = function(comment, timeoutFunction, postSubmitCallables) {
 	if (!comment.replyText) {
 	    comment.tooltip="Comment is Blank";
 	    $timeout(function() {focusReply(comment);}, 100);
@@ -500,7 +502,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 
 
 	    //$q.all([commentPostPromise]).then(postSubmitCallables[0]());
-	    $q.all([commentPostPromise]).then(serviceInstance.updateRepliesAndHandleShow(comment, true));
+	    $q.all([commentPostPromise]).then(serviceInstance.updateRepliesAndHandleShow(comment, true, timeoutFunction));
 	}
     }
 
@@ -510,7 +512,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	return element.children("div").length > 0;
     }
     
-    updateCommentsOnUiCS = function(data, comment) {
+    updateCommentsOnUiCS = function(data, comment, timeFunction) {
 	if (comment.id) {
 	    commentReplyContainer = $('#comment-reply-container-' + comment.id);
 	} else {
@@ -565,6 +567,9 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 //	    comment.num_replies = numChildren;
 //	}
 
+	if (timeoutFunction!=null) {
+	    timeoutFunction();
+	}
 
     }
 
@@ -2184,7 +2189,7 @@ testApp.directive('comment', function($compile, $timeout, $http, commonOJService
 	       //https://docs.angularjs.org/api/ng/function/angular.element
 	       //https://docs.angularjs.org/api/ng/service/$compile
 	       //https://docs.angularjs.org/guide/compiler
-	       updateCommentsOnUi = function(data, comment) {
+	       updateCommentsOnUi = function(data, comment, timeoutFunction) {
 		   commentReplyContainer = $('#comment-reply-container-' + comment.id);
 		   scope = commentReplyContainer.scope();
 		   numChildren = data.length
@@ -2217,9 +2222,13 @@ testApp.directive('comment', function($compile, $timeout, $http, commonOJService
 		        //do this on our own as we arn't making another ajax call just to get the new num_replies
 		       comment.latest_child = data[numChildren-1].id;
 		   }
+
+		   if (timeoutFunction!=null) {
+		       timeoutFunction();
+		   }
 	       }
 
-	       updateReplies = function(comment) {
+	       updateReplies = function(comment, timeoutFunction) {
 
 		   url = "/api/1.0/comments/" + comment.id + "?children=true";
 
@@ -2227,7 +2236,7 @@ testApp.directive('comment', function($compile, $timeout, $http, commonOJService
 		       url = url + "&after=" + comment.latest_child;
 		   }
 
-		   $http.get(url).success(function (data) {updateCommentsOnUi(data, comment); 
+		   $http.get(url).success(function (data) {updateCommentsOnUi(data, comment, timeoutFunction); 
 							   /*commentsService.addCommentsToMap(comment.discussion_id, data);*/
 							  });
 
@@ -2236,9 +2245,10 @@ testApp.directive('comment', function($compile, $timeout, $http, commonOJService
 	       this.updateReplies = updateReplies;
 
 	       this.updateRepliesAndHandleShow = function(comment, showReplies) {
-		   updateReplies(comment);
 		   if (showReplies!=null) {
-		       toggleCollapseOnReply(comment, showReplies);
+		       updateReplies(comment, function() {toggleCollapseOnReply(comment, showReplies)});
+		   } else {
+		       updateReplies(comment);
 		   }
 	       }
 
@@ -2297,11 +2307,11 @@ testApp.directive('comment', function($compile, $timeout, $http, commonOJService
 			   if (!("replyContainerCollapsed" in comment)) {
 			       comment.replyContainerCollapsed = true;
 			   }
-			   controller.updateReplies(comment);
+			   controller.updateReplies(comment, function() {$timeout(function() {toggleCollapse(comment);}, 100);});
 		       } else {
 
 		       }
-		       $timeout(function() {toggleCollapse(comment);}, 100);
+		       //$timeout(function() {toggleCollapse(comment);}, 100);
 		   };
 
 
