@@ -10,17 +10,52 @@
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
-#navbar-div {
+/*#navbar-div {
   width:100%;
   height:10px;
 }
+*/
 
-#navbar-right {
+/*#navbar-right {
   margin-top:5px;
-  margin-right:5px;
+  margin-right:5px; 
+}
+*/
+
+#navbar-right-lastchild {
+ /* margin-top:5px;*/
+  margin-right:5px; 
 }
 
 #articlesidebar {
     width:5%;
     min-width:250px;
+}
+
+@media (min-width:1500px){
+    .container{
+	width:1440px
+	}
+}
+
+body { padding-top: 60px; }
+@media screen and (max-width: 768px) {
+    body { padding-top: 60px; }
+}
+
+.articleheaderlink {
+    color: #000000;
+}
+
+.thumbnail {
+    border: 0 none;
+    box-shadow: none;
+}
+
+.articlepreviewheadline {
+    font-size:24px;
+}
+
+.articlepreviewheadline small {
+    font-size: 65%;
 }

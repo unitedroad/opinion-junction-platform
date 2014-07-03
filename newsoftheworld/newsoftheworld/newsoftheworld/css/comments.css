@@ -2,5 +2,19 @@
     margin-left: 40px;
 }
 
+.comment-form-group {
+    margin-bottom: 10px;
+}
 
+.comment-box-container {
+    margin-top:10px;
+    margin-bottom:10px;
+}
 
+.firstcomment {
+    margin-top:15px;
+}
+
+.comment-button-container {
+    margin-bottom:8px;
+}
