@@ -27,8 +27,9 @@ csh_obj = Comments_Save_Handler()
 
 def increment_reply_count(commentid, num_new_replies=1):
     comment = Comment.objects(id=commentid)
-    comment.update_one(inc__num_replies=num_new_replies)
-    comment.save()
+    if comment is not None:
+        comment.update_one(inc__num_replies=num_new_replies)
+        comment.save()
 
 #def comment_update_article_info(request, comment, **kwargs):
 #    if 'postid' in kwargs:
