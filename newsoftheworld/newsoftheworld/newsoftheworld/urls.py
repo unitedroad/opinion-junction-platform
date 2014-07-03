@@ -7,11 +7,14 @@ from django.contrib import admin
 admin.autodiscover()
 
 from newsoftheworldcomments.api import PostList
+from newsoftheworldcomments.api import CommentsAll
 from newsoftheworldcomments.api import CommentsList
 from newsoftheworldcomments.api import PostCommentsList
 
 from newsoftheworldarticles.api import ArticlesList
 from newsoftheworldarticles.api import ArticlesPost
+from newsoftheworldarticles.api import ArticlesByCategory
+from newsoftheworldarticles.api import ArticlesByEachCategory
 from newsoftheworldarticles.api import AuthorsList
 from newsoftheworldarticles.api import AuthorsListAll
 from newsoftheworldarticles.api import LoggedInUserDetails
@@ -81,6 +84,9 @@ urlpatterns = patterns('',
     url(r'^accounts/login_successful_mw$', 'newsoftheworldcomments.views.login_successful_mw', name='login_successful_mw'),
     url(r'^accounts/login$', 'newsoftheworldarticles.views.login', name='login_article'),
     url(r'^accounts/login/$', 'newsoftheworldarticles.views.login', name='login_article'),
+    url(r'^accounts/facebook/login/token/?$', 'newsoftheworldarticles.socialaccount.providers.facebook.views.login_by_token', 
+        name='facebook_login_by_token'),
+    url(r'^accounts/signup/?$', 'newsoftheworldarticles.views.signup', name='account_signup_rest'),
     url(r'^accounts/login_callback$', 'newsoftheworldcomments.views.login_callback', name='login_callback'),
     url(r'^accounts/', include('allauth.urls')),
 
@@ -89,10 +95,13 @@ urlpatterns = patterns('',
 )
 
 
-rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9]+)/comments/?$', PostCommentsList.as_view(), name='post-comment-list'),     
+rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?$', PostCommentsList.as_view(), name='post-comment-list'),     
     url(r'^api/1.0/posts/comments/?$', CommentsList.as_view(), name='post-comment-test-list'),     
+    url(r'^api/1.0/comments/?$', CommentsAll.as_view(), name='comment-all'),     
     url(r'^api/1.0/comments/(?P<commentid>.+)/?$', CommentsList.as_view(), name='comments-list'),     
 
+    url(r'^api/1.0/articles/by-category/?$', ArticlesByCategory.as_view(), name='articles-by-category'),     
+    url(r'^api/1.0/categories/(?P<category>.+)/articles?$', ArticlesByEachCategory.as_view(), name='articles-by-each-category'),     
     url(r'^api/1.0/articles/(?P<articleid>.+)$', ArticlesList.as_view(), name='articles-list'),     
     url(r'^api/1.0/articles/?$', ArticlesPost.as_view(), name='articles-post'),     
 
