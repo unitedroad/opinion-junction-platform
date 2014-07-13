@@ -4,11 +4,11 @@ from mongoengine import *
 
 connect('notwcomments')
 
-
 class Author(EmbeddedDocument):
     id = StringField(required=True,primary_key=True)
     author_name = StringField()
-
+    image = StringField()
+    
 class Comment(Document):
     discussion_id = StringField(required=True)
     parent_id = ObjectIdField(required=False)
@@ -21,6 +21,7 @@ class Comment(Document):
     upvotes = ListField(StringField())
     downvotes = ListField(StringField())
 
+    #num_votes = IntField()
     num_replies = IntField()
     metadata_string = StringField()
     meta = {
