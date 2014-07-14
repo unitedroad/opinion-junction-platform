@@ -10,6 +10,9 @@ from newsoftheworldcomments.api import PostList
 from newsoftheworldcomments.api import CommentsAll
 from newsoftheworldcomments.api import CommentsList
 from newsoftheworldcomments.api import PostCommentsList
+from newsoftheworldcomments.api import CommentsUpVote
+from newsoftheworldcomments.api import CommentsDownVote
+from newsoftheworldcomments.api import CommentsUnVote
 
 from newsoftheworldarticles.api import ArticlesList
 from newsoftheworldarticles.api import ArticlesPost
@@ -18,6 +21,7 @@ from newsoftheworldarticles.api import ArticlesByEachCategory
 from newsoftheworldarticles.api import AuthorsList
 from newsoftheworldarticles.api import AuthorsListAll
 from newsoftheworldarticles.api import LoggedInUserDetails
+from newsoftheworldarticles.api import UpdateProfileSelf
 from newsoftheworldarticles.api import TagsList
 from newsoftheworldarticles.api import CategoriesList
 
@@ -98,13 +102,17 @@ urlpatterns = patterns('',
 rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?$', PostCommentsList.as_view(), name='post-comment-list'),     
     url(r'^api/1.0/posts/comments/?$', CommentsList.as_view(), name='post-comment-test-list'),     
     url(r'^api/1.0/comments/?$', CommentsAll.as_view(), name='comment-all'),     
+    url(r'^api/1.0/comments/(?P<commentid>.+)/upvote/?$', CommentsUpVote.as_view(), name='comments-upvote'),     
+    url(r'^api/1.0/comments/(?P<commentid>.+)/downvote/?$', CommentsDownVote.as_view(), name='comments-downvote'),     
+    url(r'^api/1.0/comments/(?P<commentid>.+)/unvote/?$', CommentsUnVote.as_view(), name='comments-unvote'),     
     url(r'^api/1.0/comments/(?P<commentid>.+)/?$', CommentsList.as_view(), name='comments-list'),     
 
     url(r'^api/1.0/articles/by-category/?$', ArticlesByCategory.as_view(), name='articles-by-category'),     
-    url(r'^api/1.0/categories/(?P<category>.+)/articles?$', ArticlesByEachCategory.as_view(), name='articles-by-each-category'),     
+    url(r'^api/1.0/categories/(?P<category>.+)/articles/?$', ArticlesByEachCategory.as_view(), name='articles-by-each-category'),     
     url(r'^api/1.0/articles/(?P<articleid>.+)$', ArticlesList.as_view(), name='articles-list'),     
     url(r'^api/1.0/articles/?$', ArticlesPost.as_view(), name='articles-post'),     
 
+    url(r'^api/1.0/authors/loggedin/self/profile?$', UpdateProfileSelf.as_view(), name='logged-in-user-profile'),
     url(r'^api/1.0/authors/loggedin/self/?$', LoggedInUserDetails.as_view(), name='logged-in-user-details'),
     url(r'^api/1.0/authors/(?P<authorid>.+)/?$', AuthorsList.as_view(), name='authors-list'),     
     url(r'^api/1.0/authors/?$', AuthorsListAll.as_view(), name='authors-list-all'),     

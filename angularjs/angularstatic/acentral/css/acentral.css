@@ -38,9 +38,9 @@
 	}
 }
 
-body { padding-top: 60px; }
+body { padding-top: 50px; }
 @media screen and (max-width: 768px) {
-    body { padding-top: 60px; }
+    body { padding-top: 50px; }
 }
 
 .articleheaderlink {
@@ -59,3 +59,33 @@ body { padding-top: 60px; }
 .articlepreviewheadline small {
     font-size: 65%;
 }
+
+.user-container {
+
+    padding-top:20px;
+}
+
+.block-dropdown {
+
+    display:block;
+}
+
+.display-inline-block {
+    display: inline-block;
+}
+
+.display-block {
+    display: block;
+}
+
+.gravatar-warning {
+    display:block;
+    margin-bottom:5px;
+}
+
+/*
+.comment-author-name-text {
+    display: inline-block;
+    margin-bottom:0px;
+}
+*/

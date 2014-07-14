@@ -1,5 +1,23 @@
-.comment-reply-container {
-    margin-left: 40px;
+.comment-reply-container, .comment-content-container {
+    margin-left: 50px;
+    overflow: hidden;
+}
+
+.comment-vote-container {
+    width: 50px;
+    float: left;
+
+    //display:inline-block;
+    padding-left:0;
+    margin:5px 0;
+}
+
+.comment-vote-arrow-unvoted {
+    color: #000000;
+}
+
+.comment-vote-arrow-voted {
+    color: #428BCA;
 }
 
 .comment-form-group {
@@ -17,4 +35,22 @@
 
 .comment-button-container {
     margin-bottom:8px;
+}
+
+.comment-author-box {
+    margin-bottom: 5px;
+}
+
+
+.comment-author-image-container {
+    margin-right:10px;
+}
+
+.comment-author-image {
+    width:40px;
+}
+
+.comment-author-name-text {
+    display: inline-block;
+    margin-bottom:0px;
 }

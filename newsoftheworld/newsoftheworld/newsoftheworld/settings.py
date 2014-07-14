@@ -108,6 +108,8 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+CSRF_FAILURE_VIEW = 'newsoftheworldarticles.csrf.csrf_failure'
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 
 ROOT_URLCONF = 'newsoftheworld.urls'
@@ -169,6 +171,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "allauth.socialaccount.context_processors.socialaccount",
     
 )
+
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+#EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 LOGIN_REDIRECT_URL = '/accounts/login_successful_mw'
 SOCIALACCOUNT_QUERY_EMAIL = True
