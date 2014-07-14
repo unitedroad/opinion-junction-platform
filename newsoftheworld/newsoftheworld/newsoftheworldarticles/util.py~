@@ -1,8 +1,5 @@
 import sys
-import os
 import re
-import hashlib
-from newsoftheworld import settings
 from .models import Article
 from .models import Author
 from .models import STATUS_VALUE_DICT
@@ -11,11 +8,6 @@ from rest_framework import status
 from allauth.account.signals import user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-
-
-LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
-URL_PROFILE_IMAGES = settings.MEDIA_URL + 'ojprofileimages/' 
-
 
 def check_valid_object_id(**kwargs):
     if "id" in kwargs:
@@ -245,87 +237,9 @@ def create_oj_user_in_nosql(request, user, sociallogin=None, **kwargs):
     print "axl gives users true access by giving them identities of authors" 
     author.save()
 
-    if "return_author" in kwargs and kwargs["return_author"] == True:
-        return author
-
 def check_permissions(userid, permissions, all_match=True):
     author = Author.objects().get(id=userid)
     if (all_match == True):
         return all(permission in author.user_permissions for permission in permissions)
-    
+
     return any(permission in author.user_permissions for permission in permissions)
-
-def get_image_url_for_selfhosted(image_name):
-    return URL_PROFILE_IMAGES + image_name
-
-def save_image(profile_id, image_name, image_data):
-    file_name, file_extension = os.path.splitext(image_name)
-    file_name = "profile_" + str(profile_id) + file_extension
-
-    with open(os.path.join(LOCATION_PROFILE_IMAGES, file_name), "wb") as file_handler:
-        image_data = re.sub("^.*,","",image_data)
-        file_handler.write(image_data.decode('base64'))
-    return file_name
-
-def get_gravatar_hash(image_id):
-    return hashlib.md5(image_id.lower().strip()).hexdigest()
-
-def get_provider_image_persisted_string(image):
-        image = image[len(":@#"):]
-        image_array = image.split(":")
-        if image_array[0].lower() == "gravatar":
-            return ":@#gravatar:" + get_gravatar_hash(image_array[1]) + ":" + image_array[1]
- 
-def process_image(user, data):
-    if "update_image" in data and data["update_image"] == "true":
-        print "update_image is true"
-        image = data["image"]
-        if image.startswith(":@#gravatar") != True:
-            image_data = data["image_data"]
-            saved_image_name = save_image(user.id, image, image_data)
-            return get_image_url_for_selfhosted(saved_image_name)
-        else:
-            return get_provider_image_persisted_string(image)
-    
-def change_profile(user, data):
-    
-    #print "data: " + str(data)
-    #user = User.objects.get(id=user_id)
-    authors = Author.objects(id=str(user.id))
-
-    author = None
-    if len(authors) <= 0:
-        author = create_oj_user_in_nosql(None, user, None, return_author=True)
-    else:
-        author = authors[0]
-
-    if user is not None:
-        if "first_name" in data:
-            first_name = data["first_name"]
-            if first_name is None:
-                raise Exception("first_name cannot be null")
-            user.first_name = first_name
-            author.first_name = data["first_name"]
-            if "last_name" in data:
-                last_name = data["last_name"]
-                if last_name is None:
-                    raise Exception("last_name cannot be null")
-                user.last_name = last_name
-                author.last_name = last_name
-
-        if "update_image" in data and data["update_image"] == "true":
-            image = process_image(user, data)
-            
-            author.image = image
-
-        if "gender" in data:
-            author.gender = data["gender"]
-
-        user.save()
-        author.save()
-
-        return author
-
-
-def get_friendly_name(author):
-    return author.first_name + " " + author.last_name

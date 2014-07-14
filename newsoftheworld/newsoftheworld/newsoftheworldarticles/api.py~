@@ -1,6 +1,4 @@
 import datetime
-import traceback
-import sys
 from .models import Article
 from .models import Author
 from .models import Metadata
@@ -216,22 +214,6 @@ class ArticlesByEachCategory(APIView):
         serialisedList = ArticleSerialiser(articlesByCategories)
         
         return Response(serialisedList.data)
-
-class UpdateProfileSelf(APIView):
-
-
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly
-    ]
-    def post(self, request, format=None):
-        try:
-            util.change_profile(request.user, request.DATA)
-        except Exception as e:
-            print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2]))
-
-            return Response({"ok":"false","message":str(e),"status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"ok":"true"})
 
 class AuthorsList(APIView):
     model = Article

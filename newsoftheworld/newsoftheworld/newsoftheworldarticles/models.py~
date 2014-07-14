@@ -29,18 +29,12 @@ class SetField(ListField):
         if not isinstance(value, set):
             self.error('Only sets may be used.')
 
-GENDER_CHOICES = (("male", "Male"),
-                  ("female", "Female"),
-                  ("other", "Other"))
-
 class Author(Document):
     id = StringField(required=True,primary_key=True)
     author_name = StringField()
     first_name = StringField()
     last_name = StringField()
     email_address = StringField()
-    image = StringField()
-    gender = StringField(choices = GENDER_CHOICES)
     user_bio = StringField()
     user_role = StringField()
     user_permissions = ListField(StringField(), required=False)
@@ -48,7 +42,6 @@ class Author(Document):
     status = StringField()
     invitation_count = IntField()
     num_draft = IntField()
-
 
 class Article(Document):
     author = ReferenceField(Author)
@@ -64,7 +57,6 @@ class Article(Document):
 
 UPORDOWNVOTECHOICES = (('U', 'Up'),
                        ('D', 'Down'))
-
 
 STATUS_VALUE_DICT = {"draft" : "Draft", "pending_review" : "Pending Review" , "published" : "Published" }
 

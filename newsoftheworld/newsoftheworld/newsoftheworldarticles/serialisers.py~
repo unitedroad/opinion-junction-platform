@@ -85,8 +85,6 @@ class AuthorSerialiser(serializers.Serializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     email_address = serializers.CharField()
-    image = serializers.CharField()
-    gender = serializers.CharField()
     user_bio = serializers.CharField()
     user_role = serializers.CharField()
     user_permissions = serializers.WritableField()
