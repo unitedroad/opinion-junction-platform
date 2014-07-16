@@ -327,5 +327,5 @@ def change_profile(user, data):
         return author
 
 
-def get_friendly_name(author):
-    return author.first_name + " " + author.last_name
+#def get_friendly_name(author):
+#    return author.first_name + " " + author.last_name

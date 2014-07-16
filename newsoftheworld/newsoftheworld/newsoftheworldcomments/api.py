@@ -3,7 +3,7 @@ from .serialisers import PostSerialiser
 from .models import Comment
 from .models import Author
 from newsoftheworldarticles.models import Author as ArticleAuthor #breaks decoupling between articles and comments
-from newsoftheworldarticles.util import get_friendly_name #breaks decoupling between articles and comments
+from newsoftheworldcomments.util import get_friendly_name 
 from .serialisers import CommentSerialiser
 from rest_framework import generics
 from rest_framework import permissions
@@ -115,7 +115,13 @@ class PostCommentsList(APIView):
 
             if parent_id is not None:
                 increment_reply_count(parent_id, 1)
-            return Response({"ok" : "true", "parent_id" : parent_id })
+
+            if comment.id:
+                comment_id = str(comment.id)
+            else:
+                comment_id = ""
+
+            return Response({"ok" : "true", "parent_id" : parent_id, "id" : comment_id })
         except BaseException as e:
             append_error_string = ""
             if isinstance(e, ValidationError):
@@ -191,8 +197,8 @@ class CommentsUpVote(APIView):
     model = Comment
     serializer_class = CommentSerialiser
     permission_classes = [
-        #permissions.IsAuthenticatedOrReadOnly
-        permissions.AllowAny
+        permissions.IsAuthenticatedOrReadOnly
+        #permissions.AllowAny
     ]
 
 #    def get(self, request, commentid, format=None):
@@ -203,6 +209,8 @@ class CommentsUpVote(APIView):
         context = {}
         context['request'] = request
 
+        if request.user.is_authenticated() == False:
+            return Response({"ok":"false","code":"user_not_logged_in"}, status=HTTP_401_UNAUTHORIZED)
         result = upvote_comment(commentid, str(request.user.id))
         if 'ok' in result and result['ok'] == 'false':
             status_code = status.HTTP_400_BAD_REQUEST
@@ -222,8 +230,8 @@ class CommentsDownVote(APIView):
     model = Comment
     serializer_class = CommentSerialiser
     permission_classes = [
-        #permissions.IsAuthenticatedOrReadOnly
-        permissions.AllowAny
+        permissions.IsAuthenticatedOrReadOnly
+        #permissions.AllowAny
     ]
 
 #    def get(self, request, commentid, format=None):
@@ -234,7 +242,8 @@ class CommentsDownVote(APIView):
         context = {}
         context['request'] = request
 
-
+        if request.user.is_authenticated() == False:
+            return Response({"ok":"false","code":"user_not_logged_in"}, status=HTTP_401_UNAUTHORIZED)
         result = downvote_comment(commentid, str(request.user.id))
         if 'ok' in result and result['ok'] == 'false':
             status_code = status.HTTP_400_BAD_REQUEST
@@ -253,8 +262,8 @@ class CommentsUnVote(APIView):
     model = Comment
     serializer_class = CommentSerialiser
     permission_classes = [
-        #permissions.IsAuthenticatedOrReadOnly
-        permissions.AllowAny
+        permissions.IsAuthenticatedOrReadOnly
+        #permissions.AllowAny
     ]
 
 #    def get(self, request, commentid, format=None):
@@ -265,6 +274,8 @@ class CommentsUnVote(APIView):
         context = {}
         context['request'] = request
 
+        if request.user.is_authenticated() == False:
+            return Response({"ok":"false","code":"user_not_logged_in"}, status=HTTP_401_UNAUTHORIZED)
         result = unvote_comment(commentid, str(request.user.id))
         if 'ok' in result and result['ok'] == 'false':
             status_code = status.HTTP_400_BAD_REQUEST

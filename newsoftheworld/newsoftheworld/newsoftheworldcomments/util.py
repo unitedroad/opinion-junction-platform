@@ -87,3 +87,16 @@ def unvote_comment(comment_id, user_id):
 
     comments.update_one(pull__upvotes=user_id, pull__downvotes=user_id)
     return Comment.objects(id=comment_id) # I hope there is some way to avoid this
+
+def get_friendly_name(author):
+    friendly_name = ""
+    if author.first_name:
+        friendly_name = author.first_name + " "
+    if author.last_name:
+        friendly_name = friendly_name + author.last_name
+
+    friendly_name = friendly_name.strip()
+    if friendly_name:
+        return friendly_name
+    else:
+        return author.author_name

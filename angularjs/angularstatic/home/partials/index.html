@@ -17,7 +17,7 @@
 	  <h4><small><p>{{article.excerpt}}</p></small></h4>
 	</div>
 	<div>
-	  <small><p>{{article.author.first_name}}{{article.author.last_name}}</p></small>
+	  <small><p>{{getAuthorName(article.author)}}</p></small>
 	</div>
       </div>      
    
@@ -25,17 +25,21 @@
   </div>
   <div>
   <h4 >Latest Comments</h4>
-  <article ng-repeat="comment in latest_comments">
+  <article ng-repeat="comment in latest_comments" class="comment-main-page">
 
-	<div>
-	  <h5 >
-	    <a ng-href="/article/{{comment.discussion_id}}/comment-{{comment.id}}" class="articleheaderlink">{{comment.text}}</a>
-	  </h5>
-	</div>
-	<div>
-	  <small><p>{{comment.author.name}}</p></small>
-	</div>
-            
+    <div class="comment-author-image-container-mainpp">
+      <img ng-src="{{getAuthorImage(comment.author)}}" class="comment-author-image img-circle"/>
+    </div>
+    <div>
+      <div>
+	<h5 >
+	  <a ng-href="/article/{{comment.discussion_id}}/comment-{{comment.id}}" class="articleheaderlink">{{comment.text}}</a>
+	</h5>
+      </div>
+      <div>
+	<small><p>{{comment.author.name}}</p></small>
+      </div>
+    </div>   
    
   </article>
   </div>

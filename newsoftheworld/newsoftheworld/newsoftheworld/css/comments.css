@@ -54,3 +54,12 @@
     display: inline-block;
     margin-bottom:0px;
 }
+
+.comment-author-image-container-mainpp {
+    margin-right:10px;
+    float:left;
+}
+
+.comment-main-page {
+    margin-bottom:20px;
+}

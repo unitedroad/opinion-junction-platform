@@ -226,12 +226,19 @@ testApp.factory('commonOJService', function($http, $location) {
 
 
     invokeListeners = function(key) {
-	listeners = serviceInstance.listenersMap[key];
+	listenersArraysMap = serviceInstance.listenersMap[key];
 	
-	if (listeners != null) {
-	    numListeners = listeners.length;
-	    console.log("numListeners: " + numListeners);
-	    for (i = 0; i < numListeners; i++) { listeners[i](data) };
+	if (listenersArraysMap != null) {
+	    for (var key in listenersArraysMap) {
+		var listeners = listenersArraysMap[key];
+		if (listeners != null) {
+		    numListeners = listeners.length;
+		    //console.log("numListeners: " + numListeners);
+		    for (i = 0; i < numListeners; i++) { listeners[i](data) };
+		}
+		
+	    }
+
 	} else {
 	    console.log("listeners: " + listeners);
 	}
@@ -245,12 +252,13 @@ testApp.factory('commonOJService', function($http, $location) {
 	    numListeners = listeners.length;
 	    for (i = 0; i < numListeners; i++) { listeners[i](data) };
 	}
-	listenersArray = serviceInstance.listenersMap[key];
-	if (listenersArray == null) {
-	    serviceInstance.listenersMap[key] = listeners;
-	} else {
-	    serviceInstance.listenersMap[key] = listenersArray.concat(listeners);
+	var listenersArraysMap  = serviceInstance.listenersMap[key];
+	if (listenersArraysMap == null) {
+	    serviceInstance.listenersMap[key] = {};
+	    listenersArraysMap = serviceInstance.listenersMap[key];
+	    
 	}
+	listenersArraysMap[controllerId] = listeners;
     }
 
 
@@ -521,10 +529,27 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 
     serviceInstance.treatComments = treatComments;
 
+    var updateCommentTextBox = function (comment) {
+	comment.replyText = "";
+
+	//comment.popover="You comment has been posted"; //can't be done as of now due to clash 
+	                                                 //between tooltip and popover
+                                                         //https://github.com/angular-ui/bootstrap/issues/2203 
+	//comment.tooltip="You comment has been posted<br><a ng-click=''>Click here to go to the posted comment</a>";
+	//$timeout(function() { 
+	//    var top = $("#comment-content-container-" + comment.replyId).position().top;
+	//    $(window).scrollTop( top );
+	//}, 200);
+	$timeout(function() { $("#comment-content-container-" + comment.replyId).goTo(); }, 200);
+	//$timeout(function() { $("#comment-content-container-" + comment.replyId).scrollTop(0 + "px"); }, 200);
+	
+
+    };
+
     serviceInstance.updateRepliesAndHandleShow = function(comment, showReplies) {
 	
 	if (showReplies!=null) {
-	    serviceInstance.updateReplies(comment, function() { toggleCollapseOnReply(comment, showReplies); });
+	    serviceInstance.updateReplies(comment, function() { toggleCollapseOnReply(comment, showReplies); updateCommentTextBox(comment); });
 	} else {
 	    serviceInstance.updateReplies(comment);
 	}
@@ -561,6 +586,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	if (!comment.replyText) {
 	    comment.tooltip="Comment is Blank";
 	    $timeout(function() {focusReply(comment);}, 100);
+	    $timeout(function() {comment.tooltip="";}, 20000);
 	    return;
 	} else {
 	    comment.tooltip="";
@@ -570,7 +596,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	    commentPostPromise = $http.post("/api/1.0/posts/" + comment.discussion_id + "/comments", JSON.stringify(replyComment),
 					    {headers: {"Content-Type": "application/json"}})
 		.then( function(result) {
-		    
+		    comment.replyId = result.data.id;
 		});
 
 
@@ -629,7 +655,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 //	    scope.commentChildren = data;
 //	} else {
 //	    scope.commentChildren = scope.commentChildren.concat(data);
-//	}
+	//	}
 //
 //	if (comment.latest_child) {
 //	    comment.num_replies = comment.num_replies + numChildren; //having this here
@@ -647,7 +673,8 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	if (timeoutFunction!=null) {
 	    timeoutFunction();
 	}
-
+	
+	
     }
 
 
@@ -817,6 +844,21 @@ testApp.factory('profileService', function() {
 
     var serviceInstance = {};
 
+    serviceInstance.getAuthorName = function(author) {
+	var authorName = "";
+	if (author.first_name) {
+	    authorName = author.first_name + " ";
+	}
+	if (author.last_name) {
+	    authorName = authorName + " " + author.last_name;
+	}
+	if (!authorName.trim()) {
+	    authorName = author.author_name;
+	}
+ 	return authorName;
+    }
+
+
     serviceInstance.isUploadedImage = function(image) {
 	return image.indexOf(":@#") != 0;
     }
@@ -874,7 +916,7 @@ testApp.controller('testController', function($scope) {
     $scope.message = "Welcome to Opinion Junction";
 });
 
-testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, $stateParams) {
+testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, profileService, $stateParams) {
     $scope.category = $stateParams.category;
 
     setCategories = function() {
@@ -902,6 +944,14 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 			$scope.latest_comments = data;
 		    });
     }
+
+    $scope.getAuthorName = function(author) {
+	return profileService.getAuthorName(author);
+    }
+
+    $scope.getAuthorImage = function(author) {
+	return profileService.getProfileImageForCommentsAndDisplay(author);
+    };
 
     $scope.$watch('categories', function(){
 	if($scope.categories && $scope.categories!=null) {
@@ -1134,7 +1184,14 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 	removeCallablesFromEveryChangeMap("userData", ["setNavBarOnSignin"]);
     });
 
+    var userLoggedIn = function() {
+	if (commonOJService.isUserLoggedIn()) {
+	    $scope.rightNavBar = "loggedInNavBar.html";
+	}
+    };
+
     $scope.initFunction = function() {
+	commonOJService.registerListeners("userData", "mainController-" + $scope.$id,  [userLoggedIn], "yesWithData");
 	commonOJService.controllerInit([setUserData, setNavBarOnSignin], $scope, [setNavBarOnSigninUnConfUser], null);
 	    /*$http.get('/api/1.0/authors/loggedin/self/').then(function(response) {
 		if (response.data.ok && response.data.ok === "false") {
@@ -2638,7 +2695,7 @@ testApp.directive('comment', function($compile, $timeout, $http, commonOJService
        }
 });
 
-testApp.directive('commentsRoot', function($compile, $http, $modal, commonOJService, commentsService) {
+testApp.directive('commentsRoot', function($compile, $http, $modal, $timeout, commonOJService, commentsService) {
     return {
 	scope: true,
 	require: '^commentsRoot',
@@ -2699,6 +2756,7 @@ testApp.directive('commentsRoot', function($compile, $http, $modal, commonOJServ
 		    }
 		}], "yesWithData");
 		scope.commentMetaData = commentsService.getCommentMetaDataForReplyMain(scope);
+		scope.commentMetaData.collapse = true;
 		if (!scope.isUserLoggedIn()) {
 		    $compile('<div comments-login></div>')(scope, function(cloned, scope) {
 			scope.loginDiv = cloned;
@@ -2718,6 +2776,7 @@ testApp.directive('commentsRoot', function($compile, $http, $modal, commonOJServ
 			scope.commentMetaData.latest_child = data[data.length-1].id;
 		    }
 		    commentsService.treatComments(data);
+		    $timeout(function() { scope.commentMetaData.collapse=false; }, 100);
 		    //commentsService.addCommentsToMap('1', data);
 		});
 

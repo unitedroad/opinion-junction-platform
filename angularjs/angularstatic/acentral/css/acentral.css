@@ -89,3 +89,7 @@ body { padding-top: 50px; }
     margin-bottom:0px;
 }
 */
+
+#mce_44 iframe { /* tinymce edit */
+    min-height:503px;
+}
