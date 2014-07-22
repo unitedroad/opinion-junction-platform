@@ -3,10 +3,10 @@
 <head>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
   <!-- <script src="https://code.angularjs.org/snapshot/angular.min.js"></script> -->
-  <script src="https://code.angularjs.org/1.2.10/angular.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
-  <script src="https://code.angularjs.org/1.2.10/angular-route.js"></script>
-  <script src="https://code.angularjs.org/1.2.10/angular-cookies.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-route.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-cookies.js"></script>
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
   <link rel="stylesheet" href="/static/comments.css">
@@ -14,6 +14,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-animate.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/angular-strap.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/popover.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/tooltip.js"></script>
 <!--  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
   <script src="https://connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
   <script src="/angularstatic/acentral/js/app.js"></script>
@@ -26,6 +30,17 @@
     $(document).ready(mainReady);
   </script>
   
+
+  <script type="text/javascript">
+    (function($) {
+        $.fn.goTo = function() {
+           $('html, body').animate({
+                scrollTop: $(this).offset().top + 'px'
+           }, 'fast');
+           return this; // for chaining...
+        }
+    })(jQuery);
+  </script>
   <!--<base href="file:///Users/dhruwatbhagat/Documents/notw/Angular Test/">-->
   
 </head>
