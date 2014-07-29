@@ -22,6 +22,7 @@
 
 .comment-form-group {
     margin-bottom: 10px;
+    padding-top:10px;
 }
 
 .comment-box-container {
@@ -44,10 +45,20 @@
 
 .comment-author-image-container {
     margin-right:10px;
+    float:left;
+}
+
+.comment-author-details-container {
+    margin-left:50px;
+}
+
+.comment-time-text {
+    color: #999;
 }
 
 .comment-author-image {
-    width:40px;
+    width:50px;
+    max-height:80px;
 }
 
 .comment-author-name-text {
