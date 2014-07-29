@@ -1,4 +1,4 @@
-var testApp = angular.module('testApp', ['ui.router', 'ui.bootstrap', 'ngCookies', 'ui.config', 'ui.tinymce', 'ui.directives', 'ngSanitize']);
+var testApp = angular.module('testApp', ['ui.router', 'ui.bootstrap', 'ngCookies', 'ui.config', 'ui.tinymce', 'ui.directives', 'ui.include', 'ngSanitize', 'ngTouch']);
 
 tooltipTriggerMap = {
     'mouseenter': 'mouseleave',
@@ -163,6 +163,37 @@ testApp.factory('commonOJService', function($http, $location) {
 	    = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 	return re.test(email);
     } 
+
+    serviceInstance.headerLinkActivator = null;
+
+    serviceInstance.registerHeaderLinkActivator = function(activator) {
+	serviceInstance.headerLinkActivator = activator;
+    }
+
+    serviceInstance.categoryLinkActivator = null;
+
+    serviceInstance.registerCategoryLinkActivator = function(activator) {
+	serviceInstance.categoryLinkActivator = activator;
+    }
+
+
+    serviceInstance.registerCategoryLinkDeactivator = function(deactivator) {
+	serviceInstance.categoryLinkDeactivator = deactivator;
+    }
+
+
+    serviceInstance.activateHeaderNavLink = function(linkName) {
+	serviceInstance.headerLinkActivator(linkName);
+    }
+
+    serviceInstance.focusCategoryLink = function(index) {
+	serviceInstance.categoryLinkActivator(index);
+    }
+
+    serviceInstance.blurCategoryLink = function() {
+	serviceInstance.categoryLinkDeactivator();
+    }
+
     serviceInstance.isArray = function(obj) {
 
 	if( Object.prototype.toString.call( obj ) === '[object Array]' ) {
@@ -437,16 +468,120 @@ testApp.factory('commonOJService', function($http, $location) {
 
 });
 
-testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q, $compile) {
+
+testApp.factory('dateService', function($http, $location) {
+
+    var serviceInstance = {};
+
+    serviceInstance.date = new Date();
+
+    serviceInstance.useNewDate = function() {
+	serviceInstance.date = new Date();
+    }
+
+    serviceInstance.getFinalFriendlyDateString = function(num, suffix) {
+	if (num <= 1) {
+	    return num + " " + suffix + " ago";
+	}
+	return num + " " + suffix + "s ago";
+    }
+
+    serviceInstance.getFriendlyDateString = function(date) {
+	var diffYears = yearDiff(date, serviceInstance.date);
+	if (diffYears > 0) {
+	    return serviceInstance.getFinalFriendlyDateString(diffYears, "year");
+	}
+	var diffMonths = monthDiff(date, serviceInstance.date);
+
+	if (diffMonths > 0) {
+	    return serviceInstance.getFinalFriendlyDateString(diffMonths, "month");
+	}
+
+	diffDays = dayDiff(date, serviceInstance.date);
+
+	if (diffDays > 0) {
+	    return serviceInstance.getFinalFriendlyDateString(diffDays, "day");
+	}
+
+	diffHours = hourDiff(date, serviceInstance.date);
+
+	if (diffHours > 0) {
+	    return serviceInstance.getFinalFriendlyDateString(diffHours, "hour");
+	}
+
+	diffMinutes = minuteDiff(date, serviceInstance.date);
+
+	if (diffMinutes > 0) {
+	    return serviceInstance.getFinalFriendlyDateString(diffMinutes, "minute");
+	}
+
+	diffSeconds = secondDiff(date, serviceInstance.date);
+
+//	if (diffSeconds > 0) {
+	    return serviceInstance.getFinalFriendlyDateString(diffSeconds, "second");
+//	}
+
+	var timeDiff = Math.abs(serviceInstance.date.getTime() - date.getTime());
+	var diffMonths = Math.ceil(timeDiff / (30*1000 * 3600 * 24)); 
+    }
+
+    var yearDiff = function(d1, d2) {
+	var years;
+	years = (d2.getFullYear() - d1.getFullYear()) * 12;
+	return years <= 0 ? 0 : years;
+    }
+
+    var monthDiff = function(d1, d2) {
+	var months;
+	months = (d2.getFullYear() - d1.getFullYear()) * 12;
+	months -= d1.getMonth() + 1;
+	months += d2.getMonth();
+	return months <= 0 ? 0 : months;
+    }
+
+    var dayDiff = function(date1, date2) {
+	var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+	var diffDays = Math.floor(timeDiff / (1000 * 3600 * 24)); 
+	return diffDays <=0? 0: diffDays;
+    }
+
+    var hourDiff = function(date1, date2) {
+	var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+	var diffHours = Math.floor(timeDiff / (1000 * 3600)); 
+	return diffHours <=0? 0: diffHours;
+    }
+
+    var minuteDiff = function(date1, date2) {
+	var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+	var diffMinutes = Math.floor(timeDiff / (1000 * 60)); 
+	return diffMinutes <=0? 0: diffMinutes;
+    }
+
+    var secondDiff = function(date1, date2) {
+	var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+	var diffSeconds = Math.floor(timeDiff / (1000)); 
+	return diffSeconds <=0? 0: diffSeconds;
+    }
+
+    return serviceInstance;
+
+});
+
+testApp.factory('commentsService', function(commonOJService, dateService, $http, $timeout, $q, $compile) {
 
     var serviceInstance = {};
 
     serviceInstance.commentsMap = {};
     
+//    commonOJService.registerCategorylistener(function() {
+//	
+//    });
+
     serviceInstance.getCommentMetaDataForReplyMain = function(scope) {
-	metaData = {};
+	var metaData = {};
 	metaData.discussion_id = scope.articleId;
 	metaData.replyText = '';
+	metaData.scrollToReply = true;
 	return metaData;
     }
 
@@ -469,7 +604,12 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
     }
 
     serviceInstance.isReplyContainerCollapsing = function(comment) {
-	commentReplyContainer = $('#comment-reply-container-' + comment.id);
+	if (comment.id) {
+	    var commentReplyContainer = $('#comment-reply-container-' + comment.id);
+	} else {
+	    var commentReplyContainer = $('#comments-container');
+	}
+	
 	if (commentReplyContainer.length <=0) {
 	    return false;
 	}
@@ -524,6 +664,8 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	    //console.log(this);
 	    this.setVoteClass(comment);
 	    comment.replyContainerCollapsed = true;
+	    comment.scrollToReply = true;
+	    comment.postedFriendlyString = dateService.getFriendlyDateString(new Date(comment.posted));
 	}
     };
 
@@ -540,7 +682,9 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 	//    var top = $("#comment-content-container-" + comment.replyId).position().top;
 	//    $(window).scrollTop( top );
 	//}, 200);
-	$timeout(function() { $("#comment-content-container-" + comment.replyId).goTo(); }, 200);
+	if (comment.scrollToReply) {
+	    $timeout(function() { $("#comment-content-container-" + comment.replyId).goTo(); }, 200);
+	}
 	//$timeout(function() { $("#comment-content-container-" + comment.replyId).scrollTop(0 + "px"); }, 200);
 	
 
@@ -560,6 +704,7 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 
 	replyComment.text = comment.replyText;
 	replyComment.discussion_id = comment.discussion_id;
+	replyComment.metadata_string = comment.metadata_string;
 	if (comment.id) {
 	    replyComment.parent_id = comment.id;
 	}
@@ -597,11 +742,14 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 					    {headers: {"Content-Type": "application/json"}})
 		.then( function(result) {
 		    comment.replyId = result.data.id;
+		    serviceInstance.updateRepliesAndHandleShow(comment, true);
 		});
 
 
+	    commentPostPromiseArray = [];
+	    commentPostPromiseArray.push(commentPostPromise);
 	    //$q.all([commentPostPromise]).then(postSubmitCallables[0]());
-	    $q.all([commentPostPromise]).then(serviceInstance.updateRepliesAndHandleShow(comment, true));
+	    //$q.all(commentPostPromiseArray).then(serviceInstance.updateRepliesAndHandleShow(comment, true));
 	}
     }
 
@@ -679,13 +827,21 @@ testApp.factory('commentsService', function(commonOJService, $http, $timeout, $q
 
 
 
-    toggleCollapseOnReply = function(comment, showReplies) {
+    toggleCollapseOnReply = function(comment, showReplies, num_tries) {
+	if (num_tries == null) {
+	    num_tries = 0;
+	}
 	if (serviceInstance.isReplyContainerCollapsing(comment)) { //there seems to be a bug with Bootstrap collapse 
 	                                                           //when used with AngularUI 
 	                                                           //https://github.com/angular-ui/bootstrap/issues/1240
 	    $timeout(function() { comment.replyContainerCollapsed = showReplies }, 50);
 	}
-	$timeout(function() { comment.replyContainerCollapsed = !showReplies }, 100);
+	$timeout(function() { comment.replyContainerCollapsed = !showReplies }, 100 + 50*num_tries);
+
+//	if (num_tries < 5 && serviceInstance.isReplyContainerCollapsing(comment)) {
+//	    toggleCollapseOnReply(comment, showReplies, num_tries + 1);
+//	}
+	
     }
 
 
@@ -919,8 +1075,27 @@ testApp.controller('testController', function($scope) {
 testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, profileService, $stateParams) {
     $scope.category = $stateParams.category;
 
+    if ($scope.category) {
+	commonOJService.activateHeaderNavLink($scope.category);
+	$scope.topBannerFragment="#category-image";
+	$scope.categoryImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg/1024px-Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg";
+    } else {
+	commonOJService.activateHeaderNavLink("home");
+	$scope.topBannerFragment="#carousel";
+    }
     setCategories = function() {
 	$scope.categories = commonOJService.categories;
+    }
+
+    setCategoryDetailsForCategory = function() {
+	var numCategories = commonOJService.categories.length;
+	for (var i = 0; i < numCategories;i++) {
+	    var category = commonOJService.categories[i];
+	    if (category.name === $scope.category) {
+		$scope.categories = [category];
+	    }
+	    
+	}
     }
 
     $scope.message = "Axl is finding lasting success";
@@ -931,7 +1106,8 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 	commonOJService.registerCategoryListener(setCategories);	
 	$scope.allCategories = true;
     } else {
-	$scope.categories = [$scope.category];
+	//$scope.categories = [$scope.category];
+	commonOJService.registerCategoryListener(setCategories);	
     }
 
     $scope.categoriesMapCreated = false;
@@ -943,6 +1119,13 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 		    .success( function(data) {
 			$scope.latest_comments = data;
 		    });
+    } else {
+		$http.get("/api/1.0/comments/?limit=5&metadata_string=category%3d'" + $scope.category + "'", {headers: {"Content-Type": "application/json"}})
+		    .success( function(data) {
+			$scope.latest_comments = data;
+		    });
+
+
     }
 
     $scope.getAuthorName = function(author) {
@@ -955,14 +1138,21 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 
     $scope.$watch('categories', function(){
 	if($scope.categories && $scope.categories!=null) {
-	    numCategories = $scope.categories.length;
+	    var numCategories = 1;
+	    var categories = null;
 	    $scope.articleInfos = [];
 	    num_articles_per_request = 5;
-	    if ($scope.categories.length==1) {
+	    if ($scope.category) {
 		num_articles_per_request = 30;
+		numCategories = 1;
+		categories = [$scope.category];
+	    } else {
+		categories = $scope.categories;
+		numCategories = $scope.categories.length;
 	    }
+	    
 	    for (i = 0; i < numCategories; i++) {
-		category = $scope.categories[i];
+		category = categories[i];
 		$http.get("/api/1.0/categories/" + getCategoryName(category) + "/articles?limit=" + num_articles_per_request, {headers: {"Content-Type": "application/json"}}) 
 		    .success( function(data) {
 			$.each(data, function (index, item) {
@@ -1082,6 +1272,27 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 	$scope.categories = commonOJService.categories;
     }
 
+    $scope.$watch('categories', function() {
+	if ($scope.categories !=null) {
+	    var numCategories = $scope.categories;
+	    for (var i = 0; i < numCategories; i++) {
+		var category = $scope.categories[i].name;
+		var linkDetails = {};
+		linkDetails.className="";
+		$scope.linkDetailsMap.category = linkDetails;
+	    }
+	    var linkDetails = {};
+	    linkDetails.className="";
+
+	    $scope.linkDetailsMap["home"] = linkDetails;
+	    var linkDetails = {};
+	    linkDetails.className="";
+
+
+	    $scope.linkDetailsMap["settings"] = linkDetails;
+	}
+
+    });
     commonOJService.registerCategoryListener(setCategories);
     
     $scope.rightNavBar = "signinNavBar.html";
@@ -1089,6 +1300,72 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
     $scope.navbarCollapsed = true;
     $scope.totalResults = 5;
     $scope.userData = null;
+    $scope.linkDetailsMap = {};
+    $scope.categoryLinkArray = [];
+
+
+    var categoryLinkDeactivator = function() {
+	var numCategories = commonOJService.categories.length;
+
+	for (var i = 0; i < numCategories; i++) {
+	    var category = commonOJService.categories[i].name;
+	    if (category in  $scope.linkDetailsMap) {
+		$scope.linkDetailsMap[category].categoryLinkClassName = "";
+	    }
+	}
+
+
+    }
+
+    var categoryLinkActivator = function(index) {
+	if (index == null || index < 0) {
+	    return;
+	}
+
+	var numCategories = commonOJService.categories.length;
+
+	for (var i = 0; i < numCategories; i++) {
+	    var category = commonOJService.categories[i].name;
+	    if (category in  $scope.linkDetailsMap) {
+		$scope.linkDetailsMap[category].categoryLinkClassName = "";
+	    }
+	}
+
+	var category = commonOJService.categories[index].name;
+
+	if (category in $scope.linkDetailsMap) {
+	    $scope.linkDetailsMap[category].categoryLinkClassName = "navbar-category-link-focussed";
+	} else {
+	    $scope.linkDetailsMap[category] = {};
+	    $scope.linkDetailsMap[category].categoryLinkClassName = "navbar-category-link-focussed";
+	}
+
+//	category = $scope.categories[i].name;
+//
+//
+//	for (var i = 0; i < numCategories; i++) {
+//	    $scope.categoryLinkArray[i] = "";
+//	}
+//
+//	$scope.categoryLinkArray[index] = "navbar-category-link-focussed";
+//
+    }
+    
+    var headerLinkActivator = function(linkName) {
+	if (!linkName) { //I don't know why this method gets called with null linkName
+	    return;
+	}
+	for (var link in $scope.linkDetailsMap) {
+	    $scope.linkDetailsMap[link].className = "";
+	}
+	if (linkName in $scope.linkDetailsMap) {
+	    $scope.linkDetailsMap[linkName].className = "active";
+	} else {
+	    $scope.linkDetailsMap[linkName] = {};
+	    $scope.linkDetailsMap[linkName].className = "active";
+	}
+	
+    }
 //    $scope.articles = [{
 //	"name": "Article 1",
 //	"text": "Article 1 text",
@@ -1103,6 +1380,12 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 	$scope.userData = commonOJService.userData;
     }
 
+    commonOJService.registerHeaderLinkActivator(headerLinkActivator);
+
+    commonOJService.registerCategoryLinkActivator(categoryLinkActivator);
+
+    commonOJService.registerCategoryLinkDeactivator(categoryLinkDeactivator);
+    
     setNavBarOnSigninUnConfUser = function(serviceInstance, scope) {
 	if (serviceInstance.userData.code && serviceInstance.userData.code == "user_not_setup_for_oj") {
 	    setUserData(serviceInstance);
@@ -1215,6 +1498,7 @@ testApp.controller('articleController', function($scope, $http, $stateParams, co
 	    .success( function(data) {
 		if (data.length > 0) {
 		    $scope.article = data[0];
+		    commonOJService.activateHeaderNavLink($scope.article.categories[0]);
 		}
 	    });
 
@@ -1427,8 +1711,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 		return false;
 	    }
 	    
-	};
-	if (commonOJService.indexOf(commonOJService.userData.user_permissions, "edit_others_articles") <= -1) {
+	} else if (commonOJService.indexOf(commonOJService.userData.user_permissions, "edit_others_articles") <= -1) {
 	    return false;
 	} 
 
@@ -2044,6 +2327,8 @@ testApp.controller('userController', function($scope, $location, commonOJService
         } else {
 
 	}
+
+	commonOJService.activateHeaderNavLink("settings");
     }
 
     
@@ -2055,6 +2340,7 @@ testApp.controller('userController', function($scope, $location, commonOJService
     $scope.capabilities = getCapabilities();
     $scope.isArticleDivCollapsed = true;
     $scope.activeItem = "";
+
 
     function getCapabilities(){
 	capabilities = [{"title" : "Create Article", "content" : "Create Article" }];
@@ -2175,6 +2461,7 @@ var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, common
     $scope.errorMessage = "";
     $scope.loginFormData = {};
     $scope.signinCollapse = false;
+    $scope.signinModalHeading = "SIGN IN";
     $scope.signupCollapse = true;
 
     $scope.formFields = {"signinForm": [{"id":"id_login"},
@@ -2280,11 +2567,13 @@ var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, common
     $scope.openSignup = function() {
 	$scope.signinCollapse=true;
 	$scope.signupCollapse=false;
+	$scope.signinModalHeading = "SIGN UP";
     }
 
     $scope.openSignin = function() {
 	$scope.signinCollapse=false;
 	$scope.signupCollapse=true;
+	$scope.signinModalHeading = "SIGN IN";
     }
 
 
@@ -2504,6 +2793,7 @@ testApp.directive('commentReply', function($compile, $timeout, $http, $q, common
 		       replyComment = {};
 
 		       replyComment.text = comment.replyText;
+		       replyComment.metadata_string = comment.metadata_string;
 		       replyComment.discussion_id = comment.discussion_id;
 		       if (comment.id) {
 			   replyComment.parent_id = comment.id;
@@ -2525,7 +2815,7 @@ testApp.directive('commentReply', function($compile, $timeout, $http, $q, common
        }
 });
 
-testApp.directive('comment', function($compile, $timeout, $http, commonOJService, commentsService, profileService) {
+testApp.directive('comment', function($compile, $timeout, $http, commonOJService, commentsService, profileService, dateService) {
        return {
 	   scope: {comment: "="},
            templateUrl: '/angularstatic/comments/partials/comment-directive.html',
@@ -2573,6 +2863,12 @@ testApp.directive('comment', function($compile, $timeout, $http, commonOJService
                                                      //completedly
 		       console.log(voteclassname + " " + vote);
 		   };
+
+
+		   scope.getFriendlyDateString = function(dateString) {
+		       var date = new Date(dateString);
+		       return dateService.getFriendlyDateString(date);
+		   }
 
 		   scope.handleUpvote = function(comment) {
 		       if (comment.current_user_voted == "up") {
@@ -2755,8 +3051,19 @@ testApp.directive('commentsRoot', function($compile, $http, $modal, $timeout, co
 			commentsRootController.modalLoggedIn(); 
 		    }
 		}], "yesWithData");
+
+		scope.$watch('replyContainerCollapsed', function() { console.log("replyContainerCollapsed = " + scope.replyContainerCollapsed) });
 		scope.commentMetaData = commentsService.getCommentMetaDataForReplyMain(scope);
-		scope.commentMetaData.collapse = true;
+		scope.commentMetaData.replyContainerCollapsed = true;
+		scope.$watch('article', function() {
+		    if (scope.article!=null) { 
+			var numCategories = scope.article.categories.length;
+			scope.commentMetaData.metadata_string = "";
+			for (var i = 0; i < numCategories; i++) {
+			    scope.commentMetaData.metadata_string += "#category='" + scope.article.categories[i] + "'#"; 
+			}
+		    }
+		});
 		if (!scope.isUserLoggedIn()) {
 		    $compile('<div comments-login></div>')(scope, function(cloned, scope) {
 			scope.loginDiv = cloned;
@@ -2772,11 +3079,16 @@ testApp.directive('commentsRoot', function($compile, $http, $modal, $timeout, co
 		$http.get('/api/1.0/posts/' + scope.articleId + '/comments/?top=true').success(function(data) {
 		    scope.commentMetaData.commentChildren = data;
 		    scope.commentChildren = data;
+		    commentsService.treatComments(data);
 		    if (data!=null && data.length > 0) {
 			scope.commentMetaData.latest_child = data[data.length-1].id;
+			$timeout(function() { scope.commentMetaData.replyContainerCollapsed=false; }, 100);
 		    }
-		    commentsService.treatComments(data);
-		    $timeout(function() { scope.commentMetaData.collapse=false; }, 100);
+		    
+//		    if (data.length > 0) {
+//			
+//		    }
+		    scope.commentMetaData.gotChildren = true;
 		    //commentsService.addCommentsToMap('1', data);
 		});
 
@@ -2806,4 +3118,28 @@ testApp.directive('commentsLogin', function() {
 	    }
 	}
    }
+});
+
+testApp.directive('ojCarousel', function(commonOJService) {
+    return {
+	require: "carousel",
+	compile: function(elem, attrs) {
+
+            return function(scope,elem,attrs, carouselCtrl) {
+		scope.carousel = carouselCtrl;
+		scope.$watch('carousel.currentSlide', function() {
+		    console.log("CarouselSlide Changed!");
+		    console.log(scope.carousel.indexOfSlide(scope.carousel.currentSlide));
+		    commonOJService.focusCategoryLink(scope.carousel.indexOfSlide(scope.carousel.currentSlide));
+		});
+		elem.on('slide.bs.carousel', function () {
+		    alert("Hello From Carousel");
+		});
+
+		scope.$on("$destroy", function(scope) {
+		    commonOJService.blurCategoryLink();
+		});
+	    }
+	}
+    }
 });

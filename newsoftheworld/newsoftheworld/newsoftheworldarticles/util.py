@@ -11,11 +11,12 @@ from rest_framework import status
 from allauth.account.signals import user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-
+import django.dispatch
 
 LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
 URL_PROFILE_IMAGES = settings.MEDIA_URL + 'ojprofileimages/' 
 
+profile_updated = django.dispatch.Signal(providing_args=["id", "fields"])
 
 def check_valid_object_id(**kwargs):
     if "id" in kwargs:
@@ -65,15 +66,17 @@ def check_article_update_permissions(user, DATA, article):
 
     
     if author.id == user.id:
-        if "edit_article" not in user_permissions:
+        if DATA["status"] == "published":
+            check_status_permission(user_permissions, "published")
+        if article.status == "published" or article.status == "pending_review":
+            return {"ok" : "false", "code" : "bad_status", "message" : "You cannot edit opinion that is " + STATUS_VALUE_DICT[article.status],
+                    "status" : status.HTTP_400_BAD_REQUEST }
+
+        if "edit_articles" not in user_permissions:
             if author.invitation_count <0:
                 return {"ok" : "false", "code" : "no_permission", "message" : "You cannot edit anymore opinions", "status" : status.HTTP_403_FORBIDDEN }
             
-            if DATA["status"] == "published":
-                check_status_permission(user_permissions, "published")
-            if article.status == "published" or article.status == "pending_review":
-                return {"ok" : "false", "code" : "bad_status", "message" : "You cannot edit opinion that is " + STATUS_VALUE_DICT[article.status],
-                "status" : status.HTTP_400_BAD_REQUEST }
+
     else:
         skipattrs = ["id", "status"]
         if "edit_others_articles" not in user_permissions and has_values_changed(article, DATA, skipattrs):
@@ -299,31 +302,45 @@ def change_profile(user, data):
     else:
         author = authors[0]
 
+    updated_fields = []
+
     if user is not None:
         if "first_name" in data:
             first_name = data["first_name"]
             if first_name is None:
                 raise Exception("first_name cannot be null")
             user.first_name = first_name
-            author.first_name = data["first_name"]
-            if "last_name" in data:
-                last_name = data["last_name"]
-                if last_name is None:
-                    raise Exception("last_name cannot be null")
-                user.last_name = last_name
+            if author.first_name != first_name:
+                updated_fields.append("first_name")
+                author.first_name = data["first_name"]
+
+
+        if "last_name" in data:
+            last_name = data["last_name"]
+            if last_name is None:
+                raise Exception("last_name cannot be null")
+            user.last_name = last_name
+            if author.last_name != last_name:
                 author.last_name = last_name
+                updated_fields.append("last_name")
 
         if "update_image" in data and data["update_image"] == "true":
             image = process_image(user, data)
             
             author.image = image
+            updated_fields.append("image") #tracking image changes not easy, we shouldcontrol this at client end
+
 
         if "gender" in data:
-            author.gender = data["gender"]
+            gender = data["gender"]
+            if author.gender != gender:
+                author.gender = gender
+                updated_fields.append("gender")
 
         user.save()
         author.save()
 
+        profile_updated.send(sender=change_profile, id=author.id, fields=updated_fields)
         return author
 
 

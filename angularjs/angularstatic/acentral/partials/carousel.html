@@ -1,4 +1,4 @@
-  <carousel interval="10000">
+  <carousel id="carousel" interval="10000" oj-carousel>
     <slide ng-repeat="article in articles" active="article.active">
       <img ng-src="{{article.image}}" style="margin:auto;">
       <div class="carousel-caption">
@@ -8,3 +8,5 @@
       </div>
     </slide>
   </carousel>
+  <img id="category-image" class="categoryHeaderImage" ng-src="{{categoryImage}}">
+  </image>

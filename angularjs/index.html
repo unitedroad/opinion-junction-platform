@@ -5,6 +5,7 @@
   <!-- <script src="https://code.angularjs.org/snapshot/angular.min.js"></script> -->
   <script src="https://code.angularjs.org/1.2.18/angular.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-touch.js"></script>
   <script src="https://code.angularjs.org/1.2.18/angular-route.js"></script>
   <script src="https://code.angularjs.org/1.2.18/angular-cookies.js"></script>
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
@@ -14,10 +15,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-animate.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/angular-strap.js"></script>
+<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/angular-strap.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/popover.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/tooltip.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/tooltip.js"></script> -->
 <!--  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
   <script src="https://connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
   <script src="/angularstatic/acentral/js/app.js"></script>
@@ -42,7 +44,11 @@
     })(jQuery);
   </script>
   <!--<base href="file:///Users/dhruwatbhagat/Documents/notw/Angular Test/">-->
-  
+    <script type="text/javascript">
+      $("#carousel").on('play', function () {
+          alert("Hello From Carousel");
+      });
+    </script>
 </head>
 <body>
 <div id="ng-app" ng-app="testApp" >
@@ -61,19 +67,23 @@
     csrfToken: 'zzIMKt3qAbjNQ8naRGppPzVC9TZsZTKc' });
   </script>
   <script>allauth.facebook.onLoginCanceled = function(response) {}</script>-->
-  <a ng-click="fbLogin('/accounts/login_callback', 'authenticate', 'login')" class="btn btn-primary">Sign in With Facebook</a>
-    <div class="modal-body">
+
+    <div class="modal-body signin-modal-body">
+      <div class="text-center"><h4>{{signinModalHeading}}</h4></div>
+      <div class="form-group">
+	<a ng-click="fbLogin('/accounts/login_callback', 'authenticate', 'login')" class="btn btn-primary social-login-button">Sign in With Facebook</a>
+      </div>
       <!-- <iframe id="iframe" src="/accounts/login?login_redirect_url={% url 'login_callback' %}" style="zoom:0.60" frameborder="0"  width="99.6%">
       </iframe> -->  
       <div collapse="signinCollapse">
 	<p>Don't have an account? Then please <a ng-click="openSignup()">sign up</a>.</p>
 	<form ng-submit="setAllFormFields('signin') && processForm('signin')">
-	  <p>
-	    <label for="id_login">Username:</label> 
-	    <input autofocus="autofocus" id="id_login" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.login" ui-event="{ keyup : 'modalKeyUp($event)' }" >
+	  <p class="form-group signin-form-group">
+	    
+	    <input autofocus="autofocus" id="id_login" class="form-control" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.login" ui-event="{ keyup : 'modalKeyUp($event)' }" >
 	  </p>
-	  <p><label for="id_password">Password:</label> 
-	    <input id="id_password" name="password" placeholder="Password" type="password" ng-model="loginFormData.password" ui-event="{ keyup : 'modalKeyUp($event)' }"></p>
+	  <p class="form-group signin-form-group">
+	    <input id="id_password" name="password" class="form-control" placeholder="Password" type="password" ng-model="loginFormData.password" ui-event="{ keyup : 'modalKeyUp($event)' }"></p>
 	  <p>
 	    <label for="id_remember">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
 	  <p>{{ messageSignin }}</p>
@@ -85,15 +95,14 @@
       <div collapse="signupCollapse">
 	<p>Already have an account? Then please <a ng-click="openSignin()">sign in</a>.</p>
 	<form ng-submit="setAllFormFields('signup') && processForm('signup')">
-	  <p>
-	    <label for="id_login">Username:</label> 
-	    <input autofocus="autofocus" id="id_login_signup" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.username" auto-fill-sync>
+	  <p class="form-group signin-form-group">
+	    <input autofocus="autofocus" id="id_login_signup" class="form-control" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.username" auto-fill-sync>
 	  </p>
-	  <p><label for="id_password">Password:</label> 
-	    <input id="id_password_signup" name="password" placeholder="Password" type="password" ng-model="loginFormData.password1" auto-fill-sync></p>
+	  <p class="form-group signin-form-group">
+	    <input id="id_password_signup" name="password" class="form-control" placeholder="Password" type="password" ng-model="loginFormData.password1" auto-fill-sync></p>
 	  <p>
-	  <p><label for="id_password_verify">Password:</label> 
-	    <input id="id_password_verify_signup" name="password" placeholder="Confirm Password" type="password" ng-model="loginFormData.password2" auto-fill-sync></p>
+	  <p class="form-group signin-form-group">
+	    <input id="id_password_verify_signup" name="password" class="form-control" placeholder="Confirm Password" type="password" ng-model="loginFormData.password2" auto-fill-sync></p>
 	  <p>
 	    <label for="id_remember_signup">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
 	  <p>{{ messageSignup }}</p>
@@ -109,7 +118,7 @@
 </script>
 
 <script type="text/ng-template" id="loggedInNavBar.html">
-<ul id="navbar-right" class="nav navbar-nav navbar-right"><li><a href="/user/settings" class="navbar-link" >Settings</a></li></ul>
+<ul id="navbar-right" class="nav navbar-nav navbar-right" ><li ng-class="linkDetailsMap.settings != null? linkDetailsMap.settings.className: ''"><a href="/user/settings" class="navbar-link" >Settings</a></li></ul>
 </script>
 
 <nav id="navbar-div" class="navbar navbar-inverse  navbar-fixed-top">
@@ -125,13 +134,15 @@
     </div>
     <div class="navbar-collapse collapse oj-navbar-main" collapse="navbarCollapsed">
       <ul class="nav navbar-nav">
-	<li class="active"><a href="/">Home</a></li>
-	<li ng-repeat="category in categories" ui-event="{hover : 'hoverCategory($event)', click : 'hoverCategory($event)'}" }><a ng-href="/{{category.name}}" >{{category.friendly_name}}</a></li>
-	<li><a href="/about">About</a></li>
+	<li  ng-class="linkDetailsMap.home != null? linkDetailsMap.home.className: ''"><a href="/">Home</a></li>
+	<li ng-repeat="category in categories" ng-class="linkDetailsMap[category.name] !=null ? linkDetailsMap[category.name].className : ''" ui-event="{hover : 'hoverCategory($event)', click : 'hoverCategory($event)'}" }>
+	  <a ng-href="/{{category.name}}" ng-class="linkDetailsMap[category.name] !=null ? linkDetailsMap[category.name].categoryLinkClassName : ''">{{category.friendly_name}}</a>
+	</li>
+	<!-- <li><a href="/about">About</a></li>--><!--Maybe e can bring About back later, have it in the footer instead -->
       </ul>
 
       <ng-include src="rightNavBar"></ng-include> 
-      <ul id="navbar-right" class="nav navbar-nav navbar-right"><li><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li></ul>
+      <ul id="navbar-right" class="nav navbar-nav navbar-right"><li class="rightnavbar-preceder"><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li></ul>
       <!--<ul id="navbar-right" class="nav navbar-right ng-scope"><li><a href="/user/settings" class="navbar-link">Settings</a></li></ul>-->
     </div>
   </div>

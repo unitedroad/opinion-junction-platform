@@ -16,7 +16,10 @@
 	<a href="/user/{{comment.author.id}}" class="comment-author-image-container">
 	  <img ng-src="{{getCommentImage(comment)}}" class="comment-author-image img-circle" class="img-circle"/>
 	</a>
-	<a href="/user/{{comment.author.id}}"><h5 class="comment-author-name-text">{{comment.author.name}}</h5></a>
+	<div class="comment-author-details-container">
+          <div><small class="comment-time-text">{{comment.postedFriendlyString}}</small></div>
+	  <a href="/user/{{comment.author.id}}"><h5 class="comment-author-name-text">{{comment.author.name}}</h5></a>
+	</div>
       </div>
       <div id="comment-text-container-{{comment.id}}" class="comment-text-container comment-form-group" >
 	<p style="white-space: pre;">{{comment.text}}</p>

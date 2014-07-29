@@ -20,6 +20,8 @@ import logging
 
 import traceback, sys
 
+from . import db
+
 from .util import Comments_Save_Handler, csh_obj, increment_reply_count, upvote_comment, downvote_comment, unvote_comment
 
 #class PostList(generics.ListCreateAPIView):
