@@ -20,6 +20,7 @@ from newsoftheworldarticles.api import ArticlesByCategory
 from newsoftheworldarticles.api import ArticlesByEachCategory
 from newsoftheworldarticles.api import AuthorsList
 from newsoftheworldarticles.api import AuthorsListAll
+from newsoftheworldarticles.api import AuthorsSettings
 from newsoftheworldarticles.api import LoggedInUserDetails
 from newsoftheworldarticles.api import UpdateProfileSelf
 from newsoftheworldarticles.api import TagsList
@@ -114,6 +115,7 @@ rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?
 
     url(r'^api/1.0/authors/loggedin/self/profile?$', UpdateProfileSelf.as_view(), name='logged-in-user-profile'),
     url(r'^api/1.0/authors/loggedin/self/?$', LoggedInUserDetails.as_view(), name='logged-in-user-details'),
+    url(r'^api/1.0/authors/(?P<authorid>.+)/settings/?$', AuthorsSettings.as_view(), name='authors-settings'),     
     url(r'^api/1.0/authors/(?P<authorid>.+)/?$', AuthorsList.as_view(), name='authors-list'),     
     url(r'^api/1.0/authors/?$', AuthorsListAll.as_view(), name='authors-list-all'),     
     url(r'^api/1.0/tags/?$', TagsList.as_view(), name='tags-list'),     
