@@ -1,0 +1,14 @@
+.image-dimensions-textbox {
+ width:60px !important;
+ display:inline-block !important; 
+}
+  
+.dimension-mutiplier-symbol {
+    margin-left:15px;
+    margin-right:15px;      
+}
+
+.image-upload-form {
+    margin: 20px;
+
+}

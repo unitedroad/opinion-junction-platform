@@ -1,0 +1,22 @@
+tinymce.PluginManager.add('notwimageupload', function(editor, url) {
+
+    function jbBox() {
+	alert("Hello World");
+    }
+    
+    // Add a button that opens a window
+    editor.addButton('uploadimage', {
+	tooltip: 'Upload an image',
+	icon : 'image',
+	text: 'Upload',
+	onclick: jbBox
+	});
+    
+    // Adds a menu item to the tools menu
+    editor.addMenuItem('jbimages', {
+	text: 'Upload image',
+	icon : 'image',
+	context: 'insert',
+	onclick: jbBox
+	});
+});
