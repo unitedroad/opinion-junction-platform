@@ -1087,7 +1087,8 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 
     if ($scope.category) {
 	commonOJService.activateHeaderNavLink($scope.category);
-	$scope.topBannerFragment="#category-image";
+	//$scope.topBannerFragment="#category-image";
+	$scope.topBannerFragment="#carousel";
 	$scope.categoryImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg/1024px-Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg";
     } else {
 	commonOJService.activateHeaderNavLink("home");
