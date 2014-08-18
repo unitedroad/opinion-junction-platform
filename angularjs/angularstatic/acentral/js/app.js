@@ -63,13 +63,23 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    templateUrl: '/angularstatic/signin/partials/index.html',
 	    controller: 'signinController'
 	})
+        .state('profile', {
+	    url : "/profile",
+	    templateUrl: '/angularstatic/publicprofile/partials/index.html',
+	    controller: 'publicProfileController'
+	})
+        .state('profile.userid', {
+	    url : "/:userid",
+	    templateUrl: '/angularstatic/publicprofile/partials/index.html',
+	    controller: 'publicProfileController'
+	})
     	.state('user', {
 	    url : "/user",
 	    templateUrl: '/angularstatic/usersidebar/partials/index.html',
 	    controller: 'userController'
 	})
-    	.state('userSettings', {
-	    url : "/user/settings",
+    	.state('user.settings', {
+	    url : "/settings",
 	    templateUrl: '/angularstatic/usersettings/partials/index.html',
 	    controller: 'userSettingsController'
 	})
@@ -260,8 +270,8 @@ testApp.factory('commonOJService', function($http, $location) {
 	listenersArraysMap = serviceInstance.listenersMap[key];
 	
 	if (listenersArraysMap != null) {
-	    for (var key in listenersArraysMap) {
-		var listeners = listenersArraysMap[key];
+	    for (var lowerKey in listenersArraysMap) {
+		var listeners = listenersArraysMap[lowerKey];
 		if (listeners != null) {
 		    numListeners = listeners.length;
 		    //console.log("numListeners: " + numListeners);
@@ -1136,6 +1146,10 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 	return profileService.getProfileImageForCommentsAndDisplay(author);
     };
 
+    $scope.articles = [];
+
+    $scope.articlesTemp = [];
+
     $scope.$watch('categories', function(){
 	if($scope.categories && $scope.categories!=null) {
 	    var numCategories = 1;
@@ -1152,20 +1166,82 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 	    }
 	    
 	    for (i = 0; i < numCategories; i++) {
-		category = categories[i];
-		$http.get("/api/1.0/categories/" + getCategoryName(category) + "/articles?limit=" + num_articles_per_request, {headers: {"Content-Type": "application/json"}}) 
-		    .success( function(data) {
+		var category = categories[i];
+		var numServerCalls = 0;
+		$http.get("/api/1.0/categories/" + getCategoryName(category) + "/articles?limit=" + num_articles_per_request, {headers: {"Content-Type": "application/json"}, "category" : category}) 
+		    
+		    .success( function(data, status, headers, config) {
+			var category = config["category"];
+			numServerCalls = numServerCalls + 1;
+			var headerArticleAddedForCategory = false;
 			$.each(data, function (index, item) {
 			    if (commonOJService.indexOf($scope.articleIds, item.id) <= -1 ) {
 				$scope.articleIds.push(item.id);
 				$scope.articleInfos.push(item);
+				if (!headerArticleAddedForCategory) {
+				    headerArticleAddedForCategory = addHeaderArticle(item, category);
+				}
 			    }
 			});
+			if (numServerCalls == numCategories) {
+			    $scope.articles = $scope.articlesTemp;
+			}
 			//$scope.articleInfos = $scope.articleInfos.concat(data);
 		    });
 	    }	    
 	}
     });
+
+    var categoryIndexMap = {};
+
+    addHeaderArticle = function(article, category) {
+	var categoryName = getCategoryName(category);
+	//var numCategories = $scope.categories.length;
+	var numArticles = $scope.articlesTemp.length;
+	if (article.primary_image) {
+	    article.headerCategory = category;
+	    categoryIndex = getCategoryIndex(categoryName);
+	    if (categoryIndex < 0) {
+		return false;
+	    }
+	    if (numArticles == 0) {
+		$scope.articlesTemp.push(article);
+		return true;
+	    }
+	    for (var i=0; i < numArticles;  i++) {
+		var addedArticle = $scope.articlesTemp[i];
+		var addedArticleCategoryIndex = getCategoryIndex(getCategoryName(addedArticle.headerCategory));
+		if (categoryIndex < addedArticleCategoryIndex) {
+		    $scope.articlesTemp.splice(i,0, article);
+		    return true;
+		    //break;
+		}
+	    }
+	    $scope.articlesTemp.push(article);
+	    return true;
+	   
+	}
+	return false;
+    }
+
+    var getCategoryIndex = function(categoryName) {
+	if (categoryName in categoryIndexMap) {
+	    return categoryIndexMap[categoryName];
+	}
+	else {
+	    var numCategories = $scope.categories.length;
+	    for (var i = 0; i < numCategories; i++) {
+		var availableCategory = getCategoryName($scope.categories[i]);
+		if (categoryName == availableCategory) {
+		    categoryIndexMap[categoryName] = i;
+		    return i;
+		}
+	    }
+	}
+	return -1;
+    }
+
+    $scope.getCategoryIndex = getCategoryIndex;
 
     getCategoryName = function(category) {
 	if (!category) {
@@ -1178,6 +1254,8 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 
 	return category.name;
     }
+
+    $scope.getCategoryName = getCategoryName;
 
     numCalls = 0;
 
@@ -1214,14 +1292,48 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
     }
 
     createCategoriesMap = function(categories) {
-	categoriesMap = {};
-	numCategories = categories.length;
+	var categoriesMap = {};
+	var numCategories = categories.length;
 	for (i = 0; i < numCategories; i++) {
 	    category = categories[i];
 	    categoriesMap[category.name] = category;
 	}
 	return categoriesMap;
     }
+
+//    $scope.articles = 
+//	[ {"title" : "Celine's Third Law",
+//	   "image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Rummu_aherainem%C3%A4gi2.jpg/1024px-Rummu_aherainem%C3%A4gi2.jpg",
+//	   "author" : { 
+//               "user_image": "", 
+//               "first_name": "Vineet", 
+//               "last_name": "Saini", 
+//               "num_draft": null, 
+//               "user_role": "SuperEditor", 
+//               "author_name": "vineetsaini", 
+//               "invitation_count": 0, 
+//               "user_bio": null, 
+//               "email_address": "vineetsaini84@gmail.com", 
+//               "id": "10"
+//	   },
+//	   "categories" : ["Politics"]
+//	  },{"title" : "Price of Freedom",
+//	     "image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Prinzenbau%2C_24.jpg/1024px-Prinzenbau%2C_24.jpg",
+//	     "author" : {
+//               "user_image": "", 
+//               "first_name": "Dhruwat", 
+//               "last_name": "Bhagat", 
+//               "num_draft": null, 
+//               "user_role": "administrator", 
+//               "author_name": "ranubhai", 
+//               "invitation_count": 0, 
+//               "user_bio": null, 
+//               "email_address": "unitedronaldo@yahoo.com", 
+//               "id": "1"
+//	     },
+//	     "categories" : ["Identities"]
+//	   }];
+    
 
     
 });
@@ -1236,38 +1348,6 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 	$scope.navSubmenuCollapsed = false;
     }
 
-    $scope.articles = 
-	[ {"title" : "Celine's Third Law",
-	   "image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Rummu_aherainem%C3%A4gi2.jpg/1024px-Rummu_aherainem%C3%A4gi2.jpg",
-	   "author" : { 
-               "user_image": "", 
-               "first_name": "Vineet", 
-               "last_name": "Saini", 
-               "num_draft": null, 
-               "user_role": "SuperEditor", 
-               "author_name": "vineetsaini", 
-               "invitation_count": 0, 
-               "user_bio": null, 
-               "email_address": "vineetsaini84@gmail.com", 
-               "id": "10"
-	   },
-	   "categories" : ["Politics"]
-	  },{"title" : "Price of Freedom",
-	     "image": "http://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Prinzenbau%2C_24.jpg/1024px-Prinzenbau%2C_24.jpg",
-	     "author" : {
-               "user_image": "", 
-               "first_name": "Dhruwat", 
-               "last_name": "Bhagat", 
-               "num_draft": null, 
-               "user_role": "administrator", 
-               "author_name": "ranubhai", 
-               "invitation_count": 0, 
-               "user_bio": null, 
-               "email_address": "unitedronaldo@yahoo.com", 
-               "id": "1"
-	     },
-	     "categories" : ["Identities"]
-	   }];
     setCategories = function() {
 	$scope.categories = commonOJService.categories;
     }
@@ -1530,6 +1610,15 @@ testApp.controller('userProfileController', function($scope, $http, profileServi
 
     $scope.submitError = $scope.submitSuccess = "";
     $scope.showError = $scope.showSuccess = false;
+
+    $scope.hideError = function() {
+	$scope.showError = false;
+    }
+
+    $scope.hideSuccess = function() {
+	$scope.showSuccess = false;
+    }
+
     $scope.selectGender = function(gender) {
 	$scope.profilePreview.genderText = genderDict[gender]["text"];
 	$scope.profileForm.gender = gender;
@@ -1598,10 +1687,11 @@ testApp.controller('userProfileController', function($scope, $http, profileServi
 	imageData = profileService.getProfileImage($scope.userData);
 	//$scope.profileForm.image = imageData;
 	$scope.setPreviewImageOnInit(imageData);
+	$scope.profileForm.user_bio = $scope.userData.user_bio;
 	//$scope.profilePreview.selectedImage = profileService.getProfileImage($scope.userData);
     }
 
-    setUserData = function() {
+    setUserDataForUserSettings = function() {
 	$scope.userData = commonOJService.userData;
 	//$scope.profilePreview.selectedImage = profileService.getProfileImage($scope.userData);
 	$scope.populateForm();
@@ -1610,7 +1700,7 @@ testApp.controller('userProfileController', function($scope, $http, profileServi
     $scope.init = function() {
 	//$scope.selectedImage = profileService.getProfileImage(commonOJService.userData);
 	console.log("userProfileController.init()");
-	commonOJService.registerListeners("userData", "userProfileController-" + $scope.$id,  [setUserData], "yesWithData"); 
+	commonOJService.registerListeners("userData", "userProfileController-" + $scope.$id,  [setUserDataForUserSettings], "yesWithData"); 
 	//$scope.profile.selectedImage = "http://upload.wikimedia.org/wikipedia/commons/a/aa/Blank_user.svg";
 	$("#imageUpload").change($scope.previewImage);
 	$("#gravatarId").blur(checkGravatarIdAndInvalidateImageUpload);
@@ -1652,6 +1742,7 @@ testApp.controller('userProfileController', function($scope, $http, profileServi
 
 	submitDetails.gender = $scope.profileForm.gender;
 
+	submitDetails.user_bio = $scope.profileForm.user_bio;
 	if (form_errors.length > 0) {
 	    $scope.errorMessage = "The following fields are incorrect: " + form_errors;
 	    $scope.showError = true;
@@ -1690,6 +1781,10 @@ testApp.controller('userProfileController', function($scope, $http, profileServi
     
 });
 
+testApp.controller('publicProfileController', function($scope, commonOJService, profileService, $stateParams) {
+
+});
+
 testApp.controller('createArticleController', function($scope, $http, commonOJService, $location, $rootScope, $stateParams) {
 
     fieldsAccessForEditMode = {"topic" : ""};
@@ -1718,13 +1813,36 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	return true;
     }
 
+    var primaryImageExists = function(content) {
+	var contentDom = document.createElement( 'div' );
+	contentDom.innerHTML = content;
+	//var contentDom = new DOMParser().parseFromString(content, "text/xml");
+	var imgElements = contentDom.getElementsByTagName("img");
+	var numElements = imgElements.length;
+	for (var i = 0; i < numElements; i++ ) {
+	    var element = imgElements[i];
+	    var primaryAttr = element.getAttribute("primaryimage");
+	    if (primaryAttr == "true" )
+		return true;
+	}
+	return false;
+    }
+
     $scope.tinymceOptions = {
       // General options
       theme : "modern",
       width : "800px",
       height : "800px",
       plugins : ["advlist","autoresize","autosave","fullscreen","image","media","paste","preview",
-		 "searchreplace","spellchecker","visualblocks","visualchars","wordcount"]
+		 "searchreplace","spellchecker","visualblocks","visualchars","wordcount", "notwimageupload"],
+      toolbar: ["undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | notwimageupload | notwprimaryimage"],
+      paste_data_images: true, //http://stackoverflow.com/questions/21082723/tinymce-can-no-longer-drag-and-drop-images-after-upgrading-from-version-3-to-ver
+      convert_urls: false, //http://www.tinymce.com/tryit/url_conversion.php
+      extended_valid_elements: "@[primaryimage]", //http://stackoverflow.com/questions/5444677/wordpress-visual-editor-tinymce-how-to-preserve-custom-attributes
+      valid_elements: "@[primaryimage]," + //Your attributes HERE!!!
+      "a[name|href|target|title]," +
+      "#p,-ol,-ul,-li,br,img[src],-sub,-sup,-b,-i," +
+      "-span,hr",
 
     };
 
@@ -1768,6 +1886,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 		    $scope.slug= article.slug;
 		    $scope.excerpt = article.excerpt;
 		    $scope.articleAuthor = article.author;
+		    $scope.content = article.storytext;
 		    $scope.content = article.storytext;
 		    
 		} else {
@@ -1874,6 +1993,9 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     $scope.content = "";
 
+
+    $scope.originalContent = "";
+    
 
 
     $scope.activateItem = function(id) {
@@ -2051,15 +2173,40 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	
     }
     
+    var processBinaryImages = function() {
+	//alert("Hello");
+	console.log("Article Content:");
+	console.log($scope.content);
+	var elements = $($scope.content);
+	elements.find("img").each(function(index){
+	    if (this.src.startsWith("data:image") ) {
+		//alert("Image is comprised of Binary Data");
+		
+	    }
+
+	}); 
+	//alert(elements.find("img").length);
+    };
+
     $scope.submitArticle = function() {
-	validationResult = $scope.validateInputs();
+	//processBinaryImages();
+	//return;
+	var validationResult = $scope.validateInputs();
 	if (validationResult.error == true)
 	    return;
-	article = new Object();
+	if (($scope.status == "published" || $scope.status == "pending_review") && !primaryImageExists($scope.content)) {
+	    $scope.invalidateErrorDetails();
+	    $scope.setValidationErrorDetails("", "Opinion Content needs to have a primary image");
+	    $scope.contentFocus = true;	    
+	    return;
+	}
+	var article = new Object();
 	article.title = $scope.topic;
 	article.slug = $scope.slug;
 	article.excerpt = $scope.excerpt;
-	article.storytext = $scope.content;
+	if ($scope.content != $scope.originalContent) {
+	    article.storytext = $scope.content;
+	}
 	article.tags = $scope.getAllSelectedTags($scope.selectedTags, $scope.getSelectedValues($scope.popularTags));
 
 	article.categories = $scope.getSelectedValues(commonOJService.categories);
@@ -2087,6 +2234,10 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 		} else {
 		    $scope.mode = "edit";
 		    $scope.setSuccessMessage(data);
+		    if ("storytext" in data) {
+			$scope.content = data.storytext;
+			$scope.contentChangedAngular  = true;
+		    }
 		    
 		}
 		
@@ -2103,6 +2254,10 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
                 $scope.submitSuccess = true; $scope.showSuccess = true;
                 $scope.submitError = false; $scope.showError = false; 
 		$scope.setSuccessMessage(data);
+		if ("storytext" in data) {
+		    $scope.content = data.storytext;
+		    $scope.contentChangedAngular  = true;
+		}
             })
             .error(function(data) {
                 $scope.submitSuccess = false; $scope.showSuccess = false;
@@ -2374,22 +2529,190 @@ testApp.controller('userController', function($scope, $location, commonOJService
 
 });
 
-testApp.controller('userSettingsController', function($scope, $location, commonOJService) {
+testApp.controller('userSettingsController', function($scope, $location, $http, commonOJService) {
 
     $scope.sidebarArticleCapabilities = [];
 
+    $scope.successMessage = "";
+
+    $scope.errorMessage = "";
+
+    $scope.userData = null;
+
+    var setSettingsOnUi = function(data)  {
+	if ("code" in data && data.code == "unconfigured_default_settings") {
+	    
+	} else {
+	    $scope.articlesOwnActionsSettingsHidden = data.privacy_hide_own_articles;
+	    $scope.commentsOwnActionsSettingsHidden = data.privacy_hide_own_comments;
+	    $scope.votesOwnActionsSettingsHidden = data.privacy_hide_own_votes;
+	    if ($scope.articlesOwnActionsSettingsHidden  && $scope.commentsOwnActionsSettingsHidden
+		&& $scope.votesOwnActionsSettingsHidden) {
+		$scope.allOwnActionsSettingsHidden = true;
+	    }
+	 
+	    $scope.commentsOthersActionsSettingsHidden = data.privacy_hide_others_comments;
+	    $scope.repliesOthersActionsSettingsHidden = data.privacy_hide_others_replies;
+	    $scope.votesOthersActionsSettingsHidden = data.privacy_hide_others_votes;
+	    if ($scope.commentsOthersActionsSettingsHidden && $scope.repliesOthersActionsSettingsHidden
+		&& $scope.votesOthersActionsSettingsHidden) {
+		$scope.allOthersActionsSettingsHidden = true;
+	    }
+	}
+	$scope.settingsLoadSuccessful = true;
+    }
+
+    setLoadSettingsError = function() {
+	$scope.topErrorMessage = "Error loading settings";
+	$scope.settingsLoadSuccessful = false;
+    }
+    var setUserData = function(userData) {
+	if (commonOJService.isUserLoggedIn()) {
+	    $scope.userData = commonOJService.userData;
+	    $http.get('/api/1.0/authors/' + $scope.userData.id + '/settings')
+		.success(setSettingsOnUi).error(setLoadSettingsError);
+	}
+
+    }
+
     $scope.init = function() {
 	arrayCallables = [initSidebarCapabilities];
-	commonOJService.controllerInitOrRedirect(arrayCallables,$scope);
+	commonOJService.registerListeners("userData", "userSettingsController" + $scope.$id, [setUserData], "yesWithData");
+	//commonOJService.controllerInitOrRedirect(arrayCallables,$scope);
 
-        if (commonOJService.userData == null) {
-        	//$location.path("/accounts/login?login_redirect_url=/"); 
-        } else {
+        //if (commonOJService.userData == null) {
+        //	//$location.path("/accounts/login?login_redirect_url=/"); 
+        //} else {
+	//
+	//}
+    }
+
+    
+    $scope.ownActionsCollapsed = true;
+
+    $scope.ownActionsCollapseSymbol = "+";
+
+    $scope.othersActionsCollapsed = true;
+
+    $scope.othersActionsCollapseSymbol = "+";
+
+    $scope.handleOwnActionsCollapse = function() {
+	$scope.ownActionsCollapsed=!$scope.ownActionsCollapsed;
+	if ($scope.ownActionsCollapseSymbol == "+") {
+	    $scope.ownActionsCollapseSymbol = "-";
+	} else {
+	    $scope.ownActionsCollapseSymbol = "+";
+	}
+    }
+
+    $scope.handleOthersActionsCollapse = function() {
+	$scope.othersActionsCollapsed=!$scope.othersActionsCollapsed;
+	if ($scope.othersActionsCollapseSymbol == "+") {
+	    $scope.othersActionsCollapseSymbol = "-";
+	} else {
+	    $scope.othersActionsCollapseSymbol = "+";
+	}
+    }
+
+    $scope.handleAllOwnActionsSettingsChange = function() {
+	//alert("allOwnActionsSettingsHidden: " + $scope.allOwnActionsSettingsHidden);
+	if ($scope.allOwnActionsSettingsHidden !=true) {
+	    $scope.articlesOwnActionsSettingsHidden = true;
+	    $scope.commentsOwnActionsSettingsHidden = true;
+	    $scope.votesOwnActionsSettingsHidden = true;
+	} else {
+	    $scope.articlesOwnActionsSettingsHidden = false;
+	    $scope.commentsOwnActionsSettingsHidden = false;
+	    $scope.votesOwnActionsSettingsHidden = false;
+	}
+    }
+
+    $scope.handleAllOthersActionsSettingsChange = function() {
+	if ($scope.allOthersActionsSettingsHidden !=true) {
+	    $scope.commentsOthersActionsSettingsHidden = true;
+	    $scope.repliesOthersActionsSettingsHidden = true;
+	    $scope.votesOthersActionsSettingsHidden = true;
+	} else {
+	    $scope.commentsOthersActionsSettingsHidden = false;
+	    $scope.repliesOthersActionsSettingsHidden = false;
+	    $scope.votesOthersActionsSettingsHidden = false;
+	}
+    }
+
+    $scope.ownActionsSettingsNames = ['articlesOwnActionsSettingsHidden', 'commentsOwnActionsSettingsHidden', 'votesOwnActionsSettingsHidden'];
+    $scope.othersActionsSettingsNames = ['commentsOthersActionsSettingsHidden', 'repliesOthersActionsSettingsHidden', 'votesOthersActionsSettingsHidden'];
+
+    $scope.handleOwnActionsSettingsChange = function(settingsName) {
+	if ($scope[settingsName]) {
+	    $scope.allOwnActionsSettingsHidden = false;
+	} else {
+	    var allOwnActionsSettingsHidden = true;
+	    var numOwnActionsSettingsNames = $scope.ownActionsSettingsNames.length;
+	    for (var i = 0; i < numOwnActionsSettingsNames; i++ ) {
+		var availableSettingsName = $scope.ownActionsSettingsNames[i];
+		var availableSettingsValue = true;
+		if (availableSettingsName == settingsName) {
+		    availableSettingsValue = !$scope[availableSettingsName];
+		} else {
+		    availableSettingsValue = $scope[availableSettingsName];
+		}
+		if (!availableSettingsValue) {
+		    return;
+		}
+		
+	    }
+
+	    $scope.allOwnActionsSettingsHidden = true;
+	}
+    }
+
+    $scope.handleOthersActionsSettingsChange = function(settingsName) {
+	if ($scope[settingsName]) {
+	    $scope.allOthersActionsSettingsHidden = false;
+	} else {
+	    var numOthersActionsSettingsNames = $scope.othersActionsSettingsNames.length;
+	    for (var i = 0; i < numOthersActionsSettingsNames; i++ ) {
+		var availableSettingsName = $scope.othersActionsSettingsNames[i];
+		var availableSettingsValue = true;
+		if (availableSettingsName == settingsName) {
+		    availableSettingsValue = !$scope[availableSettingsName];
+		} else {
+		    availableSettingsValue = $scope[availableSettingsName];
+		}
+		if (!availableSettingsValue) {
+		    return;
+		}
+		
+
+	    }
+
+	    $scope.allOthersActionsSettingsHidden = true;
 
 	}
     }
 
-    
+    $scope.hideSuccess = function() {
+	$scope.showSuccess = false;
+    }
+
+    $scope.hideError = function() {
+	$scope.showError = false;
+    }
+
+
+    $scope.saveSettings = function() {
+	var submitForm = {};
+	submitForm.privacy_hide_own_articles = $scope.articlesOwnActionsSettingsHidden;
+	submitForm.privacy_hide_own_comments = $scope.commentsOwnActionsSettingsHidden;
+	submitForm.privacy_hide_own_votes = $scope.votesOwnActionsSettingsHidden;
+	submitForm.privacy_hide_others_comments = $scope.commentsOthersActionsSettingsHidden;
+	submitForm.privacy_hide_others_replies = $scope.repliesOthersActionsSettingsHidden;
+	submitForm.privacy_hide_others_votes = $scope.votesOthersActionsSettingsHidden;
+	$http.post('/api/1.0/authors/' + $scope.userData.id + '/settings', JSON.stringify(submitForm),
+					    {headers: {"Content-Type": "application/json"}})
+	    .success(function(data){setSettingsOnUi(data);$scope.successMessage = "Your account's settings have been updated successfully.";$scope.showSuccess = true;})
+	    .error(function(data) {$scope.errorMessage = "Your account's settings could not be updated successfully.";$scope.showError=true;});
+    }
 
 
     $scope.init();
@@ -2461,7 +2784,7 @@ var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, common
     $scope.errorMessage = "";
     $scope.loginFormData = {};
     $scope.signinCollapse = false;
-    $scope.signinModalHeading = "SIGN IN";
+    $scope.signinModalHeading = "OPINION JUNCTION - SIGN IN";
     $scope.signupCollapse = true;
 
     $scope.formFields = {"signinForm": [{"id":"id_login"},
@@ -2567,13 +2890,13 @@ var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, common
     $scope.openSignup = function() {
 	$scope.signinCollapse=true;
 	$scope.signupCollapse=false;
-	$scope.signinModalHeading = "SIGN UP";
+	$scope.signinModalHeading = "OPINION JUNCTION - SIGN UP";
     }
 
     $scope.openSignin = function() {
 	$scope.signinCollapse=false;
 	$scope.signupCollapse=true;
-	$scope.signinModalHeading = "SIGN IN";
+	$scope.signinModalHeading = "OPINION JUNCTION - SIGN IN";
     }
 
 
@@ -2712,7 +3035,16 @@ angular.module('ui.tinymce', [])
 		mode: 'exact',
 		elements: attrs.id,
 		height : "800px",
-		plugins : "advlist autoresize autosave fullscreen image media paste preview searchreplace spellchecker visualblocks visualchars wordcount"
+		plugins : "advlist autoresize autosave fullscreen image media paste preview searchreplace spellchecker visualblocks visualchars wordcount notwimageupload",
+		toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | notwimageupload | notwprimaryimage",
+		paste_data_images: true, //http://stackoverflow.com/questions/21082723/tinymce-can-no-longer-drag-and-drop-images-after-upgrading-from-version-3-to-ver
+		convert_urls: false, //http://www.tinymce.com/tryit/url_conversion.php
+		extended_valid_elements: "@[primaryimage]", //http://stackoverflow.com/questions/5444677/wordpress-visual-editor-tinymce-how-to-preserve-custom-attributes
+		valid_elements: "@[primaryimage]," + //Your attributes HERE!!!
+		"a[name|href|target|title]," +
+		    "#p,-ol,-ul,-li,br,img[src],-sub,-sup,-b,-i," +
+		    "-span,hr"
+
 
 	    };
 	    if (attrs.uiTinymce) {
@@ -2721,6 +3053,12 @@ angular.module('ui.tinymce', [])
 		expression = {};
 	    }
 	    angular.extend(options, uiTinymceConfig, expression);
+	    scope.$watch('contentChangedAngular', function() {
+		if (scope.contentChangedAngular == true) {
+		    scope.contentChangedAngular = false;
+		    tinymce.activeEditor.setContent(scope.content);
+		}
+	    });
 	    scope.$watch(attrs.uiTinymce, function(value) {
 		if (value){
 		    setTimeout(function() {
@@ -3003,7 +3341,7 @@ testApp.directive('commentsRoot', function($compile, $http, $modal, $timeout, co
 		    $scope.loginDiv.remove();
 		    $scope.loginDiv = null;
 		    $scope.commentMetaData = commentsService.getCommentMetaDataForReplyMain($scope);
-		    $compile('<div comment-meta-data="commentMetaData" comment-reply-main></div>')($scope, function(cloned, $scope) {
+		    $compile('<div comment-meta-data="commentMetaData" comment-reply-main></div><div class="comment-login-comments-gap"></div>')($scope, function(cloned, $scope) {
 			$element.prepend(cloned);
 		    });
 		}
@@ -3065,12 +3403,12 @@ testApp.directive('commentsRoot', function($compile, $http, $modal, $timeout, co
 		    }
 		});
 		if (!scope.isUserLoggedIn()) {
-		    $compile('<div comments-login></div>')(scope, function(cloned, scope) {
+		    $compile('<div comments-login></div><div class="comment-login-comments-gap"></div>')(scope, function(cloned, scope) {
 			scope.loginDiv = cloned;
 			elem.prepend(cloned);
 		    });
 		} else {
-		    $compile('<div comment-reply-main comment-meta-data="commentMetaData"></div>')(scope, function(cloned, $scope) {
+		    $compile('<div comment-reply-main comment-meta-data="commentMetaData"></div><div class="comment-login-comments-gap"></div>')(scope, function(cloned, $scope) {
 			elem.prepend(cloned);
 		    });
 		    
@@ -3130,7 +3468,10 @@ testApp.directive('ojCarousel', function(commonOJService) {
 		scope.$watch('carousel.currentSlide', function() {
 		    console.log("CarouselSlide Changed!");
 		    console.log(scope.carousel.indexOfSlide(scope.carousel.currentSlide));
-		    commonOJService.focusCategoryLink(scope.carousel.indexOfSlide(scope.carousel.currentSlide));
+		    var slideIndex = scope.carousel.indexOfSlide(scope.carousel.currentSlide);
+		    var articleCategoryName = scope.articles[slideIndex].headerCategory.name;
+		    var categoryIndex = scope.getCategoryIndex(articleCategoryName);
+		    commonOJService.focusCategoryLink(categoryIndex);
 		});
 		elem.on('slide.bs.carousel', function () {
 		    alert("Hello From Carousel");

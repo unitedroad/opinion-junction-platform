@@ -13,12 +13,12 @@
     </div>
     <div id="comment-content-container-{{comment.id}}" class="comment-content-container" >
       <div id="comment-author-box">
-	<a href="/user/{{comment.author.id}}" class="comment-author-image-container">
+	<a href="/profile/{{comment.author.id}}" class="comment-author-image-container">
 	  <img ng-src="{{getCommentImage(comment)}}" class="comment-author-image img-circle" class="img-circle"/>
 	</a>
 	<div class="comment-author-details-container">
           <div><small class="comment-time-text">{{comment.postedFriendlyString}}</small></div>
-	  <a href="/user/{{comment.author.id}}"><h5 class="comment-author-name-text">{{comment.author.name}}</h5></a>
+	  <a href="/profile/{{comment.author.id}}"><h5 class="comment-author-name-text">{{comment.author.name}}</h5></a>
 	</div>
       </div>
       <div id="comment-text-container-{{comment.id}}" class="comment-text-container comment-form-group" >

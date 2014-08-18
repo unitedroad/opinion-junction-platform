@@ -3,151 +3,154 @@
 
 </script>
 
-<div class="col col-lg-8">
-  <div class="jumbotron" id="jumbotron" collapse="invitationDivCollapse">
-    <h3>Creative Control</h3>
-    <p>You have been invited to share your opinion with us by writing your own piece.</p>
-    <p><a class="btn btn-primary btn-lg" role="button" ng-click="closeJumbo()">Ok, got it!</a></p>
-  </div>
-  <div id="submiterror" class="alert alert-danger" ng-show="submitError && showError">
-    {{ errorMessage }}
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideError()">&times;</button>
-  </div>
-  <div id="submitSuccess" class="alert alert-success" ng-show="submitSuccess && showSuccess">
-    {{ successMessage }}
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideSuccess()">&times;</button>
-  </div>
-  <div id="createarticlediv">
-    <h4>Write Article</h4>
-    <div id="titlediv" class="form-group" ng-class="topicSuccessClass">
-      <input id="articletitle" type="text" class="form-control" placeholder="Opinion Topic" ng-model="topic" 
-	     ng-disabled="mode == 'edit' && !editEnabled"></input>
-    </div>
-    <!--<br/> -->
-    <!-- <div style="padding-top:10px;" class="form-inline" ><p style="display:inline"><label class="control-label" for="slug"><b><strong>Slug: </strong></b></label> <input type="text" name="slug" class="form-control" ng-model="slug"/></p></div> -->
-    <div style="padding-top:10px;" class="input-group" ng-class="slugSuccessClass">
-      <span class="input-group-addon"><label class="control-label" style="margin-bottom:0px;" for="slug"><b><strong>Slug: </strong></b></label></span>
-      <input type="text" name="slug" class="form-control" ng-model="slug" ng-disabled="mode == 'edit' && !editEnabled"/>
-    </div>
-    <br/>
-    <div class="form-group" ng-class="excerptSuccessClass">
-      <label class="control-label" for="excerpt"><strong>Excerpt:</strong></label>
-      <textarea type="text" name="excerpt" id="excerpt" class="form-control" ng-model="excerpt" ng-disabled="mode == 'edit' && !editEnabled"/>
-    </div>
-    <br/>
-    <textarea ui-tinymce="authorWhoCanEditId"  name="content" id="content" ng-model="content" ng-focus="contentFocus" ng-disabled="mode == 'edit' && !editEnabled" class="form-control" style="width:100%" enabled="mode != 'edit' || editEnabled" options="tinymceOptions" initialised="{{initialised}}"
-	      articleContent="content" authorId="authorId"></textarea>
-    <br/>
-    <div class="input-group">
-    <button class="btn btn-primary" ng-click="submitArticle()">Submit</button>
-    </div>
-  </div>
-</div>
-<div class="col col-lg-2">
+<div class="createarticle-encompass">
+  <div class="createarticle-rightsidebar">
     <!--<div class="center-block well" style="background-color:#ffffff">
-      <h4>Categories</h4>
-   <div>
-      <input type="checkbox"/><p class="text-center" style="display:inline">Technology</p>
-    </div>
-    <div class="checkbox">
-o      <label>
-	<input type="checkbox" > Technology
-      </label>
-    </div>
-    <div class="checkbox">
-      <label>
-	<input type="checkbox" > Identities
-      </label>
-    </div>
--->
+	<h4>Categories</h4>
+	<div>
+	  <input type="checkbox"/><p class="text-center" style="display:inline">Technology</p>
+	</div>
+	<div class="checkbox">
+	  o      <label>
+	    <input type="checkbox" > Technology
+	  </label>
+	</div>
+	<div class="checkbox">
+	  <label>
+	    <input type="checkbox" > Identities
+	  </label>
+	</div>
+	-->
 
-<div class="panel panel-default">
-  <!-- Default panel contents -->
-  <div class="panel-heading">Status</div>
+    <div class="panel panel-default">
+      <!-- Default panel contents -->
+      <div class="panel-heading">Status</div>
 
 
-  <!-- List group -->
-  <div class="panel-body">
-    <div class="btn-group" dropdown>
-      <button type="button" class="btn btn-default"  ng-disabled="mode == 'edit' &&  !statusDropDownVisible">
-        {{ statusText }}
-        
-      </button>
-      <button type="button" class="btn btn-default dropdown-toggle" ng-disabled="mode == 'edit' && !statusDropDownVisible">
-        <span class="caret"></span>
-        <span class="sr-only" >Split button!</span>
-      </button>
-      <ul  class="dropdown-menu" role="menu" >
-        <li role="presentation" class="dropdown-header">Select Status</li>
-        
-	<li ng-repeat="allowedStatusValue in allowedStatusValuesMap"><a href="#"  ng-click="setStatus(allowedStatusValue)" >{{ getStatusValue(allowedStatusValue) }}</a></li>
+      <!-- List group -->
+      <div class="panel-body">
+	<div class="btn-group" dropdown>
+	  <button type="button" class="btn btn-default"  ng-disabled="mode == 'edit' &&  !statusDropDownVisible">
+            {{ statusText }}
+            
+	  </button>
+	  <button type="button" class="btn btn-default dropdown-toggle" ng-disabled="mode == 'edit' && !statusDropDownVisible">
+            <span class="caret"></span>
+            <span class="sr-only" >Split button!</span>
+	  </button>
+	  <ul  class="dropdown-menu" role="menu" >
+            <li role="presentation" class="dropdown-header">Select Status</li>
+            
+	    <li ng-repeat="allowedStatusValue in allowedStatusValuesMap"><a href="#"  ng-click="setStatus(allowedStatusValue)" >{{ getStatusValue(allowedStatusValue) }}</a></li>
+	  </ul>
+	</div>
+      </div>
+    </div>
+
+
+    <div class="panel panel-default">
+      <!-- Default panel contents -->
+      <div class="panel-heading">Categories</div>
+
+
+      <!-- List group -->
+      <ul  class="list-group">
+	<li class="list-group-item" ng-repeat="category in categories">  
+	  <div class="checkbox" style="margin-top:0px;margin-bottom:0px;">
+            <label style="display:inline">
+              <input type="checkbox" ng-model="category.selected" ng-click="checkboxClicked(category)" ng-disabled="mode == 'edit' && !editEnabled"> {{category.friendly_name}}
+            </label>
+	  </div>
+          
+	</li>
+
       </ul>
     </div>
-  </div>
-</div>
-
-
-<div class="panel panel-default">
-  <!-- Default panel contents -->
-  <div class="panel-heading">Categories</div>
-
-
-  <!-- List group -->
-  <ul  class="list-group">
-    <li class="list-group-item" ng-repeat="category in categories">  
-      <div class="checkbox" style="margin-top:0px;margin-bottom:0px;">
-        <label style="display:inline">
-          <input type="checkbox" ng-model="category.selected" ng-click="checkboxClicked(category)" ng-disabled="mode == 'edit' && !editEnabled"> {{category.friendly_name}}
-        </label>
-      </div>
-        
-    </li>
-
-  </ul>
-</div>
-<!-- <div class="panel panel-default" >
-  <div class="panel-heading">Tags</div>
-  <div class="panel-body"><p>Enter multiple tags by separating them with commas</p></div>
-  <div class="form-group" style="padding:15px;">
-  <input class="form-control" id="tags" ng-model="selectedTags"/>
-  </div>
-  
-</div>
--->
-
-<div class="panel panel-default">
-  <!-- Default panel contents -->
-  <div class="panel-heading">Tags</div>
-  <div class="panel-body"><p>Enter multiple tags by separating them with commas</p>
-    <div class="form-group" style="">
-      <input class="form-control ng-pristine ng-valid" id="tags" ng-model="selectedTags">
+    <!-- <div class="panel panel-default" >
+	 <div class="panel-heading">Tags</div>
+	 <div class="panel-body"><p>Enter multiple tags by separating them with commas</p></div>
+	 <div class="form-group" style="padding:15px;">
+	   <input class="form-control" id="tags" ng-model="selectedTags"/>
+	 </div>
+	 
     </div>
-    <div class="" style="">
-      <div class="panel panel-default" style="margin-bottom:0px;">
-  
-        <div class="center-block"><button type="button" class="btn btn-default form-control" ng-click="getPopularTags()" ng-disabled="mode == 'edit' && !editEnabled">Select most popular tags</button></div>
-<!--        <div class="panel-body" >
-	  <div class="checkbox" style="margin-top:0px;margin-bottom:0px;">
-	      <label>
-		    <input type="checkbox"> Politics
-		      </label>
-	      </div>
-        </div> -->
-<div collapse="popularTagsDivCollapse">
-  <ul  class="list-group" ng-show="showPopularTags">
-    <li class="list-group-item" ng-repeat="tag in popularTags">  
-      <div class="checkbox" style="margin-top:0px;margin-bottom:0px;" ng-disabled="mode == 'edit' && !editEnabled">
-        <label style="display:inline">
-          <input type="checkbox" ng-model="tag.selected" ng-click="checkboxClicked(tag)" ng-disabled="mode == 'edit' && !editEnabled"> {{tag.name}}
-        </label>
-      </div>
-        
-    </li>
+    -->
 
-  </ul>
-</div>
+    <div class="panel panel-default">
+      <!-- Default panel contents -->
+      <div class="panel-heading">Tags</div>
+      <div class="panel-body"><p>Enter multiple tags by separating them with commas</p>
+	<div class="form-group" style="">
+	  <input class="form-control ng-pristine ng-valid" id="tags" ng-model="selectedTags">
+	</div>
+	<div class="" style="">
+	  <div class="panel panel-default" style="margin-bottom:0px;">
+	    
+            <div class="center-block"><button type="button" class="btn btn-default form-control" ng-click="getPopularTags()" ng-disabled="mode == 'edit' && !editEnabled">Select most popular tags</button></div>
+	    <!--        <div class="panel-body" >
+			<div class="checkbox" style="margin-top:0px;margin-bottom:0px;">
+			  <label>
+			    <input type="checkbox"> Politics
+			  </label>
+			</div>
+            </div> -->
+	    <div collapse="popularTagsDivCollapse">
+	      <ul  class="list-group" ng-show="showPopularTags">
+		<li class="list-group-item" ng-repeat="tag in popularTags">  
+		  <div class="checkbox" style="margin-top:0px;margin-bottom:0px;" ng-disabled="mode == 'edit' && !editEnabled">
+		    <label style="display:inline">
+		      <input type="checkbox" ng-model="tag.selected" ng-click="checkboxClicked(tag)" ng-disabled="mode == 'edit' && !editEnabled"> {{tag.name}}
+		    </label>
+		  </div>
+		  
+		</li>
+
+	      </ul>
+	    </div>
+	  </div>
+	</div>
       </div>
     </div>
   </div>
-</div>
+  <div class="createarticle-maindiv">
+    <div class="jumbotron" id="jumbotron" collapse="invitationDivCollapse">
+      <h3>Creative Control</h3>
+      <p>You have been invited to share your opinion with us by writing your own piece.</p>
+      <p><a class="btn btn-primary btn-lg" role="button" ng-click="closeJumbo()">Ok, got it!</a></p>
+    </div>
+    <div id="submiterror" class="alert alert-danger" ng-show="submitError && showError">
+      {{ errorMessage }}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideError()">&times;</button>
+    </div>
+    <div id="submitSuccess" class="alert alert-success" ng-show="submitSuccess && showSuccess">
+      {{ successMessage }}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideSuccess()">&times;</button>
+    </div>
+    <div id="createarticlediv">
+      <h4>Write Article</h4>
+      <div id="titlediv" class="form-group" ng-class="topicSuccessClass">
+	<input id="articletitle" type="text" class="form-control" placeholder="Opinion Topic" ng-model="topic" 
+	       ng-disabled="mode == 'edit' && !editEnabled"></input>
+      </div>
+      <!--<br/> -->
+      <!-- <div style="padding-top:10px;" class="form-inline" ><p style="display:inline"><label class="control-label" for="slug"><b><strong>Slug: </strong></b></label> <input type="text" name="slug" class="form-control" ng-model="slug"/></p></div> -->
+      <div style="padding-top:10px;" class="input-group" ng-class="slugSuccessClass">
+	<span class="input-group-addon"><label class="control-label" style="margin-bottom:0px;" for="slug"><b><strong>Slug: </strong></b></label></span>
+	<input type="text" name="slug" class="form-control" ng-model="slug" ng-disabled="mode == 'edit' && !editEnabled"/>
+      </div>
+      <br/>
+      <div class="form-group" ng-class="excerptSuccessClass">
+	<label class="control-label" for="excerpt"><strong>Excerpt:</strong></label>
+	<textarea type="text" name="excerpt" id="excerpt" class="form-control" ng-model="excerpt" ng-disabled="mode == 'edit' && !editEnabled"/>
+      </div>
+      <br/>
+      <textarea ui-tinymce="authorWhoCanEditId"  name="content" id="content" ng-model="content" ng-focus="contentFocus" ng-disabled="mode == 'edit' && !editEnabled" class="form-control" style="width:100%" enabled="mode != 'edit' || editEnabled" options="tinymceOptions" initialised="{{initialised}}"
+		articleContent="content" authorId="authorId"></textarea>
+      <br/>
+      <div class="input-group">
+	<button class="btn btn-primary" ng-click="submitArticle()">Submit</button>
+      </div>
+    </div>
+  </div>
+
 </div>

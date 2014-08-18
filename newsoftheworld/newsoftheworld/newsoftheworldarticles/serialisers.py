@@ -64,6 +64,7 @@ class ArticleSerialiser(serializers.Serializer):
     status = serializers.CharField()
     storytext = serializers.CharField()
     storyplaintext = serializers.CharField()
+    primary_image = serializers.CharField()
     excerpt = serializers.CharField()
     slug = serializers.CharField()
     tags = SetField()
@@ -107,3 +108,12 @@ class MetadataSerialiser(serializers.Serializer):
     name = serializers.CharField()
     friendly_name = serializers.CharField()
     entry_type = serializers.CharField()
+
+class Author_SettingsSerialiser(serializers.Serializer):
+    author_id = serializers.CharField()
+    privacy_hide_own_articles = serializers.BooleanField()
+    privacy_hide_own_comments = serializers.BooleanField()
+    privacy_hide_own_votes = serializers.BooleanField()
+    privacy_hide_others_comments = serializers.BooleanField()
+    privacy_hide_others_replies = serializers.BooleanField()
+    privacy_hide_others_votes = serializers.BooleanField()

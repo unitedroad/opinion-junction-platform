@@ -122,7 +122,11 @@ body { padding-top: 50px; }
 }
 */
 
-#mce_44 iframe { /* tinymce edit */
+#mce_49 iframe { /* tinymce edit */
+    min-height:503px;
+}
+
+.mce-content-body { /* tinymce edit */
     min-height:503px;
 }
 
@@ -150,4 +154,123 @@ body { padding-top: 50px; }
 .signin-modal-body {
     padding-left:30px;
     padding-right: 30px;
+}
+
+.main-page-article-author-section {
+    border-bottom:1px solid #E0E0E0;
+}
+.main-page-article-author-text {
+    font-weight: 500;
+}
+
+.main-page-article-section {
+    margin-top: 25px;
+}
+
+.main-page-articles-header {
+    width:100%;
+    border-bottom:1px solid #A0A0A0;
+}
+
+.main-page-comments-header {
+    width: 100%;
+    border-bottom:1px solid #A0A0A0;
+
+}
+
+.article-comments-header {
+    width:100%;
+    border-bottom:1px solid #A0A0A0;
+    border-top:1px solid #A0A0A0;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
+.article-author-bio-section {
+    width:100%;
+    border-top:1px solid #E0E0E0;
+    min-height:100px; 
+    margin-top:40px;
+    padding-top:30px;
+    padding-left:30px;
+    margin-bottom:30px;
+}
+
+.article-author-bio-text-section {
+    line-height: 150%; 
+    margin-left: 10px;
+    max-width:960px;
+}
+
+.article-content-section {
+    line-height: 160%;
+    font-size: 15px;
+}
+
+.usersidebar {
+    width:250px;
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display:table-cell;
+    vertical-align: top;
+}
+
+.createarticle-rightsidebar {
+    /*float: none;
+    overflow: hidden;
+    padding-right:10px; 
+    /*http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width*/
+    /*vertical-align: top;
+    display:table-cell;*/
+    margin-left:10px;
+    margin-right:10px;
+    width: 300px;
+    float:right;/*http://stackoverflow.com/questions/18277732/make-left-div-take-up-remaining-width-without-swapping-elements?rq=1*/
+}
+
+.createarticle-encompass {
+    float: none;
+    overflow: hidden;
+    /*http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width*/
+    /*display:table-cell;
+    vertical-align: top;*/
+}
+
+.createarticle-maindiv {
+    float: none;
+    overflow: hidden;
+    /*display:table-cell;
+    vertical-align: top;*/
+}
+
+.profile-encompass, .articleslist-encompass, .usersettings-encompass {
+    float: none;
+    overflow: hidden;
+    max-width: 1400px;
+    margin-right:10px
+}
+
+.articleslist-encompass {
+    max-width: 2000px !important;
+}
+
+.usersettings-privacy-section {
+    /*padding-top:20px*/
+}
+
+.usersettings-expand-link {
+    text-decoration: underline;
+}
+
+.usersettings-expand-form-group {
+    height: auto;
+    margin-top: 20px;
+
+}
+
+.usersettings-form-group {
+    margin-bottom: 30px;
 }

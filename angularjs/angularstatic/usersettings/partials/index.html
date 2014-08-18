@@ -1,27 +1,102 @@
-<div class="col col-md-2">
+<!--<div class="col col-md-2">
 <ng-include src="'/angularstatic/acentral/partials/articlesidebar.html'"></ng-include> 
+</div> -->
+<div class="usersettings-encompass">
+  <div ng-show="!settingsLoadSuccessful">
+    {{topErrorMessage}}
+  </div>
+  <div ng-show="settingsLoadSuccessful">
+    <div id="submiterror" class="alert alert-danger" ng-show="showError">
+      {{ errorMessage }}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideError()">&times;</button>
+    </div>
+    <div id="submitSuccess" class="alert alert-success" ng-show="showSuccess">
+      {{ successMessage }}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideSuccess()">&times;</button>
+    </div>
+    <div class="usersettings-privacy-section"><h4>Privacy Settings</h4>
+      <div class="usersettings-form-group">
+	<div class="">
+	  <label>Hide your actions from others (Enabling this will delete all your activity logs which cannot be recovered. Your opinions and comments will stay intact.)
+	    <input type="checkbox" ng-model="allOwnActionsSettingsHidden" ng-click="handleAllOwnActionsSettingsChange()"/>
+	  </label>
+	</div>
+	<div class="">
+	  <a class="usersettings-expand-link" ng-click="handleOwnActionsCollapse()">Manage these settings at more granular level {{ownActionsCollapseSymbol}}</a>
+	</div>
+	<div collapse="ownActionsCollapsed" class="usersettings-expand-form-group">
+	  <div>
+	    <label>Hide your articles from your Profile activity log.
+	      <input type="checkbox" ng-model="articlesOwnActionsSettingsHidden" ng-click="handleOwnActionsSettingsChange('articlesOwnActionsSettingsHidden')"/>
+	    </label>
+	  </div>
+	  <div>
+	    <label>Hide your comments from your Profile activity log.
+	      <input type="checkbox" ng-model="commentsOwnActionsSettingsHidden" ng-click="handleOwnActionsSettingsChange('commentsOwnActionsSettingsHidden')"/>
+	    </label>
+	  </div>
+	  <div>
+	    <label>Hide your votes from your Profile activity log.
+	      <input type="checkbox" ng-model="votesOwnActionsSettingsHidden" ng-click="handleOwnActionsSettingsChange('votesOwnActionsSettingsHidden')"/>
+	    </label>
+	  </div>
+	</div>
+      </div>
+      <div class="usersettings-form-group">
+	<div class="">
+	  <label>
+	    Hide others' actions on your opinions and comments (Enabling this will delete all the logs of their actions on your opinions and comments. 
+	    These logs cannot be recovered.)
+	    <input type="checkbox" ng-model="allOthersActionsSettingsHidden" ng-click="handleAllOthersActionsSettingsChange()"/>
+	  </label>
+	</div>
+	<div class="">
+	  <a class="usersettings-expand-link" ng-click="handleOthersActionsCollapse()">
+	    Manage these settings at more granular level {{othersActionsCollapseSymbol}}
+	  </a>
+	</div>
+	<div collapse="othersActionsCollapsed" class="usersettings-expand-form-group">
+	  <div>
+	    <label>Hide others direct comments on your opinions from your Profile activity log.
+	      <input type="checkbox" ng-model="commentsOthersActionsSettingsHidden" ng-click="handleOthersActionsSettingsChange('commentsOthersActionsSettingsHidden')"/>
+	    </label>
+	  </div>
+	  <div>
+	    <label>Hide others replies on your comments from your Profile activity log.
+	      <input type="checkbox" ng-model="repliesOthersActionsSettingsHidden" ng-click="handleOthersActionsSettingsChange('repliesOthersActionsSettingsHidden')"/>
+	    </label>
+	  </div>
+	  <div>
+	    <label>Hide others votes on your opinions and comments from your Profile activity log.
+	      <input type="checkbox" ng-model="votesOthersActionsSettingsHidden" ng-click="handleOthersActionsSettingsChange('votesOthersActionsSettingsHidden')"/>
+	    </label>
+	  </div>
+	</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary" ng-click="saveSettings()">Save Changes</button>
+    </div>
+  </div>
 </div>
-<div class="col col-lg-8">
-</div>
-
-<!--  <li id="articleli" ng-click="activateItem('articleli'); isArticleDivCollapsed = !isArticleDivCollapsed" data-ng-class="navClass('articleli')">
+  <!--  <li id="articleli" ng-click="activateItem('articleli'); isArticleDivCollapsed = !isArticleDivCollapsed" data-ng-class="navClass('articleli')">
         
-      <a ng-href=""> Article</a>
+	<a ng-href=""> Article</a>
   </li>
 
   <div collapse="isArticleDivCollapsed">
     <div class="well well-sm">
       <ul class="nav nav-pills nav-stacked">
         <li id="createArticleli" ng-click="activateItem('createArticleli')" 
-        data-ng-class="navClass('createArticleli')">
+            data-ng-class="navClass('createArticleli')">
 	  <a ng-href="">Create Article</a>
 	</li>
 	<li id="allArticlesli" ng-click="activateItem('allArticlesli')" 
-        data-ng-class="navClass('allArticlesli')">
+            data-ng-class="navClass('allArticlesli')">
 	  <a ng-href="">All Articles</a>
 	</li>
       </ul>
     </div>
   </div>
   
--->
+  -->

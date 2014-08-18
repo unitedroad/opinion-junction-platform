@@ -1,14 +1,16 @@
 <ui-include src="'/angularstatic/acentral/partials/carousel.html'" fragment="topBannerFragment"></ui-include>
 <section class="container">
   <div class="col-md-10 col-lg-9">
-  <h4 class="text-center">Latest Opinions</h4>
-  <article ng-repeat="article in articleInfos" class="col col-lg-12">
+    <div class="main-page-articles-header">
+      <h4 class="text-center">Latest Opinions</h4>
+    </div>
+  <article ng-repeat="article in articleInfos" class="col col-md-12 col-lg-12 main-page-article-section">
       <div class="col-md-2 col-lg-2">
 	<a href="#" class="thumbnail">
 	  <img data-src="holder.js/100%x180" src="http://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Aircraft_Rescue_Firefighting_training.jpg/320px-Aircraft_Rescue_Firefighting_training.jpg" alt="...">
 	</a>
       </div>
-      <div >
+      <div class="col-md-10 col-lg10">
 	<div><small>{{get_category_friendly_name_string(article)}}</small></div>
 	<div>
 	  <h4 class="articlepreviewheadline"><a ng-href="/article/{{article.id}}/{{article.slug}}" class="articleheaderlink">{{article.title}}</a></h4>
@@ -16,15 +18,17 @@
 	<div>
 	  <h4><small><p>{{article.excerpt}}</p></small></h4>
 	</div>
-	<div>
-	  <small><p>{{getAuthorName(article.author)}}</p></small>
+	<div class="main-page-article-author-section">
+	  <small><p class="main-page-article-author-text">{{getAuthorName(article.author)}}</p></small>
 	</div>
       </div>      
    
   </article>
   </div>
-  <div>
-  <h4 >Latest Comments</h4>
+  <div class="col-md-2 col-lg-3">
+    <div class="main-page-comments-header">
+      <h4 class="text-center">Latest Comments</h4>
+    </div>
   <article ng-repeat="comment in latest_comments" class="comment-main-page">
 
     <div class="comment-author-image-container-mainpp">
@@ -32,13 +36,14 @@
     </div>
     <div>
       <div>
-	<h5 >
+	<h5 class="comment-text-main-page">
 	  <a ng-href="/article/{{comment.discussion_id}}/comment-{{comment.id}}" class="articleheaderlink">{{comment.text}}</a>
 	</h5>
       </div>
       <div>
 	<small><p>{{comment.author.name}}</p></small>
       </div>
+      <div class="clearfix"></div>
     </div>   
    
   </article>

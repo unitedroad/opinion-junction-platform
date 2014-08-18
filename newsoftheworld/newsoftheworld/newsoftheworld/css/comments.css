@@ -22,6 +22,7 @@
 
 .comment-form-group {
     margin-bottom: 10px;
+    padding-top:10px;
 }
 
 .comment-box-container {
@@ -44,10 +45,20 @@
 
 .comment-author-image-container {
     margin-right:10px;
+    float:left;
+}
+
+.comment-author-details-container {
+    margin-left:50px;
+}
+
+.comment-time-text {
+    color: #999;
 }
 
 .comment-author-image {
-    width:40px;
+    width:50px;
+    max-height:80px;
 }
 
 .comment-author-name-text {
@@ -61,5 +72,27 @@
 }
 
 .comment-main-page {
-    margin-bottom:20px;
+    /*margin-bottom:20px;*/
+    margin-top:25px;
+    /*border-bottom: 1px solid #E0E0E0;*/
+    padding-bottom: 10px;
 }
+
+.comment-text-main-page {
+    border-bottom: 1px solid #E0E0E0;
+    margin-left: 60px;
+    padding-bottom: 4px;
+}
+
+.comments-encompass-container {
+    margin-top: 20px;
+}
+
+.comment-login-comments-gap {
+    width:100%;
+    height:20px;
+}
+
+/*.comment-reply-creation-container {
+    height:69px !important;
+}*/

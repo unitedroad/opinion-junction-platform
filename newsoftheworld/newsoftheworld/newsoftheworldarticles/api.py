@@ -4,9 +4,11 @@ import sys
 from .models import Article
 from .models import Author
 from .models import Metadata
+from .models import Author_Settings
 from .serialisers import ArticleSerialiser
 from .serialisers import AuthorSerialiser
 from .serialisers import MetadataSerialiser
+from .serialisers import Author_SettingsSerialiser
 from . import util
 #from . import db
 #from .serialisers import AuthorSerialiser2
@@ -72,7 +74,19 @@ class ArticlesList(APIView):
 
         article.title = request.DATA["title"]
                     
-        article.storytext = request.DATA["storytext"]
+        #article.storytext = request.DATA["storytext"]
+        if "storytext" in request.DATA and request.DATA["storytext"] is not None:
+            #article.storytext = util.save_binary_images_in_content(article, request.DATA["storytext"])
+            article.storytext = request.DATA["storytext"]
+            if article.status == "published" or article.status == "pending_review":
+                result = util.save_binary_images_in_content(article, article.storytext)
+                if "ok" in result and result["ok"] == "false":
+                    return Response(result, status = status.HTTP_400_BAD_REQUEST)
+            permission_check["storytext"] = article.storytext
+        else:
+            article.storytext = ""
+
+
         if "storyplaintext" in request.DATA and request.DATA["storyplaintext"] is not None:
             article.storyplaintext = request.DATA["storyplaintext"]
         article.excerpt = request.DATA["excerpt"]
@@ -81,6 +95,8 @@ class ArticlesList(APIView):
         article.categories = request.DATA[u"categories"]
 
         article.save()
+
+        
 
         permission_check["articleid"] = str(article.id)
         permission_check["message"] = "Successfully Submitted your Opinion!"
@@ -177,8 +193,17 @@ class ArticlesPost(APIView):
                 article.published_date = datetime.datetime.now()
     
             article.title = request.DATA["title"]
-                        
-            article.storytext = request.DATA["storytext"]
+
+            if "storytext" in request.DATA and request.DATA["storytext"] is not None:
+                article.storytext = request.DATA["storytext"]
+                if article.status == "published" or article.status == "pending_review":
+                    if util.find_primary_image(article.storytext) == False:
+                        return Response({"ok" : "false", "code" : "no_primary_image", "message" : "Primary image not defined!"}, status = status.HTTP_400_BAD_REQUEST)
+            else:
+                article.storytext = ""
+                if article.status == "published" or article.status == "pending_review":
+                    return Response({"ok" : "false", "code" : "no_primary_image", "message" : "Primary image not defined!"}, status = status.HTTP_400_BAD_REQUEST)
+
             if "storyplaintext" in request.DATA and request.DATA["storyplaintext"] is not None:
                 article.storyplaintext = request.DATA["storyplaintext"]
             article.excerpt = request.DATA["excerpt"]
@@ -191,13 +216,22 @@ class ArticlesPost(APIView):
             article.author = author
             article.save()
 
+            if article.storytext:
+                result = util.save_binary_images_in_content(article, article.storytext)
+                if "ok" in result and result["ok"] == "false":
+                    return Response(result, status = status.HTTP_400_BAD_REQUEST)
+                permission_check["storytext"] = article.storytext
+            article.save()
+
+
             permission_check["articleid"] = str(article.id)
             permission_check["message"] = "Successfully Submitted your Opinion!"
             return Response(permission_check, status = status.HTTP_200_OK)
             
         except Exception as e:
             print "Exception in articlespost: " + str(e)
-            return Response({"ok" : "false" }, status = status.HTTP_500_INTERNAL_SERVER_ERROR )
+            print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2]))
+            return Response({"ok" : "false",  "message" : str(e) }, status = status.HTTP_500_INTERNAL_SERVER_ERROR )
     
 
 class ArticlesByCategory(APIView):
@@ -425,3 +459,57 @@ class CategoriesList(APIView):
         metadata.num_user = 0
         metadata.save()
         return Response({"ok":"true"})
+
+class AuthorsSettings(APIView):
+
+    permission_classes = [
+        permissions.IsAuthenticated
+        #permissions.AllowAny
+    ]
+    
+    def get(self, request,  authorid, format=None):
+        #print "request.user.id: " + str(request.user.id)
+        if str(request.user.id) != authorid:
+            return Response({"ok":"false","code":"other_user_details_not_allowed","message":"You cannot view settings of other authors"}, status=status.HTTP_403_FORBIDDEN)
+        author_settings_array = Author_Settings.objects(author_id=authorid)
+        if len(author_settings_array) > 0:
+            author_settings = author_settings_array[0]
+            serialisedList = Author_SettingsSerialiser(author_settings, many=False)
+            return Response(serialisedList.data)
+        else:
+            author_array = Author.objects(id=authorid)
+            if len(author_array) > 0:
+                return Response({"ok":"true","code":"unconfigured_default_settings","message":"Settings not configured, using default"})
+            else:
+                return Response({"ok":"false","code":"user_does_not_exist","message":"User does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request,  authorid, format=None):
+        if str(request.user.id) != authorid:
+            return Response({"ok":"false","code":"other_user_details_not_allowed","message":"You cannot modify settings of other authors"}, status=status.HTTP_403_FORBIDDEN)
+        author_settings_array = Author_Settings.objects(author_id=authorid)
+        author_settings = None
+        if len(author_settings_array) > 0:
+            author_settings = author_settings_array[0]
+        else:
+            author_settings = Author_Settings()
+        #print str(author_settings.privacy_hide_own_articles)
+        author_settings.author_id = authorid
+        if "privacy_hide_own_articles" in request.DATA:
+            author_settings.privacy_hide_own_articles = request.DATA["privacy_hide_own_articles"]
+        if "privacy_hide_own_comments" in request.DATA:
+            author_settings.privacy_hide_own_comments = request.DATA["privacy_hide_own_comments"]
+        if "privacy_hide_own_votes" in request.DATA:
+            author_settings.privacy_hide_own_votes = request.DATA["privacy_hide_own_votes"]
+        if "privacy_hide_others_comments" in request.DATA:
+            author_settings.privacy_hide_others_comments = request.DATA["privacy_hide_others_comments"]
+        if "privacy_hide_others_replies" in request.DATA:
+            author_settings.privacy_hide_others_replies = request.DATA["privacy_hide_others_replies"]
+        if "privacy_hide_others_votes" in request.DATA:
+            #author_settings.privacy_hide_others_votes = util.convert_string_to_boolean(request.DATA["privacy_hide_others_votes"])
+            author_settings.privacy_hide_others_votes = request.DATA["privacy_hide_others_votes"]
+
+        author_settings.save()
+        
+        serialisedList = Author_SettingsSerialiser(author_settings, many=False)
+        return Response(serialisedList.data)
+

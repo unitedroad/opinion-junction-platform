@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import hashlib
+import time
 from newsoftheworld import settings
 from .models import Article
 from .models import Author
@@ -12,11 +13,15 @@ from allauth.account.signals import user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 import django.dispatch
+from lxml import etree, html
 
 LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
+LOCATION_ARTICLE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojarticleimages')
 URL_PROFILE_IMAGES = settings.MEDIA_URL + 'ojprofileimages/' 
+URL_ARTICLE_IMAGES = settings.MEDIA_URL + 'ojarticleimages/' 
 
 profile_updated = django.dispatch.Signal(providing_args=["id", "fields"])
+log_user_activity = django.dispatch.Signal(providing_args=["type", "id", "userid_from", "userid_to"])
 
 def check_valid_object_id(**kwargs):
     if "id" in kwargs:
@@ -203,7 +208,7 @@ def get_articles_by_categories(categories, GET):
     
     for category in categories:
         print "category.name: " + category.name
-        articlesByCategory = Article.objects(categories__contains=category.name)
+        articlesByCategory = Article.objects(categories__contains=category.name).order_by('-published_date')
         if 'limit_pc' in GET and is_number(GET['limit_pc']):
            articlesByCategory = articlesByCategory.limit(int(GET['limit_pc']))
         articlesByCategories.extend(articlesByCategory)
@@ -211,7 +216,7 @@ def get_articles_by_categories(categories, GET):
     return articlesByCategories
 
 def get_articles_by_category(category, GET):
-    articlesByCategory = Article.objects(categories__contains=category).filter(status='published').exclude("storytext","storyplaintext","tags")
+    articlesByCategory = Article.objects(categories__contains=category).filter(status='published').exclude("storytext","storyplaintext","tags").order_by('-published_date')
     if 'after' in GET:
         articlesByCategory = articlesByCategory.filter(id__gt=GET['after'])
 
@@ -328,7 +333,7 @@ def change_profile(user, data):
             image = process_image(user, data)
             
             author.image = image
-            updated_fields.append("image") #tracking image changes not easy, we shouldcontrol this at client end
+            updated_fields.append("image") #tracking image changes not easy, we should control this at client end
 
 
         if "gender" in data:
@@ -336,6 +341,11 @@ def change_profile(user, data):
             if author.gender != gender:
                 author.gender = gender
                 updated_fields.append("gender")
+
+        if "user_bio" in data:
+            user_bio = data["user_bio"]
+            author.user_bio = user_bio
+            updated_fields.append(user_bio)
 
         user.save()
         author.save()
@@ -346,3 +356,89 @@ def change_profile(user, data):
 
 #def get_friendly_name(author):
 #    return author.first_name + " " + author.last_name
+
+def process_article_image_self_hosted(articleid, image_data, extension):
+    directory = os.path.join(LOCATION_ARTICLE_IMAGES, articleid)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    file_name = str(os.getpid()) + str(int(round(time.time() * 1000))) + "." + extension
+
+
+    with open(os.path.join(directory, file_name), "wb") as file_handler:
+        file_handler.write(image_data.decode('base64'))
+    return file_name
+
+def get_article_image_url(articleid, image_name):
+    return URL_ARTICLE_IMAGES + articleid + "/" + image_name
+
+
+
+def find_primary_image(content):
+    root = html.fromstring(content)
+    img_elements = root.findall('.//img')
+    for img_element in img_elements:
+        #print img_element.src
+        primary_image_attrib = img_element.attrib.get("primaryimage")
+        if primary_image_attrib == "true":
+            return True
+    return False
+
+def save_binary_images_in_content(article, content, **kwargs):
+    articleid = str(article.id)
+    article.primary_image = None
+    root = html.fromstring(content)
+    img_elements = root.findall('.//img')
+    for img_element in img_elements:
+        #print img_element.src
+        #for attr in img_element.attrib:
+        #    print attr
+        src = img_element.attrib.get("src")
+        #print "src: " + str(src)
+        if src.startswith("data:image/"):
+            image_extension = re.search("(?<=data:image/).*(?=;base64)", src).group(0)
+            image_data = re.sub("^.*,","",src)
+            saved_image_name = process_article_image_self_hosted(articleid, image_data, image_extension)
+            img_element.attrib["src"] = get_article_image_url(articleid, saved_image_name)
+        
+        primary_image_attrib = img_element.attrib.get("primaryimage")
+
+        if primary_image_attrib == "true":
+            article.primary_image = img_element.attrib.get("src")
+        
+    if article.primary_image is None:
+        return {"ok" : "false", "code": "no_primary_image", "message" : "Primary image not defined!"} 
+
+        #file_handler.write(src.decode('base64'))
+    #print len(img_elements)
+    article.storytext = html.tostring(root, pretty_print=True)
+    return {"ok": "true"}
+
+
+def convert_string_to_boolean(string):
+    if string and string.lower() == "true":
+        return True
+    return False
+
+def create_article(article=None, **kwargs):
+    user = kwargs["user"]
+    articleid = None
+    if article is None:
+        if "articleid" not in kwargs:
+            return
+        else:
+            articleid = kwargs["articleid"]
+    else:
+        articleid = article.id
+        
+    log_user_activity.send(sender=create_article, id=articleid, userid_to=user.id, userid_from=None)
+
+@receiver(log_user_activity, dispatch_uid="102")
+def update_article_creation_log(id, userid_to, userid_from, **kwargs):
+    activity_records = Author_Activity.objects(author_id=id)
+    activity_record = None
+    if len(activity_records) > 0:
+        activity_record = activity_records[0]
+    else:
+        activity_record = Author_Activity()
+    #activity_record = 

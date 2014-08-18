@@ -1,72 +1,78 @@
-<div class="col col-sm-8 col-md-8 col-lg-6">
+<div class="profile-encompass">
 <!--{{message}}-->
   <h4>
   Your Profile
   </h4>
   <br/>
-
-  <div id="submiterror" class="alert alert-danger" ng-show="showError">
-    {{ errorMessage }}
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideError()">&times;</button>
-  </div>
-  <div id="submitSuccess" class="alert alert-success" ng-show="showSuccess">
-    {{ successMessage }}
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideSuccess()">&times;</button>
-  </div>
-
-  <div class="form-group">
-    <a ng-click="selectImage()">
-      <img ng-src="{{profilePreview.selectedImage}}" class="img-responsive" style="height:200px" 
-	   alt="{{profilePreview.imageAltText}}" tooltip="{{profilePreview.imageTooltip}}"/>
-    </a>
-  </div>
-  <div class="form-group">
-    <label>Upload New Picture:</label>
-    <small class="gravatar-warning">The image should not be more than 2 MP in file size. You have to press submit below to upload the new image.</small>
-    <input type="file" id="imageUpload" ></input>
-  </div> <!-- Code to stylise file input fields like bootstrap http://gregpike.net/demos/bootstrap-file-input/demo.html -->
-  <div class="form-group">
-   <label> Or </label>
-  </div>
-  <div class="form-group" ng-class="formClasses.gravatarId">
-   <label> Enter your gravatar id to fetch your profile pic from (recommended): 
-     <span style="color:darkred" ng-class="profilePreview.gravatarErrorClass">You have entered incorrect gravatar id!</span>
-   </label>
-   <small class="gravatar-warning">This will override any previously uploaded image.</small>
-   <!-- <input type="text" class="form-control" placeholder="e.g. http://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50"> -->
-   <input type="text" id="gravatarId" class="form-control" placeholder="e.g. mycurrytrain@restrojunction.com" ng-model="profileForm.gravatarId">
-  </div>
-  <div class="form-group" ng-class="formClasses.first_name">
-    <label>First Name:</label>
-    <input type="text" class="form-control" ng-model="profileForm.first_name"></input>
-  </div>
-  <div class="form-group" ng-class="formClasses.last_name">
-    <label>Last Name:</label>
-    <input type="text" class="form-control" ng-model="profileForm.last_name" ></input>
-  </div>
-  <div class="form-group">
-    <label>Gender:</label>
-    <div class="btn-group block-dropdown" dropdown>
-      <button type="button" class="btn btn-default" >
-        {{ profilePreview.genderText }}
-        
-      </button>
-      
-      <button type="button" class="btn btn-default dropdown-toggle">
-	<span class="caret"></span>
-	<span class="sr-only" >Split button!</span>
-      </button>
-      
-      <ul class="dropdown-menu" role="menu">
-	<li><a ng-click="selectGender('male')">Male</a></li>
-	<li><a ng-click="selectGender('female')">Female</a></li>
-	<li><a ng-click="selectGender('other')">Other</a></li>
-	<li><a ng-click="selectGender('')">No Answer</a></li>
-      </ul>
+  <div>
+    <div id="submiterror" class="alert alert-danger" ng-show="showError">
+      {{ errorMessage }}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideError()">&times;</button>
     </div>
-    <div class="clearfix"></div>
-  </div>
-  <div class="form-group">
-    <button class="btn btn-primary" ng-click="updateProfile()">Submit</button>
+    <div id="submitSuccess" class="alert alert-success" ng-show="showSuccess">
+      {{ successMessage }}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-click="hideSuccess()">&times;</button>
+    </div>
+
+    <div class="form-group">
+      <a ng-click="selectImage()">
+	<img ng-src="{{profilePreview.selectedImage}}" class="img-responsive" style="height:200px" 
+	     alt="{{profilePreview.imageAltText}}" tooltip="{{profilePreview.imageTooltip}}"/>
+      </a>
+    </div>
+    <div class="form-group">
+      <label>Upload New Picture:</label>
+      <small class="gravatar-warning">The image should not be more than 2 MP in file size. You have to press submit below to upload the new image.</small>
+      <input type="file" id="imageUpload" ></input>
+    </div> <!-- Code to stylise file input fields like bootstrap http://gregpike.net/demos/bootstrap-file-input/demo.html -->
+    <div class="form-group">
+      <label> Or </label>
+    </div>
+    <div class="form-group" ng-class="formClasses.gravatarId">
+      <label> Enter your gravatar id to fetch your profile pic from (recommended): 
+	<span style="color:darkred" ng-class="profilePreview.gravatarErrorClass">You have entered incorrect gravatar id!</span>
+      </label>
+      <small class="gravatar-warning">This will override any previously uploaded image.</small>
+      <!-- <input type="text" class="form-control" placeholder="e.g. http://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50"> -->
+      <input type="text" id="gravatarId" class="form-control" placeholder="e.g. mycurrytrain@restrojunction.com" ng-model="profileForm.gravatarId">
+    </div>
+    <div class="form-group" ng-class="formClasses.first_name">
+      <label>First Name:</label>
+      <input type="text" class="form-control" ng-model="profileForm.first_name"></input>
+    </div>
+    <div class="form-group" ng-class="formClasses.last_name">
+      <label>Last Name:</label>
+      <input type="text" class="form-control" ng-model="profileForm.last_name" ></input>
+    </div>
+    <div class="form-group">
+      <label>Gender:</label>
+      <div class="btn-group block-dropdown" dropdown>
+	<button type="button" class="btn btn-default" >
+          {{ profilePreview.genderText }}
+          
+	</button>
+	
+	<button type="button" class="btn btn-default dropdown-toggle">
+	  <span class="caret"></span>
+	  <span class="sr-only" >Split button!</span>
+	</button>
+	
+	<ul class="dropdown-menu" role="menu">
+	  <li><a ng-click="selectGender('male')">Male</a></li>
+	  <li><a ng-click="selectGender('female')">Female</a></li>
+	  <li><a ng-click="selectGender('other')">Other</a></li>
+	  <li><a ng-click="selectGender('')">No Answer</a></li>
+	</ul>
+      </div>
+      <div class="clearfix"></div>
+    </div>
+    <div class="form-group">
+      <label>About Yourself: (You can write upto 2000 characters) </label>
+      <textarea class="form-control" ng-model="profileForm.user_bio" maxlength="2000"></textarea>
+      <div class="clearfix"></div>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary" ng-click="updateProfile()">Submit</button>
+    </div>
   </div>
 </div>

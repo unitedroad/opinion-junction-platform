@@ -41,7 +41,7 @@ class Author(Document):
     email_address = StringField()
     image = StringField()
     gender = StringField(choices = GENDER_CHOICES)
-    user_bio = StringField()
+    user_bio = StringField(max_length=2048, required=False)
     user_role = StringField()
     user_permissions = ListField(StringField(), required=False)
     user_image = StringField()
@@ -57,10 +57,15 @@ class Article(Document):
     status = StringField()
     storytext = StringField()
     storyplaintext = StringField()
+    primary_image = StringField()
     excerpt = StringField()
     slug = StringField()
     tags = ListField(StringField(), required=False)
     categories = ListField(StringField(), required=False)
+
+    meta = {
+        'indexes': [ {'fields' : ['published_date', 'id'] } ]
+    }
 
 UPORDOWNVOTECHOICES = (('U', 'Up'),
                        ('D', 'Down'))
@@ -69,15 +74,40 @@ UPORDOWNVOTECHOICES = (('U', 'Up'),
 STATUS_VALUE_DICT = {"draft" : "Draft", "pending_review" : "Pending Review" , "published" : "Published" }
 
 class Activity_Record(EmbeddedDocument):
-    type = StringField(required=True)
+    activity_type = StringField(required=True)
     commentid = StringField()
     userid = StringField()
     upordownvote = StringField(choices = UPORDOWNVOTECHOICES)
 
-class User_Activity(Document):
-    id = StringField(required=True,primary_key=True)
-    latest_doc = StringField()
-    activity_record = EmbeddedDocumentField(Activity_Record)
+class Activity_Article(EmbeddedDocument):
+    title = StringField(required=True)
+    published_date = DateTimeField()
+    excerpt = StringField()
+    slug = StringField()
+
+class Activity_Comment(EmbeddedDocument):
+    author_name = StringField()
+    text_excerpt = StringField()
+    url = StringField()
+
+class Activity_Vote(EmbeddedDocument):
+    author_name = StringField()
+    post_type = StringField()
+    text_excerpt = StringField()
+    vote = StringField()
+    url = StringField()
+
+class Author_Activity(Document):
+    author_id = StringField(required=True,primary_key=True)
+    author_name = StringField()
+    author_bio = StringField()
+    latest_articles = ListField(Activity_Article())
+    latest_comments = ListField(Activity_Comment())
+    latest_votes = ListField(Activity_Vote())
+    latest_replies_from = ListField(Activity_Comment())
+    latest_votes_from = ListField(Activity_Vote())
+#    latest_doc = StringField()
+#    activity_record = EmbeddedDocumentField(Activity_Record)
 
 class Metadata(models.Model):
     name=models.CharField(max_length=511)
@@ -88,3 +118,12 @@ class Metadata(models.Model):
     meta = {
         'indexes': [ {'fields' : ['num_user', 'name'] }]
     }
+
+class Author_Settings(Document):
+    author_id = StringField(required=True,primary_key=True)
+    privacy_hide_own_articles = BooleanField(default=False)
+    privacy_hide_own_comments = BooleanField(default=False)
+    privacy_hide_own_votes = BooleanField(default=False)
+    privacy_hide_others_comments = BooleanField(default=False)
+    privacy_hide_others_replies = BooleanField(default=False)
+    privacy_hide_others_votes = BooleanField(default=False)
