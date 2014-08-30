@@ -19,56 +19,67 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
   $stateProvider
 	.state('home', {
 	    url: "/",
+	    title: "Opinion Junction",
 	    templateUrl: '/angularstatic/home/partials/index.html',
 	    controller: 'mainPageController'
 	})
 	.state('politics', {
+	    title: "Opinion Junction - Politics",
 	    url: "/{category:politics}",
 	    templateUrl: '/angularstatic/home/partials/index.html',
 	    controller: 'mainPageController'
 	})
 	.state('technology', {
+	    title: "Opinion Junction - Technology",
 	    url: "/{category:technology}",
 	    templateUrl: '/angularstatic/home/partials/index.html',
 	    controller: 'mainPageController'
 	})
     	.state('hoist', {
+	    title: "Opinion Junction - Hoist",
 	    url: "/{category:hoist}",
 	    templateUrl: '/angularstatic/home/partials/index.html',
 	    controller: 'mainPageController'
 	})
 	.state('art', {
+	    title: "Opinion Junction - Art",
 	    url: "/{category:art}",
 	    templateUrl: '/angularstatic/home/partials/index.html',
 	    controller: 'mainPageController'
 	})
 	.state('identities', {
+	    title: "Opinion Junction - Identities",
 	    url: "/{category:identities}",
 	    templateUrl: '/angularstatic/home/partials/index.html',
 	    controller: 'mainPageController'
 	})
 
 	.state('article', {
+	    title: "Opinion Junction - Article",
 	    url : "/article/:articleId",
 	    templateUrl: '/angularstatic/article/partials/article.html',
 	    controller: 'articleController'
 	})
     	.state('article.text', {
+	    title: "Opinion Junction - Article",
 	    url : "/:text",
 	    templateUrl: '/angularstatic/article/partials/article.html',
 	    controller: 'articleController'
 	})
 	.state('signin', {
+	    title: "Opinion Junction - Sign in",
 	    url : "/signin",
 	    templateUrl: '/angularstatic/signin/partials/index.html',
 	    controller: 'signinController'
 	})
         .state('profile', {
+	    title: "Opinion Junction - Profile",
 	    url : "/profile",
 	    templateUrl: '/angularstatic/publicprofile/partials/index.html',
 	    controller: 'publicProfileController'
 	})
         .state('profile.userid', {
+	    title: "Opinion Junction - Profile",
 	    url : "/:userid",
 	    templateUrl: '/angularstatic/publicprofile/partials/index.html',
 	    controller: 'publicProfileController'
@@ -79,32 +90,39 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    controller: 'userController'
 	})
     	.state('user.settings', {
+	    title: "Opinion Junction - Settings",
 	    url : "/settings",
 	    templateUrl: '/angularstatic/usersettings/partials/index.html',
 	    controller: 'userSettingsController'
 	})
     	.state('user.profile', {
+	    title: "Opinion Junction - Settings - Profile",
 	    url: "/profile",
 	    templateUrl: '/angularstatic/profile/partials/index.html',
 	    controller: 'userProfileController'
 	})
 	.state('user.createarticle', {
+	    title: "Opinion Junction - Create Article",
 	    url: "/createarticle",
 	    templateUrl: '/angularstatic/createarticle/partials/index.html',
 	    controller: 'createArticleController'
 	}).state('user.articles', {
+	    title: "Opinion Junction - Articles",
 	    url: "/articles",
 	    templateUrl: '/angularstatic/articleslist/partials/index.html',
 	    controller: 'viewArticlesController'
 	}).state('user.editarticle', {
+	    title: "Opinion Junction - Edit Article",
 	    url: "/editarticle/:articleId",
 	    templateUrl: '/angularstatic/createarticle/partials/index.html',
 	    controller: 'createArticleController'
 	}).state('default', {
+	    title: "Opinion Junction",
 	    url: "/default",
 	    templateUrl: '/angularstatic/default/partials/index.html',
 	    controller: 'createArticleController'
 	}).state('message', {
+	    title: "Opinion Junction - Message",
 	    url: "/message",
 	    templateUrl: '/angularstatic/message/partials/index.html',
 	    controller: 'messageViewController'
@@ -1062,7 +1080,7 @@ testApp.factory('profileService', function() {
 
     serviceInstance.getProfileImageForCommentsAndDisplay = function(author, size) {
 	if (!author.image ) {
-	    return "http://upload.wikimedia.org/wikipedia/commons/a/aa/Blank_user.svg";
+	    return "https://upload.wikimedia.org/wikipedia/commons/a/aa/Blank_user.svg";
 	}
 
 	if (serviceInstance.isUploadedImage(author.image)) {
@@ -1082,17 +1100,44 @@ testApp.controller('testController', function($scope) {
     $scope.message = "Welcome to Opinion Junction";
 });
 
-testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, profileService, $stateParams) {
+testApp.controller('mainPageController', function($scope, $rootScope, $http, $modal, commonOJService, profileService, $stateParams) {
     $scope.category = $stateParams.category;
+
+    //$rootScope.title = "Opinion Junction";
+    //$scope.title = "Opinion Junction";
+    $scope.ogTitle = "Opinion junction";
+    $scope.ogDescription = "Opinion Junction";
+    $scope.ogImage = "";
+
+
+    createCategoriesMap = function(categories) {
+	var categoriesMap = {};
+	var numCategories = categories.length;
+	for (i = 0; i < numCategories; i++) {
+	    category = categories[i];
+	    categoriesMap[category.name] = category;
+	}
+	return categoriesMap;
+    }
 
     if ($scope.category) {
 	commonOJService.activateHeaderNavLink($scope.category);
 	//$scope.topBannerFragment="#category-image";
 	$scope.topBannerFragment="#carousel";
 	$scope.categoryImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg/1024px-Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg";
+
+	$scope.categoriesMap = createCategoriesMap($scope.categories);
+	$scope.categoriesMapCreated = true;
+	if ($scope.category in $scope.categoriesMap) {
+	    $scope.category_friendly_name = $scope.categoriesMap[$scope.category].friendly_name;
+	    $("title").text("Opinion Junction - " + $scope.category_friendly_name);	    
+	}
+	
+
     } else {
 	commonOJService.activateHeaderNavLink("home");
 	$scope.topBannerFragment="#carousel";
+	$("title").text("Opinion Junction");
     }
     setCategories = function() {
 	$scope.categories = commonOJService.categories;
@@ -1176,6 +1221,13 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 			numServerCalls = numServerCalls + 1;
 			var headerArticleAddedForCategory = false;
 			$.each(data, function (index, item) {
+			    if (!item.thumbnail_image) {
+				if (item.primary_image) {
+				    item.thumbnail_image = item.primary_image;
+				} else {
+				    item.thumbnail_image = "/static/no_preview.png";;
+				}
+			    }
 			    if (commonOJService.indexOf($scope.articleIds, item.id) <= -1 ) {
 				$scope.articleIds.push(item.id);
 				$scope.articleInfos.push(item);
@@ -1186,6 +1238,7 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 			});
 			if (numServerCalls == numCategories) {
 			    $scope.articles = $scope.articlesTemp;
+			    $scope.showFooter = true;
 			}
 			//$scope.articleInfos = $scope.articleInfos.concat(data);
 		    });
@@ -1200,6 +1253,9 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 	//var numCategories = $scope.categories.length;
 	var numArticles = $scope.articlesTemp.length;
 	if (article.primary_image) {
+	    if (!article.header_image) {
+		article.header_image = article.primary_image;
+	    }
 	    article.headerCategory = category;
 	    categoryIndex = getCategoryIndex(categoryName);
 	    if (categoryIndex < 0) {
@@ -1292,15 +1348,7 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
 
     }
 
-    createCategoriesMap = function(categories) {
-	var categoriesMap = {};
-	var numCategories = categories.length;
-	for (i = 0; i < numCategories; i++) {
-	    category = categories[i];
-	    categoriesMap[category.name] = category;
-	}
-	return categoriesMap;
-    }
+
 
 //    $scope.articles = 
 //	[ {"title" : "Celine's Third Law",
@@ -1339,7 +1387,7 @@ testApp.controller('mainPageController', function($scope, $http, $modal, commonO
     
 });
 
-testApp.controller('mainController', function($scope, $http, $modal, commonOJService, $stateParams) {
+testApp.controller('mainController', function($scope, $rootScope, $http, $modal, commonOJService, $stateParams) {
 
     $scope.category = $stateParams.category;
     
@@ -1352,6 +1400,11 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
     setCategories = function() {
 	$scope.categories = commonOJService.categories;
     }
+    //$rootScope.title = "Opinion Junction";
+    //$scope.title = "Opinion Junction";
+    $scope.ogTitle = "Opinion junction";
+    $scope.ogDescription = "Opinion Junction";
+    $scope.ogImage = "";
 
     $scope.$watch('categories', function() {
 	if ($scope.categories !=null) {
@@ -1573,13 +1626,23 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 
 
 testApp.controller('articleController', function($scope, $http, $stateParams, commonOJService) {
+
     $scope.message = "Welcome to Opinion Junction's First Article";
     $scope.articleId = $stateParams.articleId;
+    $("title").text("Opinion Junction - Article");
     $http.get("/api/1.0/articles/" + $scope.articleId, {headers: {"Content-Type": "application/json"}})
 	    .success( function(data) {
 		if (data.length > 0) {
 		    $scope.article = data[0];
 		    commonOJService.activateHeaderNavLink($scope.article.categories[0]);
+		    $scope.socialShareArticle = $scope.article;
+		    $scope.showFooter=true;
+		    $("title").text("Opinion Junction - Article - " + $scope.article.title);
+		    var socialbar = $("#floating-socialbar");
+		    socialbar.css("position", "relative");
+		    socialbar.css("top", "0px");
+		    socialbar.css("bottom", "auto");  
+
 		}
 	    });
 
@@ -1591,6 +1654,10 @@ testApp.controller('articleController', function($scope, $http, $stateParams, co
     $scope.isUserLoggedIn = function() {
 	return commonOJService.userData && (commonOJService.userData.id || (commonOJService.userData.code === "user_not_setup_for_oj"));
     }
+
+    $scope.articleUrl = window.location.href;
+
+
 });
 
 testApp.controller('signinController', function($scope) {
@@ -1598,6 +1665,7 @@ testApp.controller('signinController', function($scope) {
 });
 
 testApp.controller('userProfileController', function($scope, $http, profileService, commonOJService) {
+    $("title").text("Opinion Junction - Settings - Profile");
     $scope.message = "Hello, welcome to your profile";
     $scope.profilePreview = {};
     $scope.profilePreview.genderText = "Male";
@@ -1788,6 +1856,8 @@ testApp.controller('publicProfileController', function($scope, commonOJService, 
 
 testApp.controller('createArticleController', function($scope, $http, commonOJService, $location, $rootScope, $stateParams) {
 
+    $("title").text("Opinion Junction");
+
     fieldsAccessForEditMode = {"topic" : ""};
 
     $scope.articleFields = ["topic","slug"];
@@ -1795,6 +1865,20 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
     $scope.articleAuthor = null;
 
     $scope.editEnabled = true;
+
+    $scope.displayImagesVisible = false
+    $scope.previewDisplayImageCollapseSymbol = "+";
+
+    $scope.toggleDisplayImageDivCollapse = function() {
+	$scope.displayImagesVisible = $scope.displayImagesVisible;
+	if ($scope.previewDisplayImageCollapseSymbol == "+") {
+	    $scope.previewDisplayImageCollapseSymbol = "-";
+	} else {
+	    $scope.previewDisplayImageCollapseSymbol = "+";
+	}
+
+	$scope.displayImagesVisible = !$scope.displayImagesVisible;
+    }
 
     $scope.articleInitialised = false;
     $scope.isEditEnabled = function(fieldName) {
@@ -1829,6 +1913,45 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	return false;
     }
 
+    var getPrimaryImageBinaryData = function(content) {
+	var contentDom = document.createElement( 'div' );
+	contentDom.innerHTML = content;
+	//var contentDom = new DOMParser().parseFromString(content, "text/xml");
+	var imgElements = contentDom.getElementsByTagName("img");
+	var numElements = imgElements.length;
+	for (var i = 0; i < numElements; i++ ) {
+	    var element = imgElements[i];
+	    var primaryAttr = element.getAttribute("primaryimage");
+	    if (primaryAttr == "true" ) {
+		return element.getAttribute("src");
+	
+		
+	    }
+	    
+	}
+
+	return null;
+    }
+
+    $scope.checkImageChange = function() {
+	var primaryImage = getPrimaryImageBinaryData($scope.content);
+	if (primaryImage != $scope.primaryImage) {
+	    $scope.primaryImageChanged = $scope.primaryImageChanged + 1;
+	}
+    }
+
+    $scope.$watch("primaryImageChanged", function() {
+	console.log("primary image changed");
+	$scope.thumbnailCropStep = 2;
+	$scope.headerCropStep = 2;
+	//getPrimaryImageBinaryData($scope.content);
+	$scope.primaryImageCropInput = getPrimaryImageBinaryData($scope.content);
+	$scope.primaryImage = $scope.primaryImageCropInput;
+//	if (getPrimaryImageBinaryData($scope.content)) {
+//	    $scope.primaryImageCropInput = getPrimaryImageBinaryData($scope.content)
+//	}
+    });
+
     $scope.tinymceOptions = {
       // General options
       theme : "modern",
@@ -1859,8 +1982,10 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
     	    scope.articleId = $stateParams.articleId;
     	    getArticleForEditMode();
     	    scope.mode = "edit";
+	    $("title").text("Opinion Junction - Edit Article");
         } else {
 	    scope.mode = "create";
+	    $("title").text("Opinion Junction - Create Article");
 	    if (!check_create_allowed()) {
 
 		commonOJService.messageForControllers.messageViewErrorMessage = "You don't have permissions to create articles";
@@ -2214,6 +2339,10 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
 	article.status = $scope.status;
 
+	if ($scope.primaryImageChanged > 0) {
+	    article.header_image = $scope.headerImage;
+	    article.thumbnail_image = $scope.thumbnail;
+	}
 
 	permission_logic = {};
 
@@ -2319,6 +2448,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 });
 
 testApp.controller('viewArticlesController', function($scope, commonOJService, $http) {
+    $("title").text("Opinion Junction - View Articles");
     $scope.message = "Welcome to Opinion Junction's First Article";
     $scope.sidebarArticleCapabilities = [];
 
@@ -2531,6 +2661,8 @@ testApp.controller('userController', function($scope, $location, commonOJService
 });
 
 testApp.controller('userSettingsController', function($scope, $location, $http, commonOJService) {
+
+    $("title").text("Opinion Junction - Settings");
 
     $scope.sidebarArticleCapabilities = [];
 
@@ -3004,6 +3136,7 @@ angular.module('ui.tinymce', [])
 	  
 	},*/
 	link: function(scope, elm, attrs, ngModel) {
+	    scope.primaryImageChanged = 0;
 	    var expression, options, tinyInstance;
     // generate an ID if not present
 	    if (!attrs.id) {
@@ -3019,9 +3152,24 @@ angular.module('ui.tinymce', [])
 		    ed.on('ExecCommand', function(e) {
 			ed.save();
 			ngModel.$setViewValue(elm.val());
+			if (e.command == "setPrimaryImage") {
+			    //console.log("setPrimaryImage called");
+			    scope.primaryImageChanged = scope.primaryImageChanged + 1;
+			}
 			if (!scope.$$phase) {
 			    scope.$apply();
 			}
+		    });
+		    ed.on("NodeChange", function(e) {
+			console.log('node change event', e);
+			ed.save();
+			ngModel.$setViewValue(elm.val());
+			scope.checkImageChange();
+			if (!scope.$$phase) {
+			    scope.$apply();
+			}
+			
+			
 		    });
             // Update model on keypress
 		    ed.on('KeyUp', function(e) {
@@ -3484,4 +3632,52 @@ testApp.directive('ojCarousel', function(commonOJService) {
 	    }
 	}
     }
+});
+
+
+testApp.directive('socialSidebar', function() {
+   return {
+       scope: {
+	   pageurl: "@",
+	   article: "=" //it seems this is unavoidable and we can't use "&"
+       },
+       restrict: 'AE',
+       templateUrl: '/angularstatic/socialsidebar/partials/socialsidebar.html',
+       compile: function(elem, attrs) {
+
+           return function(scope,elem,attrs) {
+	       elem.on('click', function(e){
+                   e.preventDefault();
+               });
+	       //console.log("pageurl: " + scope.pageurl);
+	       scope.openShareWindow = function(shareProvider) {
+		   var shareUrl = null;
+		   if (shareProvider === "facebook") {
+		       shareUrl = "https://www.facebook.com/sharer/sharer.php?u=" + scope.pageurl;
+		   } else if (shareProvider === "twitter") {
+		       shareUrl = "https://twitter.com/share?url=" + scope.pageurl;
+		   } else if (shareProvider === "googleplus") {
+		       shareUrl = "https://plus.google.com/share?url=" + scope.pageurl;
+		   } else if (shareProvider === "pinterest") {
+		       shareUrl = "http://pinterest.com/pin/create/button/?url=" + scope.pageurl + "&media=" + scope.article.thumbnail_image + 
+			   "&description=" + scope.article.excerpt;
+		   } else {
+		       console.log("Unknow Sharing provider, won't share anything");
+		   }
+		   var width  = 575,
+		   height = 400,
+		   left   = ($(window).width()  - width)  / 2,
+		   top    = ($(window).height() - height) / 2,
+		   url    = shareUrl,
+		   opts   = 'status=1' +
+                       ',width='  + width  +
+                       ',height=' + height +
+                       ',top='    + top    +
+                       ',left='   + left;
+
+		   window.open(url, 'Social Share Window', opts);
+	       }
+	    }
+	}
+   }
 });

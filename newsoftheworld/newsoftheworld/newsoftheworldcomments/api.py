@@ -22,7 +22,7 @@ import traceback, sys
 
 from . import db
 
-from .util import Comments_Save_Handler, csh_obj, increment_reply_count, upvote_comment, downvote_comment, unvote_comment
+from .util import Comments_Save_Handler, csh_obj, increment_reply_count, upvote_comment, downvote_comment, unvote_comment, after_save_comment, get_comment_for_id, get_comments_all
 
 #class PostList(generics.ListCreateAPIView):
 #    model = Post
@@ -97,9 +97,12 @@ class PostCommentsList(APIView):
             comment = Comment()
             comment.discussion_id = postid
             parent_id = None
+            parent_comment_queryset = None
             if u"parent_id" in request.DATA and request.DATA[u"parent_id"] is not None:
                 comment.parent_id = ObjectId(request.DATA[u"parent_id"])
                 parent_id = request.DATA[u"parent_id"]
+                parent_comment_queryset = get_comment_for_id(parent_id, return_queryset=True)
+
             comment.posted = datetime.datetime.now()
             comment.text = request.DATA[u"text"]
             if len(comment.text) == 0:
@@ -115,8 +118,19 @@ class PostCommentsList(APIView):
                 comment.metadata_string = request.DATA[u"metadata_string"]
             comment.save()
 
-            if parent_id is not None:
-                increment_reply_count(parent_id, 1)
+            if parent_id and len(parent_comment_queryset) > 0:
+                parent_comment = parent_comment_queryset[0]
+                if parent_comment.slug:
+                    comment.slug = parent_comment.slug + ":" + str(comment.id)
+                else:
+                    comment.slug = str(comment.id)
+
+            comment.save()
+
+            after_save_comment(comment)
+
+            if parent_comment_queryset is not None:
+                increment_reply_count(parent_comment_queryset, 1)
 
             if comment.id:
                 comment_id = str(comment.id)
@@ -129,7 +143,9 @@ class PostCommentsList(APIView):
             if isinstance(e, ValidationError):
                 append_error_string = "\nValidationError.errors: " + str(e.errors)
             print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2])) + append_error_string
-            return Response({"ok" : "false " + str(e) + " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2])) + append_error_string}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"ok" : "false " + str(e) + " exception stacktrace: " 
+                             + str(traceback.extract_tb(sys.exc_info()[2])) 
+                             + append_error_string}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CommentsList(APIView):
     model = Comment
@@ -172,17 +188,7 @@ class CommentsAll(APIView):
     
     def get(self, request, format=None):
         #for comment in Comment.objects.all():
-        comments = Comment.objects()
-        
-        if "metadata_string" in request.GET and request.GET["metadata_string"] is not None:
-            comments = comments.filter(metadata_string__contains=request.GET['metadata_string'])
-        if 'sortBy' in request.GET and request.GET['sortBy'] is not None:
-            comments = comments.order_by(request.GET['sortBy'])
-        else:
-            comments = comments.order_by("-id")
-
-        if "limit" in request.GET and request.GET["limit"] is not None:
-            comments = comments.limit(int(request.GET["limit"]))
+        comments = get_comments_all(request.GET)
 
         context = {}
         context['request'] = request

@@ -1,5 +1,9 @@
-<div class="container">
-  <article>
+ <div class="container">
+  <div  id="floating-socialbar" style="float:left;margin-top:50px;width:50px">
+    <social-sidebar article="socialShareArticle" pageurl="{{articleUrl}}"/>
+    <!-- <ng-include src="'/angularstatic/acentral/partials/socialsidebar.html'"></ng-include> -->
+  </div>
+  <article style="margin-left:60px" id="article-main-area">
     <header >
       <div class="page-header">
       <h1> {{article.title}}</h1>
@@ -30,3 +34,4 @@
   </div>
 
 </div>
+<ng-include  src="'/angularstatic/acentral/partials/footer.html'"></ng-include>

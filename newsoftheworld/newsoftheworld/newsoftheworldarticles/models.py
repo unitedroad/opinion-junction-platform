@@ -58,6 +58,8 @@ class Article(Document):
     storytext = StringField()
     storyplaintext = StringField()
     primary_image = StringField()
+    header_image = StringField()
+    thumbnail_image = StringField()
     excerpt = StringField()
     slug = StringField()
     tags = ListField(StringField(), required=False)
@@ -86,26 +88,36 @@ class Activity_Article(EmbeddedDocument):
     slug = StringField()
 
 class Activity_Comment(EmbeddedDocument):
-    author_name = StringField()
+    #author_name = StringField()
     text_excerpt = StringField()
-    url = StringField()
+    author_id_to = StringField()
+    comment_id = StringField()
+    comment_slug = StringField()
+    article_id = StringField()
+    #article_slug = StringField()
 
 class Activity_Vote(EmbeddedDocument):
     author_name = StringField()
+    author_id_to = StringField()
     post_type = StringField()
     text_excerpt = StringField()
+    slug = StringField()
     vote = StringField()
-    url = StringField()
+    article_id = StringField()
 
 class Author_Activity(Document):
     author_id = StringField(required=True,primary_key=True)
     author_name = StringField()
     author_bio = StringField()
-    latest_articles = ListField(Activity_Article())
-    latest_comments = ListField(Activity_Comment())
-    latest_votes = ListField(Activity_Vote())
-    latest_replies_from = ListField(Activity_Comment())
-    latest_votes_from = ListField(Activity_Vote())
+    latest_articles = ListField(EmbeddedDocumentField(Activity_Article))
+    latest_comments = ListField(EmbeddedDocumentField(Activity_Comment))
+    latest_votes = ListField(EmbeddedDocumentField(Activity_Vote))
+    latest_replies_from = ListField(EmbeddedDocumentField(Activity_Comment))
+    latest_votes_from = ListField(EmbeddedDocumentField(Activity_Vote))
+    meta = {
+        'indexes': [ {'fields' : ['author_id'] }]
+    }
+
 #    latest_doc = StringField()
 #    activity_record = EmbeddedDocumentField(Activity_Record)
 

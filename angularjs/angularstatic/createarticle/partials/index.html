@@ -143,6 +143,37 @@
 	<label class="control-label" for="excerpt"><strong>Excerpt:</strong></label>
 	<textarea type="text" name="excerpt" id="excerpt" class="form-control" ng-model="excerpt" ng-disabled="mode == 'edit' && !editEnabled"/>
       </div>
+      <div class="">
+	<a class="usersettings-expand-link" ng-click="toggleDisplayImageDivCollapse()">Preview and Edit Header and Thumbnail images {{previewDisplayImageCollapseSymbol}}</a>
+      </div>
+      
+      <div collapse="!displayImagesVisible">
+	<div class="form-group" >
+	  <label class="control-label"><h5>Thumbnail</h5></label>
+	  <image-crop
+	     data-width="180"
+	     data-height="180"
+	     data-shape="circle"
+	     data-result="thumbnail"
+	     data-input="primaryImageCropInput"
+	     data-step="thumbnailCropStep"
+	     >
+	  </image-crop>
+	</div>
+	<div class="form-group" >
+	  <label class="control-label"><h5>Header Image</h5></label>
+	  <image-crop
+	     data-width="1280"
+	     data-height="480"
+	     data-shape="circle"
+	     data-result="headerImage"
+	     data-input="primaryImageCropInput"
+	     data-step="headerCropStep"
+	     >
+	  </image-crop>
+	</div>
+      </div>
+      <br/>
       <br/>
       <textarea ui-tinymce="authorWhoCanEditId"  name="content" id="content" ng-model="content" ng-focus="contentFocus" ng-disabled="mode == 'edit' && !editEnabled" class="form-control" style="width:100%" enabled="mode != 'edit' || editEnabled" options="tinymceOptions" initialised="{{initialised}}"
 		articleContent="content" authorId="authorId"></textarea>

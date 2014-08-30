@@ -65,6 +65,8 @@ class ArticleSerialiser(serializers.Serializer):
     storytext = serializers.CharField()
     storyplaintext = serializers.CharField()
     primary_image = serializers.CharField()
+    header_image = serializers.CharField()
+    thumbnail_image = serializers.CharField()
     excerpt = serializers.CharField()
     slug = serializers.CharField()
     tags = SetField()

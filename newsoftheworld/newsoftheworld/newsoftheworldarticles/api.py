@@ -87,6 +87,8 @@ class ArticlesList(APIView):
             article.storytext = ""
 
 
+
+
         if "storyplaintext" in request.DATA and request.DATA["storyplaintext"] is not None:
             article.storyplaintext = request.DATA["storyplaintext"]
         article.excerpt = request.DATA["excerpt"]
@@ -96,7 +98,26 @@ class ArticlesList(APIView):
 
         article.save()
 
-        
+        save_front_page_image_info = False
+
+        if "header_image" in request.DATA and request.DATA["header_image"] is not None:
+            util.save_front_page_images_in_article(request.DATA["header_image"], article, "header_image")
+            save_front_page_info = True
+        elif not article.header_image:
+           util. save_front_page_images_in_article(article.primary_image, article, "header_image")
+           save_front_page_info = True
+
+        if "thumbnail_image" in request.DATA and request.DATA["thumbnail_image"] is not None:
+            util.save_front_page_images_in_article(request.DATA["thumbnail_image"], article, "thumbnail_image")
+            save_front_page_info = True
+        elif not article.thumbnail_image:
+            util.save_front_page_images_in_article(article.primary_image, article, "thumbnail_image")
+            save_front_page_info = True
+
+        if save_front_page_info:
+            article.save()
+
+        util.update_article(article, user=request.user)
 
         permission_check["articleid"] = str(article.id)
         permission_check["message"] = "Successfully Submitted your Opinion!"
@@ -223,6 +244,30 @@ class ArticlesPost(APIView):
                 permission_check["storytext"] = article.storytext
             article.save()
 
+            util.create_article(article,user=request.user)
+
+            #print "article.primary_image: " + article.primary_image
+
+
+            save_front_page_info = False
+
+            if "header_image" in request.DATA and request.DATA["header_image"] is not None:
+                util.save_front_page_images_in_article(request.DATA["header_image"], article, "header_image")
+                save_front_page_info = True
+            else:
+                util.save_front_page_images_in_article(article.primary_image, article, "header_image")
+                save_front_page_info = True
+
+
+            if "thumbnail_image" in request.DATA and request.DATA["thumbnail_image"] is not None:
+                util.save_front_page_images_in_article(request.DATA["thumbnail_image"], article, "thumbnail_image")
+                save_front_page_info = True
+            else:
+                util.save_front_page_images_in_article(article.primary_image, article, "thumbnail_image")
+                save_front_page_info = True
+
+            if save_front_page_info:
+                article.save()
 
             permission_check["articleid"] = str(article.id)
             permission_check["message"] = "Successfully Submitted your Opinion!"

@@ -1,28 +1,62 @@
 <!doctype html>
-<html>
+<html xmlns:ng="http://angularjs.org">
 <head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+  <title >Opinion Junction</title>
+    <!--      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script> -->
+    <!--[if lt IE 9]>
+
+      <script src="https:////cdnjs.cloudflare.com/ajax/libs/es5-shim/4.0.3/es5-shim.min.js"></script>
+    <![endif]-->
+    <!--[if lte IE 8]>
+      <script>
+        document.createElement('ng-include');
+        document.createElement('ng-pluralize');
+        document.createElement('ng-view');
+	document.createElement('ui-view');
+        document.createElement('ng:include');
+        document.createElement('ng:pluralize');
+        document.createElement('ng:view');
+	document.createElement('ui:view');
+      </script>
+    <![endif]-->
+    <!--[if lt IE 8] 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
+    <![endif]-->
+    <script>
+      var ie = false;
+    </script>
+    <!--[if lte IE 8]>
+    <script>
+	ie = 8;
+    </script>
+    <![endif]-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <!-- <script src="https://code.angularjs.org/snapshot/angular.min.js"></script> -->
-  <script src="https://code.angularjs.org/1.2.18/angular.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-touch.js"></script>
-  <script src="https://code.angularjs.org/1.2.18/angular-route.js"></script>
-  <script src="https://code.angularjs.org/1.2.18/angular-cookies.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-touch.min.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-route.min.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-cookies.min.js"></script>
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
   <link rel="stylesheet" href="/static/comments.css">
   <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-animate.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-animate.js"></script> -->
+  <!-- GitHub won't like me -->
 <!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/angular-strap.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/popover.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/tooltip.js"></script> -->
 <!--  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
   <script src="https://connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
   <script src="/angularstatic/acentral/js/app.js"></script>
+  <script src="/angularstatic/external/angular-crop/js/image-crop.js"></script> 
+  <link rel="stylesheet" href="/angularstatic/external/angular-crop/css/image-crop-styles.css"
+	type="text/css"></link>
   <!-- <script src="js/controllers.js"></script> -->
   <script type="text/javascript">
     function submitTest(){
@@ -49,9 +83,72 @@
           alert("Hello From Carousel");
       });
     </script>
+
+
+
+
+    <script>
+
+      $(window).scroll(
+          function() {
+	      var socialbar = $("#floating-socialbar");
+	      if (socialbar.length > 0) {
+		  var stWindow = $(window).scrollTop();
+		  
+		  //    var socialbarContainer = $("#floating-socialbar-container");
+		  //    var stSocialbarContainer = socialbarContainer.scrollTop();
+
+		  //    var stSocialBar = socialbar.scrollTop();
+		  var heightArticle = $("#article-main-area").height();
+		  //if (!oldStWindow){        // This should mean we have just started 
+		  // scrolling the first time
+		  if (stWindow > 50 + heightArticle - socialbar.height()) {
+                      socialbar.css("position", "fixed");
+		      socialbar.css("top", (50 + heightArticle - socialbar.height() - stWindow) + "px");
+	              socialbar.css("bottom", "auto");  
+
+
+		      //socialbar.css("position", "relative");
+                      //socialbar.css("bottom", "0px"); 
+
+
+                      //socialbar.css("top", "auto");  		      
+		  } else 
+                      if (stWindow > 50) {  //This should mean we are traversing down
+
+			  socialbar.css("position", "fixed");
+			  socialbar.css("top", "0px");
+			  socialbar.css("bottom", "auto");  
+
+		      } else {
+			  socialbar.css("position", "relative");
+                          //socialbar.css("top", (50 + socialbar.height()) + "px"  );
+			  socialbar.css("top", "0px"); 
+			  socialbar.css("bottom", "auto");  
+
+
+			  //socialbar.removeProp("bottom");  
+		      }
+		  //	  oldStSocialBarContainer = stSocialBarContainer;
+		  //          return;
+		  //      };
+
+
+		  //   if (oldStSocialBarContainer < stSocialBarContainer) { //This means we are traversing up
+		  //        if (stSocialBar  0
+		  //	  socialBar.attr("position", "relative");
+		  //   } else {
+		  //            socialBar.attr("position", "");
+		  //   }
+
+	      }
+       });
+
+      
+    </script>
 </head>
 <body>
-<div id="ng-app" ng-app="testApp" >
+<div class="ng-app:testApp" id="ng-app" ng-app="testApp" xmlns:ng="http://angularjs.org">
 <div ng-init="initFunction()" ng-controller="mainController">
 <script type="text/ng-template" id="loginModalContent.html">
   <!--<script src="//connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
@@ -162,7 +259,14 @@
 -->
 <!-- </div> -->
 <ui-view>
-
+  <!--[if lt IE 9]>
+  <div style="margin:50px">
+    <h1 class="articlepreviewheadline" style="font-size:40px">Hmm... maybe upgrading to modern browser such as Firefox wouldn't hurt?</h5>
+    <br/>
+    <br/>
+    <h4 class="articlepreviewheadline"><a href="/#/" class="articleheaderlink" style="color:grey">Opinion Junction Home Page</a></h4>
+  </div>
+  <![endif]-->
 </ui-view>
 {{category}}
 </div>

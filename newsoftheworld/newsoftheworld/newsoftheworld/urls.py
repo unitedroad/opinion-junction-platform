@@ -26,7 +26,25 @@ from newsoftheworldarticles.api import UpdateProfileSelf
 from newsoftheworldarticles.api import TagsList
 from newsoftheworldarticles.api import CategoriesList
 
+from newsoftheworldarticles.views import Article_Traditional_View
+from newsoftheworldarticles.views import Category_Traditional_View
+from newsoftheworldarticles.views import Home_Traditional_View
+
 urlpatterns = patterns('',
+
+    url(r'^/?$', 
+        Home_Traditional_View.as_view()),
+    url(r'^article/(?P<articleid>.+)/(?P<articletext>.+)/?$', Article_Traditional_View.as_view()),
+    url(r'^(?P<category_name>politics|technology|identities|hoist|art)/?$', 
+        Category_Traditional_View.as_view()),
+
+
+    url(r'^(?P<server_deliver_root>ojserverdeliver)/?$', 
+        Home_Traditional_View.as_view()),
+    url(r'^(?P<server_deliver_root>ojserverdeliver)/article/(?P<articleid>.+)/(?P<articletext>.+)/?$', Article_Traditional_View.as_view()),
+    url(r'^(?P<server_deliver_root>ojserverdeliver)/(?P<category_name>politics|technology|identities|hoist|art)/?$', 
+        Category_Traditional_View.as_view()),
+
     # Examples:
     # url(r'^$', 'newsoftheworldhomeapp.views.home', name='home'),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),

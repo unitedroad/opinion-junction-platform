@@ -6,6 +6,8 @@ from django.core.urlresolvers import reverse
 
 from django.http import HttpResponse
 
+from django.views.generic import TemplateView
+
 from django.template import RequestContext, Template
 
 from django.utils.cache import patch_response_headers 
@@ -26,6 +28,16 @@ from allauth.account.utils import (get_next_redirect_url, get_login_redirect_url
                                    passthrough_next_redirect_url)
 
 from django.contrib.sites.models import Site
+
+from . import util
+
+from . import viewutil
+
+from newsoftheworldcomments import util as commentsutil
+
+from .models import Article
+
+from .models import Metadata
 
 class RedirectAuthenticatedUserAjaxCompatibleMixin(RedirectAuthenticatedUserMixin):
     def dispatch(self, request, *args, **kwargs):
@@ -94,3 +106,155 @@ class RestSignupView(SignupView):
     
 signup = RestSignupView.as_view()
 
+class Main_Traditional_View(TemplateView):
+    
+    template_name = "index.html"
+
+
+    def get_context_data(self, **kwargs):
+        
+        tag_list = Metadata.objects.filter(entry_type="category")
+
+        context = super(Main_Traditional_View, self).get_context_data(**kwargs)
+        context['categories'] = tag_list
+
+        viewutil.setCategoriesMap(tag_list, context)
+
+        if 'server_deliver_root' in kwargs:
+            context['server_deliver_root'] = "/" + kwargs["server_deliver_root"]
+        else:
+            context['server_deliver_root'] = ''
+        return context
+
+
+
+class Article_Traditional_View(Main_Traditional_View):
+    
+    template_name = "article/article.html"
+
+
+    def get_context_data(self, **kwargs):
+        article = None
+        articleid = kwargs["articleid"]
+        if util.check_valid_object_id(id=articleid) is not True:
+            article = util.get_bad_article("incorrect_articleid")
+        else:
+            articles = Article.objects(id=articleid)
+            if len(articles) > 0:
+                articles.select_related()
+                article = articles[0]
+            else:
+                article = util.get_bad_article("no_article_found")
+        context = super(Article_Traditional_View, self).get_context_data(**kwargs)
+        context['article'] = article
+        return context
+
+
+class Home_Traditional_View(Main_Traditional_View):
+
+    template_name = "home/index.html"
+
+
+    def get_context_data(self, **kwargs):
+
+        context = super(Home_Traditional_View, self).get_context_data(**kwargs)
+        categories = context['categories']
+        articleInfos = []
+        util_kwargs = {}
+        util_kwargs["limit"] = 5
+        
+        articles = []
+
+        for category in categories:
+            articlesByCategory = util.get_articles_by_category(category.name, util_kwargs)
+            viewutil.addHeaderArticle(articles, articlesByCategory)            
+            articleInfos.extend(articlesByCategory)
+
+        for article in articleInfos:
+            viewutil.set_category_friendly_name_string(context, article)
+            viewutil.setFriendlyAuthorName(article.author)
+            viewutil.setAuthorImage(article.author)
+            viewutil.setFriendlyThumbnailImage(article)
+
+
+        latest_comments_qs = commentsutil.get_comments_all(util_kwargs)
+        latest_comments = []
+        latest_comments.extend(latest_comments_qs)
+
+        for comment in latest_comments:
+            viewutil.setAuthorImage(comment.author)
+            #print comment.author.name
+            #viewutil.setFriendlyAuthorName(comment.author)
+
+        #if len(articleInfos) > 0:
+        #    print articleInfos[0].author.friendly_name
+
+        context['homepage'] = True
+        context['articleInfos'] = articleInfos
+        context['articles'] = articles
+        context['latest_comments'] = latest_comments
+#        context['article'] = article
+
+        return context
+    
+
+
+class Category_Traditional_View(Main_Traditional_View):
+
+    template_name = "home/index.html"
+
+
+    def get_context_data(self, **kwargs):
+
+        category_name = kwargs["category_name"]
+        util_kwargs = {}
+        util_kwargs["limit"] = 30
+
+        articleInfosQs = util.get_articles_by_category(category_name, util_kwargs)
+        articleInfos = [] # We need to do this otherwise the updated article objects are not in the list
+        context = super(Category_Traditional_View, self).get_context_data(**kwargs)
+
+        for article in articleInfosQs:
+            viewutil.set_category_friendly_name_string(context, article)
+            viewutil.setFriendlyAuthorName(article.author)
+            #print article.author.friendly_name
+            #print article.author.id
+            viewutil.setAuthorImage(article.author)
+            viewutil.setFriendlyThumbnailImage(article)
+            articleInfos.append(article)
+
+        articles = []
+        viewutil.addHeaderArticle(articles, articleInfos)
+#        if len(articleInfos) > 0:
+#            article = articleInfos[0]
+#            if not article.header_image:
+#                article.header_image = article.primary_image
+#            articles.append(articleInfos[0])
+
+        commentsutil_kwargs = {}
+        commentsutil_kwargs["limit"] = 5
+        commentsutil_kwargs["metadata_string"] = "category='" + category_name + "'"
+        latest_comments_qs = commentsutil.get_comments_all(commentsutil_kwargs)
+        latest_comments = []
+        latest_comments.extend(latest_comments_qs)
+
+        for comment in latest_comments:
+            viewutil.setAuthorImage(comment.author)
+
+
+        #if len(articleInfos) > 0:
+        #    print dir(articleInfos[0].author)
+        #    print articleInfos[0].author.friendly_name
+
+        context['homepage'] = False
+        if category_name in context['categoriesMap']:
+            context['category'] = context['categoriesMap'][category_name]
+        else:
+            category_none = Metadata()
+            Metadata.entry_type = "category"
+            context['category'] = category_none
+        context['articleInfos'] = articleInfos
+        context['articles'] = articles
+        context['latest_comments'] = latest_comments
+#        context['article'] = article
+        return context

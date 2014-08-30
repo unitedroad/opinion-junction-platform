@@ -3,25 +3,39 @@ import os
 import re
 import hashlib
 import time
+import binascii
+import io
+import urllib
+import urllib2
 from newsoftheworld import settings
 from .models import Article
 from .models import Author
 from .models import STATUS_VALUE_DICT
 from .models import Metadata
+from .models import Author_Activity
+from .models import Author_Settings
+from .db import db
 from rest_framework import status
 from allauth.account.signals import user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 import django.dispatch
 from lxml import etree, html
+from PIL import Image
 
 LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
 LOCATION_ARTICLE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojarticleimages')
+LOCATION_FRONT_PAGE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojfrontpageimages')
 URL_PROFILE_IMAGES = settings.MEDIA_URL + 'ojprofileimages/' 
 URL_ARTICLE_IMAGES = settings.MEDIA_URL + 'ojarticleimages/' 
+URL_FRONT_PAGE_IMAGES = settings.MEDIA_URL + 'ojfrontpageimages/' 
 
 profile_updated = django.dispatch.Signal(providing_args=["id", "fields"])
 log_user_activity = django.dispatch.Signal(providing_args=["type", "id", "userid_from", "userid_to"])
+
+crop_image_dimensions_dict = {"header_image" : (0,0,1280, 480), "thumbnail_image" : (0,0,180, 180)}
+
+image_format_dict = {"JPEG" : "jpg", "PNG" : "png", "GIF" : "gif"}
 
 def check_valid_object_id(**kwargs):
     if "id" in kwargs:
@@ -369,6 +383,20 @@ def process_article_image_self_hosted(articleid, image_data, extension):
         file_handler.write(image_data.decode('base64'))
     return file_name
 
+def process_front_page_image(articleid, image_type, image, extension, **kwargs):
+    directory = LOCATION_FRONT_PAGE_IMAGES
+    if "primary_image_name" in kwargs:
+        file_name = image_type + "_" + str(articleid) + "_" + kwargs["primary_image_name"] + "." + extension
+    else:
+        file_name = image_type + "_" + str(articleid) + "." + extension
+    
+    image.save(os.path.join(directory,file_name))
+    
+#    with open(os.path.join(directory, file_name), "wb") as file_handler:
+#        file_handler.write(image_data.decode('base64'))
+    return file_name
+    
+
 def get_article_image_url(articleid, image_name):
     return URL_ARTICLE_IMAGES + articleid + "/" + image_name
 
@@ -414,7 +442,103 @@ def save_binary_images_in_content(article, content, **kwargs):
     article.storytext = html.tostring(root, pretty_print=True)
     return {"ok": "true"}
 
+def get_cropped_image_from_data(image_data, image_type):
+    crop_dimensions = crop_image_dimensions_dict[image_type]
+    image_data_binary = binascii.a2b_base64(image_data)
+    binary_image_ios = io.BytesIO(image_data_binary)
+    image = Image.open(binary_image_ios)
+    return image.crop(crop_dimensions)
+    
+def get_cropped_image_from_file(image_file, image_type):
+    image = Image.open(image_file)
+    return image.crop(crop_dimensions)
 
+def convert_image_url_to_location(image_url): #brittle, has tight coupling between image path and image url, 
+                                              #any change to this coupling will have to be reflected here 
+                                              #or this code will bomb
+    stripped_image_url = None
+    root_file_path = None
+    if image_url.startswith(URL_PROFILE_IMAGES):
+        stripped_image_url = image_url[len(URL_PROFILE_IMAGES):]
+        root_file_path = LOCATION_PROFILE_IMAGES
+    elif image_url.startswith(URL_ARTICLE_IMAGES):
+        stripped_image_url = image_url[len(URL_ARTICLE_IMAGES):]
+        root_file_path = LOCATION_ARTICLE_IMAGES
+    elif image_url.startswith(URL_FRONT_PAGE_IMAGES):
+        stripped_image_url = image_url[len(URL_FRONT_PAGE_IMAGES):]
+        root_file_path = LOCATION_FRONT_PAGE_IMAGES
+    else:
+        return None
+        
+    stripped_image_path = stripped_image_url.replace("/", os.sep)
+    
+    full_image_path = os.path.join(root_file_path, stripped_image_path)
+    
+    return full_image_path
+
+def get_front_page_image_url(image_name, image_type=None):
+    return URL_FRONT_PAGE_IMAGES + image_name
+
+def get_cropped_image(image, image_type):
+    crop_dimensions = crop_image_dimensions_dict[image_type]
+    return image.crop(crop_dimensions)
+    pass
+
+def image_from_url(image_url):
+    url_ios = urllib2.urlopen(image_url)
+    file_ios = io.BytesIO(url_ios.read())
+    image = Image.open(file_ios)
+    return image
+
+def get_cropped_image_from_url(image_url, image_type):
+   image = image_from_url(image_url)
+   return get_cropped_image(image, image_type)
+
+def save_front_page_images_in_article(image_attr, article, image_type="header_image", **kwargs):
+    articleid = article.id
+    image = None
+    image_extension = None
+    image_data = None
+    image_name = None
+    if image_attr.startswith("data:image/"):
+        image_extension = re.search("(?<=data:image/).*(?=;base64)", image_attr).group(0)
+        image_data = re.sub("^.*,","",image_attr)
+        image = get_cropped_image_from_data(image_data, image_type)
+    else:
+        if image_attr.startswith("http:") or image_attr.startswith("https://"): #quick and dirty test to check 
+                                                                                # if the file location is external url
+            image = get_cropped_image_from_url(image_attr, image_type)
+            primary_image_name_base = image_attr.split('/')[-1]
+            image_name, image_extension = os.path.splitext(primary_image_name_base)
+            if image.format in image_format_dict:
+                image_extension = image_format_dict["image.format"]
+            if image_extension and image_extension.startswith("."):
+                image_extension = image_extension[1:]
+        else:
+            filename_complete = convert_image_url_to_location(image_attr)
+            if filename_complete is None:
+                filename_complete = image_attr #maybe we got filepath instead of url, so  trying the rest of code with filename instead
+            image = get_cropped_image_from_file(filename_complete, image_type)
+            primary_image_name_base = os.path.basename(primary_image_name)
+            image_name, image_extension = os.path.splitext(primary_image_name_base)
+
+    if "primary_image_name" in kwargs:
+        saved_image_name = process_front_page_image(articleid, image_type, image, image_extension, primary_image_name= kwargs["primary_image_name"])
+    elif image_name:
+        saved_image_name = process_front_page_image(articleid, image_type, image, image_extension, primary_image_name= image_name)
+    else:
+        saved_image_name = process_front_page_image(articleid, image_type, image, image_extension)
+
+    image_url = get_front_page_image_url(saved_image_name)
+    
+    if image_type == "header_image":
+        article.header_image = image_url
+    elif image_type == "thumbnail_image":
+        article.thumbnail_image = image_url
+
+    return image_url
+
+    
 def convert_string_to_boolean(string):
     if string and string.lower() == "true":
         return True
@@ -433,12 +557,69 @@ def create_article(article=None, **kwargs):
         
     log_user_activity.send(sender=create_article, id=articleid, userid_to=user.id, userid_from=None)
 
-@receiver(log_user_activity, dispatch_uid="102")
-def update_article_creation_log(id, userid_to, userid_from, **kwargs):
-    activity_records = Author_Activity.objects(author_id=id)
-    activity_record = None
-    if len(activity_records) > 0:
-        activity_record = activity_records[0]
+def update_article(article=None, **kwargs):
+    user = kwargs["user"]
+    articleid = None
+    if article is None:
+        if "articleid" not in kwargs:
+            return
+        else:
+            articleid = kwargs["articleid"]
     else:
-        activity_record = Author_Activity()
+        articleid = article.id
+        
+    log_user_activity.send(sender=update_article, id=articleid, userid_to=user.id, userid_from=None)
+
+
+@receiver(log_user_activity, dispatch_uid="103")
+def update_article_creation_log(id, userid_to, userid_from, **kwargs):
+
+    author_settings_array_me = Author_Settings.objects(author_id=userid_to)
+    print "len(author_settings_array_me): " + str(len(author_settings_array_me))
+    if len(author_settings_array_me) == 0 or author_settings_array_me[0].privacy_hide_own_articles is False:
+        article_me_array = Article.objects(id=id)
+    
+        if len(article_me_array) > 0 and article_me_array[0].status=="published":
+            article_me = article_me_array[0]
+            activity_article_pm = {}        
+            activity_article_pm["title"] = article_me.title
+            activity_article_pm["published_date"] = article_me.published_date
+            activity_article_pm["excerpt"] = article_me.excerpt
+            activity_article_pm["slug"] = article_me.slug
+
+            print db.author__activity.update({"_id": str(userid_to)}, 
+                                       {"$push": 
+                                        {"latest_articles": 
+                                         { "$each" : [activity_article_pm],
+                                           "$slice" : -5
+                                         }
+                                        }
+                                       }, 
+                                       upsert=True)
+    
+#    activity_records = Author_Activity.objects(author_id=id)
+#    activity_record = None
+#    if len(activity_records) > 0:
+#        activity_record = activity_records[0]
+#    else:
+#        activity_record = Author_Activity()
     #activity_record = 
+
+def get_bad_article(error_type):
+    article = Article()
+    article.id = "-1"
+    article.author = Author()
+    article.author.id = "-1"
+    article.author.image = ""
+    article.author.first_name = ""
+    article.author.last_name = ""
+    article.author.user_bio = ""
+    
+    if error_type == "incorrect_articleid":
+        article.excerpt = "Article id is incorrect"
+        article.title = "Incorrect article id"
+    elif error_type == "no_article_found":
+        article.excerpt = "No article found!"
+        article.title = "No article found for this id"
+
+    return article
