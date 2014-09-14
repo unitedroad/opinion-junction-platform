@@ -787,8 +787,11 @@
 	  }
 
 	//scope.imageCropId = imageCropId;
-        scope.canvasWidth = scope.width + 100;
-        scope.canvasHeight = scope.height + 100;
+        //scope.canvasWidth = scope.width + 100;
+        //scope.canvasHeight = scope.height + 100;
+
+        scope.canvasWidth = scope.width;
+        scope.canvasHeight = scope.height;
         
         var $input = element.find('input[type=file]');
         var $canvas = element.find('canvas')[0];
@@ -813,13 +816,21 @@
 
         // ---------- INLINE STYLES ----------- //
         scope.moduleStyles = {
-          width: (scope.width + 100) + 'px',
-          height: (scope.height + 100) + 'px'
+          //width: (scope.width + 100) + 'px',
+          //height: (scope.height + 100) + 'px'
+
+          width: (scope.width) + 'px',
+          height: (scope.height) + 'px'
+
         };
 
         scope.sectionStyles = {
-          width: (scope.width + 100) + 'px',
-          height: (scope.height + 100) + 'px'
+          //width: (scope.width + 100) + 'px',
+          //height: (scope.height + 100) + 'px'
+
+          width: (scope.width) + 'px',
+          height: (scope.height) + 'px'
+
         };
 
         scope.croppingGuideStyles = {
@@ -871,14 +882,19 @@
 	scope.finalImgOnLoad = function() {
           var tempCanvas = document.createElement('canvas');
           tempCanvas.id = 'canvas-' + scope.imageCropId;
-          tempCanvas.width = this.width - 100;
-          tempCanvas.height = this.height - 100;
+          //tempCanvas.width = this.width - 100;
+          //tempCanvas.height = this.height - 100;
+
+          tempCanvas.width = this.width;
+          tempCanvas.height = this.height;
+
           tempCanvas.style.display = 'none';
           // console.log('tempCanvas.width', tempCanvas.width, tempCanvas.height);
 
           var tempCanvasContext = tempCanvas.getContext('2d');
           // console.log('tempCanvasContext', tempCanvasContext);
-          tempCanvasContext.drawImage(scope.finalImg, -50, -50);
+          //tempCanvasContext.drawImage(scope.finalImg, -50, -50);
+	  tempCanvasContext.drawImage(scope.finalImg, 0, 0);
 
           document.getElementById('section-final-' + scope.imageCropId).appendChild(tempCanvas);
           scope.result = tempCanvas.toDataURL();
@@ -889,6 +905,23 @@
         };	  
 
 	  scope.$img.onload = function() {
+	 
+	  console.log("scope.$img.width: " + scope.$img.width);
+
+	  console.log("scope.$img.height: " + scope.$img.height);
+	  
+          if (scope.$img.width < scope.width) {
+	      var oldImgWidth = scope.$img.width;
+	      scope.$img.width = scope.width;
+	      scope.$img.height = scope.$img.height * scope.$img.width / oldImgWidth;
+	      console.log("scope.$img.height now: " + scope.$img.height);
+	  }
+
+	  if (scope.$img.height < scope.height) {
+	      var oldImgHeight = scope.$img.height;
+	      scope.$img.height = scope.height;
+	      scope.$img.width = scope.$img.width * scope.$img.height / oldImgHeight;
+	  }
           ctx.drawImage(scope.$img, 0, 0);
 
 	        var dataURL = $canvas.toDataURL("image/png");
@@ -951,15 +984,19 @@
           
 	  //var scope = $($img).scope();
 
-          minLeft = (scope.width + 100) - this.width;
-          minTop = (scope.height + 100) - this.height;
+          //minLeft = (scope.width + 100) - this.width;
+          //minTop = (scope.height + 100) - this.height;
+          minLeft = (scope.width) - this.width;
+          minTop = (scope.height) - this.height;
+
           newWidth = imgWidth;
           newHeight = imgHeight;
 
           // console.log('canvas width', $canvas.width);
           // console.log('image width', imgWidth);
 
-          maxZoomedInLevel = ($canvas.width - 100) / imgWidth;
+          //maxZoomedInLevel = ($canvas.width - 100) / imgWidth;
+          maxZoomedInLevel = ($canvas.width) / imgWidth;
           // console.log('maxZoomedInLevel', maxZoomedInLevel);
 
           maxZoomGestureLength = to2Dp(Math.sqrt(Math.pow($canvas.width, 2) + Math.pow($canvas.height, 2)));

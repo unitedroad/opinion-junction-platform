@@ -14,6 +14,8 @@ from .models import STATUS_VALUE_DICT
 from .models import Metadata
 from .models import Author_Activity
 from .models import Author_Settings
+from .models import Category
+from .models import Tag
 from .db import db
 from rest_framework import status
 from allauth.account.signals import user_logged_in
@@ -21,7 +23,7 @@ from django.dispatch import receiver
 from django.contrib.auth.models import User
 import django.dispatch
 from lxml import etree, html
-from PIL import Image
+from PIL import Image, ImageOps, ImageChops
 
 LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
 LOCATION_ARTICLE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojarticleimages')
@@ -32,10 +34,40 @@ URL_FRONT_PAGE_IMAGES = settings.MEDIA_URL + 'ojfrontpageimages/'
 
 profile_updated = django.dispatch.Signal(providing_args=["id", "fields"])
 log_user_activity = django.dispatch.Signal(providing_args=["type", "id", "userid_from", "userid_to"])
+article_published = django.dispatch.Signal(providing_args=["article"])
+article_unpublished = django.dispatch.Signal(providing_args=["article"])
 
 crop_image_dimensions_dict = {"header_image" : (0,0,1280, 480), "thumbnail_image" : (0,0,180, 180)}
+fit_image_dimensions_dict = {"header_image" : (1280, 480), "thumbnail_image" : (180, 180)}
 
 image_format_dict = {"JPEG" : "jpg", "PNG" : "png", "GIF" : "gif"}
+
+
+def uses_transparency_filename(filename):
+    img = Image.open(filename)
+    trans = img.info.get("transparency", None)
+    if trans is not None:
+        trans *= 3  # convert color number to palette table index
+        palette = img.getpalette()
+        imgs = []
+        for bg in [0, 255]:   # map transparent color first to black, then white
+            palette[trans:trans+3] = [bg] * 3
+            img.putpalette(palette)
+            imgs.append(img.convert("L"))
+        return bool(ImageChops.difference(*imgs).getbbox())
+
+def uses_transparency(img):
+    trans = img.info.get("transparency", None)
+    if trans is not None:
+        trans *= 3  # convert color number to palette table index
+        palette = img.getpalette()
+        imgs = []
+        for bg in [0, 255]:   # map transparent color first to black, then white
+            palette[trans:trans+3] = [bg] * 3
+            img.putpalette(palette)
+            imgs.append(img.convert("L"))
+        return bool(ImageChops.difference(*imgs).getbbox())
+
 
 def check_valid_object_id(**kwargs):
     if "id" in kwargs:
@@ -371,6 +403,37 @@ def change_profile(user, data):
 #def get_friendly_name(author):
 #    return author.first_name + " " + author.last_name
 
+#def convert_image_to_jpg(image):
+#    bg = Image.new("RGB", image.size, (255,255,255))
+#    bg.paste(image, image)
+#    if bg.mode !="RGB":
+#        bg.convert("RGB")
+#    return bg
+
+
+def remove_transparency_from_image(image):
+    image = image.convert("RGBA")
+    alpha = image.split()[-1]
+    copy = Image.new("RGB", image.size, (255,255,255))
+    copy.paste(image,mask=alpha)
+    return copy.convert('RGB')
+#    #image = image.convert("RGBA")
+#    if image.mode == 'RGBA': #http://stackoverflow.com/questions/1962795/how-to-get-alpha-value-of-a-png-image-with-pil
+#        alpha = image.split()[-1]
+#    elif image.mode == 'LA' or (image.mode == 'P' and 'transparency' in image.info):
+#        image = image.convert("RGBA")
+#        alpha = image.split()[-1]
+#    else:
+#        return image.convert('RGB')
+#    alpha = image.split()[-1]
+#    alphamap = alpha.load()
+#    imagemap = image.load()
+#    for x in range(width):
+#        for y in range(height):
+#            if alphamap[x,y] == 0:
+#                imagemap[x,y] = 16777215
+#    return image.convert('RGB')
+
 def process_article_image_self_hosted(articleid, image_data, extension):
     directory = os.path.join(LOCATION_ARTICLE_IMAGES, articleid)
     if not os.path.exists(directory):
@@ -384,18 +447,43 @@ def process_article_image_self_hosted(articleid, image_data, extension):
     return file_name
 
 def process_front_page_image(articleid, image_type, image, extension, **kwargs):
+    #if image.format is "GIF":
+    #    pass
     directory = LOCATION_FRONT_PAGE_IMAGES
+    #print "image.format: " + str(image.format)
+    if image.format is "PNG" or image.format is "GIF" or not image.format:
+        extension = "jpg"
+        #print "image.format: " + str(image.format)
+        #image = convert_image_to_jpg(image)
+        image = remove_transparency_from_image(image)
     if "primary_image_name" in kwargs:
         file_name = image_type + "_" + str(articleid) + "_" + kwargs["primary_image_name"] + "." + extension
+        #file_name = image_type + "_" + str(articleid) + "_" + kwargs["primary_image_name"] + "." + "jpg"
     else:
         file_name = image_type + "_" + str(articleid) + "." + extension
-    
-    image.save(os.path.join(directory,file_name))
+        #file_name = image_type + "_" + str(articleid) + "." + "jpg"
+    if "quality" not in kwargs or kwargs["quality"] is None:
+        image.save(os.path.join(directory,file_name))
+    else:
+        image.save(os.path.join(directory,file_name), quality=kwargs["quality"])
     
 #    with open(os.path.join(directory, file_name), "wb") as file_handler:
 #        file_handler.write(image_data.decode('base64'))
     return file_name
     
+def check_gif_image_convertible_to_jpg(image, **kwargs): 
+    """checks if image is convertible to jpg 
+       Searches for frames in the image
+          Gets first frame and checks if it has transparency information
+              if it has transparency information, then it returns GIF_CONVERTIBLE_TO_PNG
+              otherwise, it returns GIF_CONVERTIBLE_TO_JPG instead
+    """
+    #http://stackoverflow.com/questions/10269099/pil-convert-gif-frames-to-jpg
+       
+    pass
+
+def check_png_image_convertible_to_jpg(image, **kawrgs):
+    pass
 
 def get_article_image_url(articleid, image_name):
     return URL_ARTICLE_IMAGES + articleid + "/" + image_name
@@ -444,14 +532,34 @@ def save_binary_images_in_content(article, content, **kwargs):
 
 def get_cropped_image_from_data(image_data, image_type):
     crop_dimensions = crop_image_dimensions_dict[image_type]
+    fit_dimensions = fit_image_dimensions_dict[image_type]
+    fit_width, fit_height = fit_dimensions
     image_data_binary = binascii.a2b_base64(image_data)
     binary_image_ios = io.BytesIO(image_data_binary)
     image = Image.open(binary_image_ios)
-    return image.crop(crop_dimensions)
+    fitted_image = None
+    image_width, image_height = image.size
+    if (image_height < fit_height) or (image_width < fit_width):
+        fitted_image = ImageOps.fit(image, fit_dimensions, Image.ANTIALIAS)
+    else:
+        fitted_image = ImageOps.fit(image, fit_dimensions)
+    return fitted_image
     
 def get_cropped_image_from_file(image_file, image_type):
     image = Image.open(image_file)
-    return image.crop(crop_dimensions)
+
+    fit_dimensions = fit_image_dimensions_dict[image_type]
+    fit_width, fit_height = fit_dimensions
+
+    fitted_image = None
+    image_width, image_height = image.size
+    if (image_height < fit_height) or (image_width < fit_width):
+        fitted_image = ImageOps.fit(image, fit_dimensions, Image.ANTIALIAS)
+    else:
+        fitted_image = ImageOps.fit(image, fit_dimensions)
+    return fitted_image
+
+    #return image.crop(crop_dimensions)
 
 def convert_image_url_to_location(image_url): #brittle, has tight coupling between image path and image url, 
                                               #any change to this coupling will have to be reflected here 
@@ -481,8 +589,16 @@ def get_front_page_image_url(image_name, image_type=None):
 
 def get_cropped_image(image, image_type):
     crop_dimensions = crop_image_dimensions_dict[image_type]
-    return image.crop(crop_dimensions)
-    pass
+    fit_dimensions = fit_image_dimensions_dict[image_type]
+    fit_width, fit_height = fit_dimensions
+    fitted_image = None
+    image_width, image_height = image.size
+    if (image_height < fit_height) or (image_width < fit_width):
+        fitted_image = ImageOps.fit(image, fit_dimensions, Image.ANTIALIAS)
+    else:
+        fitted_image = ImageOps.fit(image, fit_dimensions)
+    return fitted_image
+
 
 def image_from_url(image_url):
     url_ios = urllib2.urlopen(image_url)
@@ -494,6 +610,27 @@ def get_cropped_image_from_url(image_url, image_type):
    image = image_from_url(image_url)
    return get_cropped_image(image, image_type)
 
+def return_clean_file_name(file_name, is_extension=False):
+    if not file_name:
+        return ''
+
+
+    extension_period = u""
+
+    if is_extension and file_name.startswith("."):
+        extension_period = u"."
+        file_name = file_name[1:]
+        if not file_name:
+            return extension_period
+
+    stripped_name = ''.join([i if ord(i) < 128 else '' for i in file_name]) #remove unicode
+    stripped_name = urllib.unquote(stripped_name)
+    stripped_name = re.sub(r'\W+', '', stripped_name)
+
+
+    return extension_period + stripped_name
+    
+    
 def save_front_page_images_in_article(image_attr, article, image_type="header_image", **kwargs):
     articleid = article.id
     image = None
@@ -514,13 +651,18 @@ def save_front_page_images_in_article(image_attr, article, image_type="header_im
                 image_extension = image_format_dict["image.format"]
             if image_extension and image_extension.startswith("."):
                 image_extension = image_extension[1:]
+
+            image_name = return_clean_file_name(image_name)
+            image_extension = return_clean_file_name(image_extension, True)
         else:
             filename_complete = convert_image_url_to_location(image_attr)
             if filename_complete is None:
                 filename_complete = image_attr #maybe we got filepath instead of url, so  trying the rest of code with filename instead
             image = get_cropped_image_from_file(filename_complete, image_type)
-            primary_image_name_base = os.path.basename(primary_image_name)
+            primary_image_name_base = os.path.basename(filename_complete)
             image_name, image_extension = os.path.splitext(primary_image_name_base)
+            image_name = return_clean_file_name(image_name)
+            image_extension = return_clean_file_name(image_extension, True)
 
     if "primary_image_name" in kwargs:
         saved_image_name = process_front_page_image(articleid, image_type, image, image_extension, primary_image_name= kwargs["primary_image_name"])
@@ -552,9 +694,18 @@ def create_article(article=None, **kwargs):
             return
         else:
             articleid = kwargs["articleid"]
+            articles = Article.objects(id=articleid)
+            if len(articles) > 0:
+                article = articles[0]
+            else:
+                return
     else:
         articleid = article.id
         
+    
+    if article.status == "published":
+        article_published.send(sender=create_article,article=article)
+
     log_user_activity.send(sender=create_article, id=articleid, userid_to=user.id, userid_from=None)
 
 def update_article(article=None, **kwargs):
@@ -565,11 +716,59 @@ def update_article(article=None, **kwargs):
             return
         else:
             articleid = kwargs["articleid"]
+            articles = Article.objects(id=articleid)
+            if len(articles) > 0:
+                article = articles[0]
+            else:
+                return
     else:
         articleid = article.id
+
+    if "article_state" in kwargs and kwargs["article_state"] is not None:
+        article_state = kwargs["article_state"]
+        if article is not None:
+            if article.status != "published" and article_state["original_article"].status == "published":
+                article_unpublished.send(sender=update_article,article=article)
+            elif article.status == "published" and article_state["original_article"].status != "published":
+                article_published.send(sender=update_article,article=article)
         
+    
     log_user_activity.send(sender=update_article, id=articleid, userid_to=user.id, userid_from=None)
 
+
+def update_category_num_users_for_article(article, increment_number=1):
+    article_categories = sorted(article.categories)
+    #print "article_categories: " + article_categories
+    categories_db = Category.objects().order_by("name")
+    categories = []
+    categories.extend(categories_db)
+    #print "update_category_num_users_for_article: increment_number: " + str(increment_number)
+    for article_category in article_categories:
+        #print "article_category: " + article_category
+        for index, category in enumerate(categories):
+            if article_category == category.name:
+                category.update(inc__num_users=increment_number)
+                category.save()
+                categories = categories[index:]
+                break
+
+def update_tag_num_users_for_article(article, increment_number=1):
+    article_tags = article.tags
+    print "update_tag_num_users_for_article: increment_number: " + str(increment_number)
+    for article_tag in article_tags:
+        if article_tag and article_tag.strip():
+            Tag.objects(name=article_tag).update_one(upsert=True,set__name=article_tag,inc__num_users=increment_number)
+        #http://stackoverflow.com/questions/14623430/mongoengine-how-to-perform-a-save-new-item-or-increment-counter-operation
+
+@receiver(article_published, dispatch_uid="106")
+def handle_article_published(article, **kwargs):
+    update_category_num_users_for_article(article, 1)
+    update_tag_num_users_for_article(article, 1)
+
+@receiver(article_unpublished, dispatch_uid="107")
+def handle_article_unpublished(article, **kwargs):
+    update_category_num_users_for_article(article, -1)
+    update_tag_num_users_for_article(article, -1)
 
 @receiver(log_user_activity, dispatch_uid="103")
 def update_article_creation_log(id, userid_to, userid_from, **kwargs):
@@ -623,3 +822,23 @@ def get_bad_article(error_type):
         article.title = "No article found for this id"
 
     return article
+
+def return_list_stripped_members(list_object,add_blank=False):
+    stripped_list = []
+    for member in list_object:
+        if add_blank == False:
+            if not member:
+                continue
+            member = member.strip()
+            if not member:
+                continue
+            stripped_list.append(member)
+        else:
+            if not member:
+                stripped_list.append(member)
+                continue
+            member = member.strip()
+            stripped_list.append(member)
+
+    
+    return stripped_list

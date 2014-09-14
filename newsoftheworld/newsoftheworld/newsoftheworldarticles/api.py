@@ -4,10 +4,14 @@ import sys
 from .models import Article
 from .models import Author
 from .models import Metadata
+from .models import Category
+from .models import Tag
 from .models import Author_Settings
 from .serialisers import ArticleSerialiser
 from .serialisers import AuthorSerialiser
 from .serialisers import MetadataSerialiser
+from .serialisers import CategorySerialiser
+from .serialisers import TagSerialiser
 from .serialisers import Author_SettingsSerialiser
 from . import util
 #from . import db
@@ -23,6 +27,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 import bson
+
+import copy 
 
 class ArticlesList(APIView):
     model = Article
@@ -50,6 +56,14 @@ class ArticlesList(APIView):
     
         article = articles[0]
      
+        original_article = copy.deepcopy(article)
+
+        article_state = {}
+
+        article_state["original_article"] = original_article
+
+        article_state["changed_fields"] = []
+
         user_list = Author.objects(id=str(request.user.id))
         
         if len (user_list) < 1:
@@ -93,12 +107,12 @@ class ArticlesList(APIView):
             article.storyplaintext = request.DATA["storyplaintext"]
         article.excerpt = request.DATA["excerpt"]
         article.slug = request.DATA[u"slug"]
-        article.tags =  request.DATA[u"tags"]
-        article.categories = request.DATA[u"categories"]
+        article.tags =  util.return_list_stripped_members(request.DATA[u"tags"])
+        article.categories = util.return_list_stripped_members(request.DATA[u"categories"])
 
         article.save()
 
-        save_front_page_image_info = False
+        save_front_page_info = False
 
         if "header_image" in request.DATA and request.DATA["header_image"] is not None:
             util.save_front_page_images_in_article(request.DATA["header_image"], article, "header_image")
@@ -117,7 +131,7 @@ class ArticlesList(APIView):
         if save_front_page_info:
             article.save()
 
-        util.update_article(article, user=request.user)
+        util.update_article(article, article_state=article_state, user=request.user)
 
         permission_check["articleid"] = str(article.id)
         permission_check["message"] = "Successfully Submitted your Opinion!"
@@ -229,8 +243,8 @@ class ArticlesPost(APIView):
                 article.storyplaintext = request.DATA["storyplaintext"]
             article.excerpt = request.DATA["excerpt"]
             article.slug = request.DATA[u"slug"]
-            article.tags =  request.DATA[u"tags"]
-            article.categories = request.DATA[u"categories"]
+            article.tags =  util.return_list_stripped_members(request.DATA[u"tags"])
+            article.categories = util.return_list_stripped_members(request.DATA[u"categories"])
     #        if u"authorid" in request.DATA and request.DATA[u"authorid"] in not None:
     #            author = Author.objects(id=request.DATA[u"authorid"])
     #            article.author = author
@@ -461,26 +475,35 @@ class TagsList(APIView):
             if "num_docs" in request.GET:
                 num_docs = int(request.GET["num_docs"])
             print "num_docs = " + str(num_docs) 
-            tag_list = Metadata.objects.filter(entry_type="tag").order_by("num_user")[0:num_docs]
+            #tag_list = Metadata.objects.filter(entry_type="tag").order_by("num_user")[0:num_docs]
+            tag_list = Tag.objects.order_by("-num_users")[0:num_docs]
         else:
-            tag_list = Metadata.objects.filter(entry_type="tag")
-        serialisedList = MetadataSerialiser(tag_list)
+            #tag_list = Metadata.objects.filter(entry_type="tag")
+            tag_list = Tag.objects()
+        serialisedList = TagSerialiser(tag_list)
         return Response(serialisedList.data)
 
     def post(self, request, format=None):
-        metadata = Metadata()
-        metadata.entry_type = "tag"
-        metadata.name = request.DATA["name"]
-        metadata.num_user = 0
-        metadata.save()
+        #metadata = Metadata()
+        #metadata.entry_type = "tag"
+        #metadata.name = request.DATA["name"]
+        #metadata.num_user = 0
+        #metadata.save()
+        tag = Tag()
+        tag.name = request.DATA["name"]
+        tag.num_users = 0
+        tag.save()
         return Response({"ok":"true"})
         
 class CategoriesList(APIView):
 
     def get(self, request,  format=None):
 
-        tag_list = Metadata.objects.filter(entry_type="category")
-        serialisedList = MetadataSerialiser(tag_list)
+        #tag_list = Metadata.objects.filter(entry_type="category")
+        #serialisedList = MetadataSerialiser(tag_list)
+        category_list = Category.objects()
+        serialisedList = CategorySerialiser(category_list)
+
         return Response(serialisedList.data)
 
     def post(self, request, format=None):
@@ -496,13 +519,19 @@ class CategoriesList(APIView):
         if "create_categories" not in user_permissions:
             return Response({"ok" : "false", "code" : "no_permission", "message" : "You don't have permission to create categories" }, status = status.HTTP_403_FORBIDDEN)
 
-        metadata = Metadata()
-        metadata.entry_type = "category"
-        metadata.name = request.DATA["name"]
+        #metadata = Metadata()
+        #metadata.entry_type = "category"
+        #metadata.name = request.DATA["name"]
+        #if "friendly_name" in request.DATA:
+        #    metadata.friendly_name = request.DATA["friendly_name"]
+        #metadata.num_user = 0
+        #metadata.save()
+        category = Category()
+        category.name = request.DATA["name"]
         if "friendly_name" in request.DATA:
-            metadata.friendly_name = request.DATA["friendly_name"]
-        metadata.num_user = 0
-        metadata.save()
+            category.friendly_name = request.DATA["friendly_name"]
+        category.num_users = 0
+        category.save()
         return Response({"ok":"true"})
 
 class AuthorsSettings(APIView):

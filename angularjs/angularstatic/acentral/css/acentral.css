@@ -205,6 +205,18 @@ body { padding-top: 50px; }
 .article-content-section {
     line-height: 160%;
     font-size: 15px;
+    padding-top:18px
+}
+
+.article-content-section iframe[allowfullscreen="allowfullscreen"] { 
+    /*Bad Hack but tinyMCE is stubborn ! :( */
+    height: 385px;
+    width: 680px;
+}
+
+.article-content-section h3,article-content-section h4 {
+    margin-top:20px;
+    margin-bottom:30px;
 }
 
 .usersidebar {
@@ -381,4 +393,31 @@ body { padding-top: 50px; }
 
 .carousel-article-link:hover {
     color : #FFE4C4;
+}
+
+div[data-label="image-container"] {
+    font-size: 11px;
+    font-style: italic;
+    position: relative;
+    margin-bottom:30px
+}
+
+div[data-caption-label] {
+    position:absolute;
+    left:0px;
+}
+
+div[data-attribution-label] {
+    position:absolute;
+    right: 0px;
+}
+
+#article-main-area {
+    margin-left:70px;
+}
+
+#floating-socialbar {
+    float:left;
+    margin-top:50px;
+    width:60px;
 }

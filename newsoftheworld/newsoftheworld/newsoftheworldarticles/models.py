@@ -131,6 +131,23 @@ class Metadata(models.Model):
         'indexes': [ {'fields' : ['num_user', 'name'] }]
     }
 
+class Category(Document):
+    name= StringField(max_length=511)
+    friendly_name = StringField(max_length=511, default='')
+    num_users = IntField(default=0)
+    meta = {
+        'indexes': [ {'fields' : ['num_users', 'name'] }]
+    }
+
+class Tag(Document):
+    name= StringField(max_length=511)
+    num_users = IntField(default=0)
+    meta = {
+        'indexes': [ {'fields' : ['num_users', 'name'] }]
+    }
+
+
+
 class Author_Settings(Document):
     author_id = StringField(required=True,primary_key=True)
     privacy_hide_own_articles = BooleanField(default=False)

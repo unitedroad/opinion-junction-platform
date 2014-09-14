@@ -106,11 +106,31 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    url: "/createarticle",
 	    templateUrl: '/angularstatic/createarticle/partials/index.html',
 	    controller: 'createArticleController'
+	}).state('createarticlepfrontpagereview', {
+	    title: "Opinion Junction - Preview Article",
+	    url: "/user/createarticle/frontpagepreview",
+	    templateUrl: '/angularstatic/home/partials/index.html',
+	    controller: 'createArticleFrontPagePreviewController'
+	}).state('createarticlepreview', {
+	    title: "Opinion Junction - Preview Article",
+	    url: "/user/createarticle/preview",
+	    templateUrl: '/angularstatic/article/partials/article.html',
+	    controller: 'createArticlePreviewController'
 	}).state('user.articles', {
 	    title: "Opinion Junction - Articles",
 	    url: "/articles",
 	    templateUrl: '/angularstatic/articleslist/partials/index.html',
 	    controller: 'viewArticlesController'
+	}).state('editarticlepfrontpagereview', {
+	    title: "Opinion Junction - Preview Article",
+	    url: "/user/editarticle/frontpagepreview",
+	    templateUrl: '/angularstatic/home/partials/index.html',
+	    controller: 'createArticleFrontPagePreviewController'
+	}).state('editarticlepreview', {
+	    title: "Opinion Junction - Preview Article",
+	    url: "/user/editarticle/preview",
+	    templateUrl: '/angularstatic/article/partials/article.html',
+	    controller: 'createArticlePreviewController'
 	}).state('user.editarticle', {
 	    title: "Opinion Junction - Edit Article",
 	    url: "/editarticle/:articleId",
@@ -158,6 +178,8 @@ function initSidebarCapabilities(commonOJService, scope) {
 	}
 
 }
+
+
 
 testApp.factory('commonOJService', function($http, $location) {
     var serviceInstance = {};
@@ -1100,7 +1122,7 @@ testApp.controller('testController', function($scope) {
     $scope.message = "Welcome to Opinion Junction";
 });
 
-testApp.controller('mainPageController', function($scope, $rootScope, $http, $modal, commonOJService, profileService, $stateParams) {
+testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, profileService, $stateParams) {
     $scope.category = $stateParams.category;
 
     //$rootScope.title = "Opinion Junction";
@@ -1112,6 +1134,9 @@ testApp.controller('mainPageController', function($scope, $rootScope, $http, $mo
 
     createCategoriesMap = function(categories) {
 	var categoriesMap = {};
+	if (categories == null) {
+	    return; // not the end of the world
+	}
 	var numCategories = categories.length;
 	for (i = 0; i < numCategories; i++) {
 	    category = categories[i];
@@ -1127,10 +1152,15 @@ testApp.controller('mainPageController', function($scope, $rootScope, $http, $mo
 	$scope.categoryImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg/1024px-Pont_de_Bir-Hakeim_and_view_on_the_16th_Arrondissement_of_Paris_140124_1.jpg";
 
 	$scope.categoriesMap = createCategoriesMap($scope.categories);
-	$scope.categoriesMapCreated = true;
-	if ($scope.category in $scope.categoriesMap) {
-	    $scope.category_friendly_name = $scope.categoriesMap[$scope.category].friendly_name;
-	    $("title").text("Opinion Junction - " + $scope.category_friendly_name);	    
+	if ($scope.categoriesMap !=null) {
+	    $scope.categoriesMapCreated = true;
+	    if ($scope.category in $scope.categoriesMap) {
+		$scope.category_friendly_name = $scope.categoriesMap[$scope.category].friendly_name;
+		$("title").text("Opinion Junction - " + $scope.category_friendly_name);	    
+	    } 
+
+	} else {
+	    $("title").text("Opinion Junction - " + $scope.category);	    
 	}
 	
 
@@ -1338,7 +1368,7 @@ testApp.controller('mainPageController', function($scope, $rootScope, $http, $mo
 	}
 	
 	for (i = 1; i < numArticleCategories; i++) {
-	    category_friendly_names = category_friendly_names + "," + $scope.categoriesMap[articleCategories[i].friendly_name];
+	    category_friendly_names = category_friendly_names + ", " + $scope.categoriesMap[articleCategories[i]].friendly_name;
 	    //if (category.localCompare
 	}
 
@@ -1387,7 +1417,7 @@ testApp.controller('mainPageController', function($scope, $rootScope, $http, $mo
     
 });
 
-testApp.controller('mainController', function($scope, $rootScope, $http, $modal, commonOJService, $stateParams) {
+testApp.controller('mainController', function($scope, $http, $modal, commonOJService, $stateParams) {
 
     $scope.category = $stateParams.category;
     
@@ -1625,7 +1655,7 @@ testApp.controller('mainController', function($scope, $rootScope, $http, $modal,
 });
 
 
-testApp.controller('articleController', function($scope, $http, $stateParams, commonOJService) {
+testApp.controller('articleController', function($scope, $http, $stateParams, $sce, commonOJService) {
 
     $scope.message = "Welcome to Opinion Junction's First Article";
     $scope.articleId = $stateParams.articleId;
@@ -1645,6 +1675,11 @@ testApp.controller('articleController', function($scope, $http, $stateParams, co
 
 		}
 	    });
+
+
+    $scope.to_trusted = function(html_code) { //http://stackoverflow.com/questions/24178316/ng-bind-html-strips-elements-attributes
+	return $sce.trustAsHtml(html_code);
+    };
 
     $scope.comments_init = function () {
         $('iframe_comments').height($('iframe_comments').contents().height());
@@ -1854,7 +1889,53 @@ testApp.controller('publicProfileController', function($scope, commonOJService, 
 
 });
 
-testApp.controller('createArticleController', function($scope, $http, commonOJService, $location, $rootScope, $stateParams) {
+testApp.controller('createArticleFrontPagePreviewController', function($scope, $location) {
+    //var articleState = createEditPreviewArticleStateService.getArticleState();
+    var articleState = window.articleState; //http://stackoverflow.com/questions/21519113/angularjs-open-a-new-browser-window-yet-still-retain-scope-and-controller-and
+    console.log("In createArticleFrontPagePreviewController");
+    if (articleState != null) {
+	$scope.articleInfos = [articleState.article];
+	if (articleState.article.header_image) {
+	    $scope.articles = [articleState.article];
+	} else {
+	    if (articleState.article.primary_image) {
+		articleState.article.header_image = articleState.article.primary_image;
+		$scope.articles = [articleState.article];
+	    }
+	}
+	$scope.mode = articleState.mode;
+    } else {
+	commonOJService.messageForControllers.messageViewErrorMessage = "It seems you aren't editing any opinion, click on Home above to go back to the home page";
+	
+
+	$location.path("/message");
+ 
+    }
+});
+
+testApp.controller('createArticlePreviewController', function($scope, $location, $sce) {
+    //var articleState = createEditPreviewArticleStateService.getArticleState();
+    var articleState = window.articleState; //http://stackoverflow.com/questions/21519113/angularjs-open-a-new-browser-window-yet-still-retain-scope-and-controller-and
+    if (articleState != null) {
+	$scope.article = articleState.article;
+	$scope.mode = articleState.mode;
+    } else {
+	commonOJService.messageForControllers.messageViewErrorMessage = "It seems you aren't editing any opinion, click on Home above to go back to the home page";
+	
+
+	$location.path("/message");
+ 
+    }
+
+    $scope.to_trusted = function(html_code) { //http://stackoverflow.com/questions/24178316/ng-bind-html-strips-elements-attributes
+	return $sce.trustAsHtml(html_code);
+    };
+
+});
+
+testApp.controller('createArticleController', function($scope, $http, commonOJService,  $location, $stateParams) {
+
+    //createEditPreviewArticleStateService.setArticleState(null);
 
     $("title").text("Opinion Junction");
 
@@ -1958,15 +2039,18 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
       width : "800px",
       height : "800px",
       plugins : ["advlist","autoresize","autosave","fullscreen","image","media","paste","preview",
-		 "searchreplace","spellchecker","visualblocks","visualchars","wordcount", "notwimageupload"],
-      toolbar: ["undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | notwimageupload | notwprimaryimage"],
+		 "searchreplace","spellchecker","visualblocks","visualchars","wordcount", "link", "notwimageupload", "caption", "youtube"],
+      toolbar: ["undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | youtube | notwimageupload | notwprimaryimage | notwcaptionimage | caption | attribution"],
       paste_data_images: true, //http://stackoverflow.com/questions/21082723/tinymce-can-no-longer-drag-and-drop-images-after-upgrading-from-version-3-to-ver
       convert_urls: false, //http://www.tinymce.com/tryit/url_conversion.php
-      extended_valid_elements: "@[primaryimage]", //http://stackoverflow.com/questions/5444677/wordpress-visual-editor-tinymce-how-to-preserve-custom-attributes
-      valid_elements: "@[primaryimage]," + //Your attributes HERE!!!
+      extended_valid_elements: "@[primaryimage|width|height|style]", //http://stackoverflow.com/questions/5444677/wordpress-visual-editor-tinymce-how-to-preserve-custom-attributes
+      valid_elements: "@[primaryimage|data*]," + //Your attributes HERE!!!
       "a[name|href|target|title]," +
-      "#p,-ol,-ul,-li,br,img[src],-sub,-sup,-b,-i," +
-      "-span,hr",
+      "#p,-ol,-ul,-li,br,img[src|style],-sub,-sup,-b,-i," +
+      "-span,hr,div[data-label|data-caption-label|data-source-label|data-attribution-label|class]," + 
+      "object[width|height|classid|codebase|type|data],param[name|value],iframe[data|width|height|src|allowfullscreen|frameborder|style]," +
+      "h1,h2,h3,h4,h5,em,strong",
+      extended_valid_elements : "embed[src|type|width|height|flashvars|wmode]"
 
     };
 
@@ -1996,6 +2080,8 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
 	    }
 	    scope.authorWhoCanEditId = -1;
+	    //scope.editingButtonsEnabled = true;
+	    scope.editingButtonsDisabled = false;
 	}
     };
 
@@ -2003,18 +2089,82 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	$scope.setupEditModeOnInit(scope);
     }
 
-    getArticleForEditMode = function() {
+    $scope.selectCategoryOnUi  = function(category) {
+	var numCategories = $scope.categories.length;
+	for (var i = 0; i < numCategories; i++) {
+	    if (category === $scope.categories[i].name) {
+		$scope.categories[i].selected = true;
+		break;
+	    }
+	}
+
+    }
+
+
+    $scope.selectArticleCategoriesOnUi = function() {
+	var articleCategories = $scope.originalArticle.categories
+	var numArticleCategories = articleCategories.length;
+	for (var i = 0; i < numArticleCategories; i++) {
+	    var articleCategory = articleCategories[i];
+	    $scope.selectCategoryOnUi(articleCategory);
+	}
+
+
+    }
+
+    $scope.setStatusText = function(statusValue) {
+	var numAllowedStatuses = $scope.allowedStatusValuesMap.length;
+	for (var i = 0; i < numAllowedStatuses; i++) {
+	    var allowedStatusValueTextArray = $scope.allowedStatusValuesMap[i].split(",");;
+	    if (allowedStatusValueTextArray[0] === statusValue) {
+		$scope.statusText = allowedStatusValueTextArray[1];
+		break;
+	    }
+	}
+    }
+
+    var setSelectedTagsForEditMode = function(article) {
+	var articleTags = article.tags;
+
+	if (articleTags != null) {
+	    var tagsString = "";
+	    var numArticleTags = articleTags.length;
+	    if (numArticleTags > 0) {
+		tagsString = tagsString + articleTags[0];
+	    }
+	    for (var i = 1; i < numArticleTags; i++) {
+		tagsString = tagsString + "," + articleTags[i];
+	    }
+	    if (tagsString) {
+		$scope.selectedTags = tagsString;
+	    }
+	}
+ 
+    };
+
+    var getArticleForEditMode = function() {
 	$http.get("/api/1.0/articles/" + $scope.articleId, {headers: {"Content-Type": "application/json"}})
 	    .success( function(data) {
 		if (data.length > 0) {
-		    article = data[0];
+		    var article = data[0];
 		    $scope.topic = article.title;
 		    $scope.slug= article.slug;
 		    $scope.excerpt = article.excerpt;
 		    $scope.articleAuthor = article.author;
 		    $scope.content = article.storytext;
-		    $scope.content = article.storytext;
-		    
+		    $scope.status = article.status;
+		    $scope.originalArticle = article;
+		    //$scope.content = article.storytext;
+		    if ($scope.categories && $scope.categoriesCheckboxDefined !== true) {
+			$scope.selectArticleCategoriesOnUi(); 
+			$scope.categoriesCheckboxDefined = true;
+		    }
+		    if ($scope.allowedStatusValuesMap && $scope.initialStatusDefined !==true) {
+			$scope.setStatusText($scope.status);	
+			$scope.initialStatusDefined = true;
+		    }
+		    setSelectedTagsForEditMode(article);
+
 		} else {
 		    $scope.errorMessage="Opinion not found";
 		    $scope.submitError = true;
@@ -2036,10 +2186,20 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     $scope.popularTags = [];
 
-    setCategories = function() {
 
-	$scope.categories = commonOJService.categories;
+
+
+
+    var setCategories = function() {
+
+	$scope.categories = JSON.parse(JSON.stringify(commonOJService.categories)); //Deep copy of commonOJService.categories
+	if ($scope.originalArticle && $scope.categoriesCheckboxDefined !== true) {
+	    $scope.selectArticleCategoriesOnUi(); 
+	    $scope.categoriesCheckboxDefined = true;
+	}
     }
+
+
 
     commonOJService.registerCategoryListener(setCategories);
     $scope.categories = commonOJService.categories;
@@ -2071,8 +2231,72 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     }
 
+    var createTagNameMap = function(tagNameMap, tags) {
+	if (tags === null) {
+	    tags = $scope.popularTags;
+	}
 
-    
+	if (tagNameMap === null) {
+	    tagNameMap = {};
+	}
+
+	var numTags = tags.length;
+	for (var i = 0; i < numTags; i++) {
+	    var tag = tags[i];
+	    tagNameMap[tag.name] = tag;
+	}
+	return tagNameMap;
+    }
+
+    var checkManuallyEnteredTags = function(tags) {
+	if ($scope.selectedTags && tags) {
+	    var originalTags = tags;
+	    tags = JSON.parse(JSON.stringify(tags)); //http://stackoverflow.com/questions/1129216/sorting-objects-in-an-array-by-a-field-value-in-javascript
+	    tags.sort(function(tag1,tag2) {
+		if (tag1.name > tag2.name) {
+		    return 1;
+		} else if (tag2.name > tag1.name) {
+		    return -1;
+		}
+		return 0;
+	    });
+	    var numTags = tags.length;
+	    var selectedTagsArray = $scope.selectedTags.split(",");
+	    var tagNameMap = {};
+	    var tagNameMapCreated = false;
+	    selectedTagsArray.sort(function(tag1, tag2) {
+		tag1 = tag1.trim();
+		tag2 = tag2.trim();
+		if (tag1 > tag2) {
+		    return 1;
+		} else if (tag2 > tag1) {
+		    return -1;
+		}
+		return 0;		
+	    });
+	    var numSelectedTags = selectedTagsArray.length;
+	    for (var i = 0; i < numSelectedTags; i++) {
+		var selectedTag = selectedTagsArray[i];
+		for (var j = 0; j < numTags; j++) {
+		    var tag = tags[j];
+		    if (selectedTag && (selectedTag = selectedTag.trim())) {
+			if (selectedTag === tag.name) {
+			    if (tagNameMapCreated === false) {
+				createTagNameMap(tagNameMap, originalTags);
+				tagNameMapCreated = true
+			    }
+			    tagNameMap[tag.name].selected = true;
+			    tags = tags.slice(j);
+			    break;
+			}
+
+		    }
+		}
+	    }
+
+	}
+
+    }
 
     $scope.getPopularTags = function() {
 	if ($scope.showPopularTags !== true) {
@@ -2083,6 +2307,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 		    $scope.popularTags = response;
 		    $scope.showPopularTags = true;
 		    $scope.popularTagsDivCollapse = false;
+		    checkManuallyEnteredTags($scope.popularTags)
 		}
 	
 	
@@ -2145,25 +2370,31 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
  
     getAllowedStatusValuesMap = function() {
 	allowedStatusValuesMap = [];
-	if ($scope.articleAuthor == null || commonOJService.userData.id == $scope.articleAuthor.id) {
-      	    for (permission in $scope.permissionStatusValuesMapForSelf) {
-    		if (commonOJService.indexOf(commonOJService.userData.user_permissions,permission) > -1 ) {
-    		    allowedStatusValuesMap = allowedStatusValuesMap.concat($scope.permissionStatusValuesMapForSelf[permission]);
+	if (commonOJService.userData) {
+	    if ($scope.articleAuthor == null || commonOJService.userData.id == $scope.articleAuthor.id) {
+      		for (permission in $scope.permissionStatusValuesMapForSelf) {
+    		    if (commonOJService.indexOf(commonOJService.userData.user_permissions,permission) > -1 ) {
+    			allowedStatusValuesMap = allowedStatusValuesMap.concat($scope.permissionStatusValuesMapForSelf[permission]);
+    		    }
     		}
-    	    }
-	} else {
-	    for (permission in $scope.permissionStatusValuesMapForOthers) {
-		if (commonOJService.indexOf(commonOJService.userData.user_permissions,permission) > -1 ) {
-		    allowedStatusValuesMap = allowedStatusValuesMap.concat($scope.permissionStatusValuesMapForOthers[permission]);
+	    } else {
+		for (permission in $scope.permissionStatusValuesMapForOthers) {
+		    if (commonOJService.indexOf(commonOJService.userData.user_permissions,permission) > -1 ) {
+			allowedStatusValuesMap = allowedStatusValuesMap.concat($scope.permissionStatusValuesMapForOthers[permission]);
+		    }
 		}
 	    }
+
+	    if ($scope.status) {
+		allowedStatusValuesMap = allowedStatusValuesMap.concat(commonOJService.getObjectValue($scope.allStatusValues, $scope.status));    
+	    }
+
+	    return commonOJService.unique(allowedStatusValuesMap);
+
 	}
 	
-	if ($scope.status) {
-	    allowedStatusValuesMap = allowedStatusValuesMap.concat(commonOJService.getObjectValue($scope.allStatusValues, $scope.status));
-	}
 	
-	return commonOJService.unique(allowedStatusValuesMap);
+
     }
 
     $scope.showStatusDropDown = function() {
@@ -2229,9 +2460,21 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	if ($scope.mode == "edit") {
 	    $scope.editEnabled = $scope.isEditEnabled("");
 	    if ($scope.editEnabled) {
-		$scope.authorWhoCanEditId = article.author.id;
+		$scope.authorWhoCanEditId = $scope.originalArticle.author.id;
+		//$scope.editingButtonsEnabled = true;
+		$scope.editingButtonsDisabled = false;
 	    }
-	    $scope.allowedStatusValuesMap = getAllowedStatusValuesMap();
+	    var allowedStatusValuesMap = getAllowedStatusValuesMap();
+	    if (allowedStatusValuesMap !==null) {
+		$scope.allowedStatusValuesMap = allowedStatusValuesMap;
+	    }
+	    
+	    if ($scope.status) {
+		if ($scope.mode === "edit" && $scope.originalArticle && $scope.initialStatusDefined !== true) {
+		    $scope.setStatusText($scope.status);	
+		    $scope.initialStatusDefined = true;
+		}
+	    }
 	    $scope.statusDropDownVisible = $scope.showStatusDropDown();
 	    $scope.articleInitialised = true;
 	    setPageLeaveBehaviourForEdit();
@@ -2314,6 +2557,68 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	//alert(elements.find("img").length);
     };
 
+
+    $scope.getArticleObject = function() {
+	var article = new Object();
+	article.title = $scope.topic;
+	article.slug = $scope.slug;
+	article.excerpt = $scope.excerpt;
+	if ($scope.content != $scope.originalContent) {
+	    article.storytext = $scope.content;
+	}
+	article.tags = $scope.getAllSelectedTags($scope.selectedTags, $scope.getSelectedValues($scope.popularTags));
+
+	article.categories = $scope.getSelectedValues($scope.categories);
+
+	article.status = $scope.status;
+
+	if ($scope.primaryImageChanged > 0) {
+	    article.header_image = $scope.headerImage;
+	    article.thumbnail_image = $scope.thumbnail;
+	}
+
+	return article;
+
+    }
+
+    $scope.previewArticle = function() {
+	var article = $scope.getArticleObject();
+	var articleState = {};
+	articleState.article = article;
+	articleState.mode = $scope.mode;
+	//createEditPreviewArticleStateService.setArticleState(articleState);
+	if ($scope.mode === "create") {
+	    var previewWindow = window.open("/user/createarticle/preview");
+	    articleState.article.author = $scope.userData;
+	    previewWindow.articleState = articleState;
+	    //$location.path("/user/createarticle/preview");
+	} else {
+	    var previewWindow = window.open("/user/editarticle/preview");
+	    articleState.article.author = $scope.articleAuthor;
+	    previewWindow.articleState = articleState;
+	    //$location.path("/user/editarticle/preview");
+	}
+    }
+
+    $scope.previewArticleFrontPage = function() {
+	var article = $scope.getArticleObject();
+	var articleState = {};
+	articleState.article = article;
+	articleState.mode = $scope.mode;
+	//createEditPreviewArticleStateService.setArticleState(articleState);
+	if ($scope.mode === "create") {
+	    var previewWindow = window.open("/user/createarticle/frontpagepreview");
+	    articleState.article.author = $scope.userData;
+	    previewWindow.articleState = articleState;
+	    //$location.path("/user/createarticle/preview");
+	} else {
+	    var previewWindow = window.open("/user/editarticle/frontpagepreview");
+	    articleState.article.author = $scope.articleAuthor;
+	    previewWindow.articleState = articleState;
+	    //$location.path("/user/editarticle/preview");
+	}
+    }
+
     $scope.submitArticle = function() {
 	//processBinaryImages();
 	//return;
@@ -2326,26 +2631,15 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	    $scope.contentFocus = true;	    
 	    return;
 	}
-	var article = new Object();
-	article.title = $scope.topic;
-	article.slug = $scope.slug;
-	article.excerpt = $scope.excerpt;
-	if ($scope.content != $scope.originalContent) {
-	    article.storytext = $scope.content;
-	}
-	article.tags = $scope.getAllSelectedTags($scope.selectedTags, $scope.getSelectedValues($scope.popularTags));
-
-	article.categories = $scope.getSelectedValues(commonOJService.categories);
-
-	article.status = $scope.status;
-
-	if ($scope.primaryImageChanged > 0) {
-	    article.header_image = $scope.headerImage;
-	    article.thumbnail_image = $scope.thumbnail;
-	}
+	var article = $scope.getArticleObject();
 
 	permission_logic = {};
 
+
+	//$scope.editingButtonsEnabled = false;
+	$scope.editingButtonsDisabled = true;
+
+	//$scope.$apply();
 	if ($scope.mode === "create") {
 
             $http.post("/api/1.0/articles", JSON.stringify(article), {headers: {"Content-Type": "application/json"}})
@@ -2370,12 +2664,16 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 		    }
 		    
 		}
+		//$scope.editingButtonsEnabled = true;
+		$scope.editingButtonsDisabled = false;
 		
             })
             .error(function(data) {
                 $scope.submitSuccess = false; $scope.showSuccess = false;
                 $scope.submitError = true; $scope.showError = true;
 		$scope.setErrorMessage(data);
+		//$scope.editingButtonsEnabled = true;
+		$scope.editingButtonsDisabled = false;
             });
         
 	} else {
@@ -2388,11 +2686,15 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 		    $scope.content = data.storytext;
 		    $scope.contentChangedAngular  = true;
 		}
+		//$scope.editingButtonsEnabled = true;
+		$scope.editingButtonsDisabled = false;
             })
             .error(function(data) {
                 $scope.submitSuccess = false; $scope.showSuccess = false;
                 $scope.submitError = true; $scope.showError = true;
 		$scope.setErrorMessage(data);
+		//$scope.editingButtonsEnabled = true;
+		$scope.editingButtonsDisabled = false;
             });
 	}
     }
@@ -2427,6 +2729,9 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
     };
 
     $scope.setErrorMessage = function(data) {
+	if ((typeof data) === "string" || data instanceof String) {
+	    $scope.errorMessage = "Something went wrong while submitting your opinion, here are the details, please contact the site administrators with it: " + data;
+	}
 	if ("message" in data) {
 	    $scope.errorMessage = data.message;
 	} else {
@@ -2485,7 +2790,7 @@ testApp.controller('viewArticlesController', function($scope, commonOJService, $
 	if (typeof(pageNumber) === 'undefined') {
 	    pageNumber = 0;
 	}
-	articlesUrl = "/api/1.0/articles/?no_content=true&limit=10";
+	articlesUrl = "/api/1.0/articles/?no_content=true&limit=50";
 	if (commonOJService.userData == null) {
 	    return;
 	}
@@ -3184,15 +3489,18 @@ angular.module('ui.tinymce', [])
 		mode: 'exact',
 		elements: attrs.id,
 		height : "800px",
-		plugins : "advlist autoresize autosave fullscreen image media paste preview searchreplace spellchecker visualblocks visualchars wordcount notwimageupload",
-		toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | notwimageupload | notwprimaryimage",
+		plugins : "advlist autoresize autosave fullscreen image media paste preview searchreplace spellchecker visualblocks visualchars wordcount link notwimageupload caption youtube",
+		toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | youtube | notwimageupload | notwprimaryimage | notwcaptionimage | caption | attribution",
 		paste_data_images: true, //http://stackoverflow.com/questions/21082723/tinymce-can-no-longer-drag-and-drop-images-after-upgrading-from-version-3-to-ver
 		convert_urls: false, //http://www.tinymce.com/tryit/url_conversion.php
-		extended_valid_elements: "@[primaryimage]", //http://stackoverflow.com/questions/5444677/wordpress-visual-editor-tinymce-how-to-preserve-custom-attributes
-		valid_elements: "@[primaryimage]," + //Your attributes HERE!!!
+		extended_valid_elements: "@[primaryimage|width|height|style]", //http://stackoverflow.com/questions/5444677/wordpress-visual-editor-tinymce-how-to-preserve-custom-attributes
+		valid_elements: "@[primaryimage|data*]," + //Your attributes HERE!!!
 		"a[name|href|target|title]," +
-		    "#p,-ol,-ul,-li,br,img[src],-sub,-sup,-b,-i," +
-		    "-span,hr"
+		    "#p,-ol,-ul,-li,br,img[src|style],-sub,-sup,-b,-i," +
+		    "-span,hr,div[data-label|data-caption-label|data-source-label|data-attribution-label|class]," + 
+		    "object[width|height|classid|codebase|type|data],param[name|value],iframe[data|width|height|src|allowfullscreen|frameborder|style]," +
+		    "h1,h2,h3,h4,h5,em,strong",
+		extended_valid_elements : "embed[src|type|width|height|flashvars|wmode]"
 
 
 	    };

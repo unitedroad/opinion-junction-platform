@@ -111,6 +111,14 @@ class MetadataSerialiser(serializers.Serializer):
     friendly_name = serializers.CharField()
     entry_type = serializers.CharField()
 
+class CategorySerialiser(serializers.Serializer):
+    name = serializers.CharField()
+    friendly_name = serializers.CharField()
+
+class TagSerialiser(serializers.Serializer):
+    name = serializers.CharField()
+
+
 class Author_SettingsSerialiser(serializers.Serializer):
     author_id = serializers.CharField()
     privacy_hide_own_articles = serializers.BooleanField()

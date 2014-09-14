@@ -33,7 +33,7 @@ def set_category_friendly_name_string(context,article):
     articleCategoriesIndex1 = articleCategories[1:]
 
     for articleCategory in articleCategoriesIndex1:
-        category_friendly_names = category_friendly_names + "," + categoriesMap[articleCategory.friendly_name]
+        category_friendly_names = category_friendly_names + "," + categoriesMap[articleCategory].friendly_name
 
     article.category_friendly_names = category_friendly_names
 
@@ -111,7 +111,7 @@ def addHeaderArticle(headerArticles, articleInfos):
         if articleInfo.primary_image:
             if not articleInList(articleInfo, headerArticles):
                 if not articleInfo.header_image:
-                    articleInfo.header_image = article.primary_image
+                    articleInfo.header_image = articleInfo.primary_image
                 headerArticles.append(articleInfo)
                 return
 
