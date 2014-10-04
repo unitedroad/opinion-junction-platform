@@ -127,3 +127,14 @@ class Author_SettingsSerialiser(serializers.Serializer):
     privacy_hide_others_comments = serializers.BooleanField()
     privacy_hide_others_replies = serializers.BooleanField()
     privacy_hide_others_votes = serializers.BooleanField()
+
+class Author_ActivitySerialiser(serializers.Serializer):
+    author_id = serializers.CharField()
+    author_name = serializers.CharField()
+    author_bio = serializers.CharField()
+    image = serializers.CharField()
+#    latest_articles = ListField(EmbeddedDocumentField(Activity_Article))
+#    latest_comments = ListField(EmbeddedDocumentField(Activity_Comment))
+#    latest_votes = ListField(EmbeddedDocumentField(Activity_Vote))
+#    latest_replies_from = ListField(EmbeddedDocumentField(Activity_Comment))
+#    latest_votes_from = ListField(EmbeddedDocumentField(Activity_Vote))

@@ -109,6 +109,7 @@ class Author_Activity(Document):
     author_id = StringField(required=True,primary_key=True)
     author_name = StringField()
     author_bio = StringField()
+    image = StringField()
     latest_articles = ListField(EmbeddedDocumentField(Activity_Article))
     latest_comments = ListField(EmbeddedDocumentField(Activity_Comment))
     latest_votes = ListField(EmbeddedDocumentField(Activity_Vote))

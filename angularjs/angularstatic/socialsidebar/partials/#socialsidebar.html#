@@ -1,0 +1,23 @@
+  <ul class="nav nav-stacked">
+    <li>
+      <a class="sharing-icon sharing-icon-facebook" ng-href="#" 
+	 data-popup-height="380" data-popup-width="660" target="_new" ng-click="openShareWindow('facebook')"></a>
+    </li>
+    <li>
+      <a class="sharing-icon sharing-icon-twitter" ng-href="#" 
+	 data-popup-height="380" data-popup-width="660" target="_new" ng-click="openShareWindow('twitter')"></a>
+    </li>
+    <li>
+      <a class="sharing-icon sharing-icon-googleplus" ng-href="#"
+	 data-popup-height="380" data-popup-width="660" target="_new" ng-click="openShareWindow('googleplus')">
+	<img src="//ssl.gstatic.com/images/icons/gplus-32.png" alt="Google+" class="sharing-icon-googleplus-img" style=""/>
+      </a>
+    </li>
+    <li>
+      <a class="sharing-icon sharing-icon-pinterest" 
+	 ng-href="# "
+	   data-popup-height="380" data-popup-width="660" target="_new" ng-click="openShareWindow('pinterest')">
+      </a>
+    </li>
+  </ul>
+

@@ -1,0 +1,447 @@
+.categoryHeaderImage, .carousel-inner > .item > a > img, .carousel-inner > .item > img {
+  /*position: absolute;*/
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  #height: 600px;
+  max-width: none;
+  #max-height: 600px;
+}
+
+@media (min-width: 768px) {
+    .categoryHeaderImage, .carousel-inner > .item > a > img, .carousel-inner > .item > img {
+	height:350px;
+	max-height:350px;
+    }
+}
+
+@media (min-width: 992px) {
+    .categoryHeaderImage, .carousel-inner > .item > a > img, .carousel-inner > .item > img {
+	height:400px;
+	max-height:400px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .categoryHeaderImage, .carousel-inner > .item > a > img, .carousel-inner > .item > img {
+	height:500px;
+	max-height:500px;
+    }
+}
+
+@media (min-width: 1500px) {
+    .categoryHeaderImage, .carousel-inner > .item > a > img, .carousel-inner > .item > img {
+	height:600px;
+	max-height:600px;
+    }
+}
+
+.headerCategoryImage {
+
+}
+
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+
+/*#navbar-div {
+  width:100%;
+  height:10px;
+}
+*/
+
+/*#navbar-right {
+  margin-top:5px;
+  margin-right:5px; 
+}
+*/
+
+#navbar-right-lastchild {
+ /* margin-top:5px;*/
+  margin-right:5px; 
+}
+
+#articlesidebar {
+    width:5%;
+    min-width:250px;
+}
+
+@media (min-width:1500px){
+    .container{
+	width:1440px
+	}
+}
+
+body { padding-top: 50px; }
+@media screen and (max-width: 768px) {
+    body { padding-top: 50px; }
+}
+
+.articleheaderlink {
+    color: #000000;
+}
+
+.thumbnail {
+    border: 0 none;
+    box-shadow: none;
+}
+
+.articlepreviewheadline {
+    font-size:24px;
+}
+
+.articlepreviewheadline small {
+    font-size: 65%;
+}
+
+.user-container {
+
+    padding-top:20px;
+}
+
+.block-dropdown {
+
+    display:block;
+}
+
+.display-inline-block {
+    display: inline-block;
+}
+
+.display-block {
+    display: block;
+}
+
+.gravatar-warning {
+    display:block;
+    margin-bottom:5px;
+}
+
+/*
+.comment-author-name-text {
+    display: inline-block;
+    margin-bottom:0px;
+}
+*/
+
+#mce_61 iframe { /* tinymce edit */
+    min-height:503px;
+}
+
+.mce-content-body { /* tinymce edit */
+    min-height:503px;
+}
+
+.rightnavbar-preceder {
+    padding-right: 5px;
+}
+
+.navbar-category-link-focussed {
+    color: #FFF !important;
+}
+
+.signin-form-group {
+    margin-top:25px;    
+}
+
+.social-login-button {
+    width:100%;
+}
+
+.modal-dialog {
+    max-width:500px;
+}
+
+
+.signin-modal-body {
+    padding-left:30px;
+    padding-right: 30px;
+}
+
+.main-page-article-author-section {
+    border-bottom:1px solid #E0E0E0;
+}
+.main-page-article-author-text {
+    font-weight: 500;
+}
+
+.main-page-article-section {
+    margin-top: 25px;
+}
+
+.main-page-articles-header {
+    width:100%;
+    border-bottom:1px solid #A0A0A0;
+}
+
+.main-page-comments-header {
+    width: 100%;
+    border-bottom:1px solid #A0A0A0;
+
+}
+
+.article-comments-header {
+    width:100%;
+    border-bottom:1px solid #A0A0A0;
+    border-top:1px solid #A0A0A0;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
+.article-author-bio-section {
+    width:100%;
+    border-top:1px solid #E0E0E0;
+    min-height:100px; 
+    margin-top:40px;
+    padding-top:30px;
+    padding-left:30px;
+    margin-bottom:30px;
+}
+
+.public-profile-main-area {
+    padding-top:20px;
+}
+.author-activity-bio-text-section {
+    min-height:80px;
+}
+.article-author-bio-text-section, .author-activity-bio-text-section {
+    /*line-height: 150%; */
+    margin-left: 10px;
+    max-width:960px;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+    display: block;
+    padding: 9.5px;
+    /*margin: 0px 0px 10px;*/
+    font-size: 13px;
+    line-height: 1.42857;
+    /*word-break: break-all;*/
+    word-wrap: break-word;
+    color: #333;
+    background-color: #F5F5F5;
+    border: 1px solid #CCC;
+    border-radius: 4px;
+}
+
+.article-content-section {
+    line-height: 160%;
+    font-size: 15px;
+    padding-top:18px
+}
+
+.article-content-section iframe[allowfullscreen="allowfullscreen"] { 
+    /*Bad Hack but tinyMCE is stubborn ! :( */
+    height: 385px;
+    width: 680px;
+}
+
+.article-content-section h3,article-content-section h4 {
+    margin-top:20px;
+    margin-bottom:30px;
+}
+
+.usersidebar {
+    width:250px;
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display:table-cell;
+    vertical-align: top;
+}
+
+.createarticle-rightsidebar {
+    /*float: none;
+    overflow: hidden;
+    padding-right:10px; 
+    /*http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width*/
+    /*vertical-align: top;
+    display:table-cell;*/
+    margin-left:10px;
+    margin-right:10px;
+    width: 300px;
+    float:right;/*http://stackoverflow.com/questions/18277732/make-left-div-take-up-remaining-width-without-swapping-elements?rq=1*/
+}
+
+.createarticle-encompass {
+    float: none;
+    overflow: hidden;
+    /*http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width*/
+    /*display:table-cell;
+    vertical-align: top;*/
+}
+
+.createarticle-maindiv {
+    float: none;
+    overflow: hidden;
+    /*display:table-cell;
+    vertical-align: top;*/
+}
+
+.profile-encompass, .articleslist-encompass, .usersettings-encompass {
+    float: none;
+    overflow: hidden;
+    max-width: 1400px;
+    margin-right:10px
+}
+
+.articleslist-encompass {
+    max-width: 2000px !important;
+}
+
+.usersettings-privacy-section {
+    /*padding-top:20px*/
+}
+
+.usersettings-expand-link {
+    text-decoration: underline;
+}
+
+.usersettings-expand-form-group {
+    height: auto;
+    margin-top: 20px;
+
+}
+
+.usersettings-form-group {
+    margin-bottom: 30px;
+}
+
+.article-content-section img {
+    max-width:100%;
+}
+
+.main-footer {
+    background-color:black;    
+    margin-top:20px;
+}
+  
+.font-white {
+    color:white;  
+}
+    
+.footer-copyright {
+   color:#CCCCCC;   
+   border-top: 1px solid #CCCCCC;
+   font-size:17px;
+   padding-top:8px;
+   padding-bottom:8px;
+   float:left;
+   width:100%
+      
+}
+  
+.main-footer {
+   color:#CCCCCC;  
+   font-size:14px;
+}
+
+.footer-site-details {
+   padding-top:5px;
+   padding-bottom:15px;
+   width:100%;
+   margin-bottom: 10px;
+   margin-top: 5px;
+   letter-spacing: 1px;
+  
+}
+  
+.newsletter-input {
+   margin-right: 0px;
+   height:23px;
+   /*border-top-right-radius: 0px; 
+   border-bottom-right-radius: 0px;*/   
+}
+    
+.newsletter-button {
+    margin-left: -5px;
+    border-radius: 0px 0px 0px 0px;
+    margin-top: -2px;
+    height:23px;
+}
+
+.footer-newsletter {
+    text-align: center;
+}
+
+.input-group-xs>.form-control,
+.input-group-xs>.input-group-addon,
+.input-group-xs>.input-group-btn>.btn {
+    height: 22px;
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.sharing-icon {
+    height: 50px;
+    width: 50px;
+    background-image: url('/static/sprites.png');
+    background-repeat: no-repeat;
+}
+
+.sharing-icon-facebook {
+
+    background-position: 0px -205px;
+}
+
+.sharing-icon-twitter {
+
+    background-position: 0px -263px;
+}
+
+.sharing-icon-googleplus {
+    background: none;
+    background-position: 0px -195px;
+    padding-left:9px !important;
+}
+
+.sharing-icon-pinterest {
+
+    background-position: 0px -324px;
+}
+
+.sharing-icon-googleplus-img {
+    border:0;
+    width:32px;
+    height:32px;
+}
+
+.carousel-article-link {
+    color : #FFFFFF;
+}
+
+.carousel-article-link:hover {
+    color : #FFE4C4;
+}
+
+div[data-label="image-container"] {
+    font-size: 11px;
+    font-style: italic;
+    position: relative;
+    margin-bottom:30px
+}
+
+div[data-caption-label] {
+    position:absolute;
+    left:0px;
+}
+
+div[data-attribution-label] {
+    position:absolute;
+    right: 0px;
+}
+
+#article-main-area {
+    margin-left:70px;
+}
+
+#floating-socialbar {
+    float:left;
+    margin-top:50px;
+    width:60px;
+}
+
+[ng-click],
+[data-ng-click],
+[x-ng-click] { /*http://stackoverflow.com/questions/18896859/change-the-mouse-pointer-on-ngclick*/
+    cursor: pointer;
+}

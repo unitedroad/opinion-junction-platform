@@ -13,6 +13,7 @@ from .serialisers import MetadataSerialiser
 from .serialisers import CategorySerialiser
 from .serialisers import TagSerialiser
 from .serialisers import Author_SettingsSerialiser
+from .serialisers import Author_ActivitySerialiser
 from . import util
 #from . import db
 #from .serialisers import AuthorSerialiser2
@@ -587,3 +588,11 @@ class AuthorsSettings(APIView):
         serialisedList = Author_SettingsSerialiser(author_settings, many=False)
         return Response(serialisedList.data)
 
+class AuthorsActivity(APIView):
+    def get(self, request,  authorid, format=None):
+        author_activity = util.get_or_initialise_author_activity(authorid)
+        if author_activity is not None:
+            serialisedList = Author_ActivitySerialiser(author_activity, many=False)
+            return Response(serialisedList.data)
+        else:
+            return Response({"ok":"false", "code": "user_does_not_exist","message":"User does not exist"}, status=status.HTTP_400_BAD_REQUEST)

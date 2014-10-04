@@ -1,0 +1,2 @@
+<div id="comments-container" class="comments-container collapse" collapse="commentMetaData.collapse" discussion_id="{{articleId}}">
+</div>

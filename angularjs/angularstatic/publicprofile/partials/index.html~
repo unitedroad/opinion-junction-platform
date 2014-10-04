@@ -1,0 +1,6 @@
+<div class="container">
+  <div class="public-profile-main-area">
+    <div class="author-activity-bio-text-section" ng-bind-html="to_trusted(authorActivity.author_bio)">
+    </div>
+  </div>
+</div>

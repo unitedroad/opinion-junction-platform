@@ -1,0 +1,276 @@
+<!doctype html>
+<html xmlns:ng="http://angularjs.org">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+  <title >Opinion Junction</title>
+    <!--      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script> -->
+    <!--[if lt IE 9]>
+
+      <script src="https:////cdnjs.cloudflare.com/ajax/libs/es5-shim/4.0.3/es5-shim.min.js"></script>
+    <![endif]-->
+    <!--[if lte IE 8]>
+      <script>
+        document.createElement('ng-include');
+        document.createElement('ng-pluralize');
+        document.createElement('ng-view');
+	document.createElement('ui-view');
+        document.createElement('ng:include');
+        document.createElement('ng:pluralize');
+        document.createElement('ng:view');
+	document.createElement('ui:view');
+      </script>
+    <![endif]-->
+    <!--[if lt IE 8] 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
+    <![endif]-->
+    <script>
+      var ie = false;
+    </script>
+    <!--[if lte IE 8]>
+    <script>
+	ie = 8;
+    </script>
+    <![endif]-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <!-- <script src="https://code.angularjs.org/snapshot/angular.min.js"></script> -->
+  <script src="https://code.angularjs.org/1.2.18/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-touch.min.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-route.min.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-cookies.min.js"></script>
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
+  <link rel="stylesheet" href="/static/comments.css">
+  <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-animate.js"></script> -->
+  <!-- GitHub won't like me -->
+<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/angular-strap.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/popover.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/tooltip.js"></script> -->
+<!--  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
+  <script src="https://connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
+  <script src="/angularstatic/acentral/js/app.js"></script>
+  <script src="/angularstatic/external/angular-crop/js/image-crop.js"></script> 
+  <link rel="stylesheet" href="/angularstatic/external/angular-crop/css/image-crop-styles.css"
+	type="text/css"></link>
+  <!-- <script src="js/controllers.js"></script> -->
+  <script type="text/javascript">
+    function submitTest(){
+        alert('Testing Angular App');
+    }
+    var facebook_popup_suffix = "/accounts/login_callback";
+    $(document).ready(mainReady);
+  </script>
+  
+
+  <script type="text/javascript">
+    (function($) {
+        $.fn.goTo = function() {
+           $('html, body').animate({
+                scrollTop: $(this).offset().top + 'px'
+           }, 'fast');
+           return this; // for chaining...
+        }
+    })(jQuery);
+  </script>
+  <!--<base href="file:///Users/dhruwatbhagat/Documents/notw/Angular Test/">-->
+    <script type="text/javascript">
+      $("#carousel").on('play', function () {
+          alert("Hello From Carousel");
+      });
+    </script>
+
+
+
+
+    <script>
+
+      $(window).scroll(
+          function() {
+	      var socialbar = $("#floating-socialbar");
+	      if (socialbar.length > 0) {
+		  var stWindow = $(window).scrollTop();
+		  
+		  //    var socialbarContainer = $("#floating-socialbar-container");
+		  //    var stSocialbarContainer = socialbarContainer.scrollTop();
+
+		  //    var stSocialBar = socialbar.scrollTop();
+		  var heightArticle = $("#article-main-area").height();
+		  //if (!oldStWindow){        // This should mean we have just started 
+		  // scrolling the first time
+		  if (stWindow > 50 + heightArticle - socialbar.height()) {
+                      socialbar.css("position", "fixed");
+		      socialbar.css("top", (50 + heightArticle - socialbar.height() - stWindow) + "px");
+	              socialbar.css("bottom", "auto");  
+
+
+		      //socialbar.css("position", "relative");
+                      //socialbar.css("bottom", "0px"); 
+
+
+                      //socialbar.css("top", "auto");  		      
+		  } else 
+                      if (stWindow > 50) {  //This should mean we are traversing down
+
+			  socialbar.css("position", "fixed");
+			  socialbar.css("top", "0px");
+			  socialbar.css("bottom", "auto");  
+
+		      } else {
+			  socialbar.css("position", "relative");
+                          //socialbar.css("top", (50 + socialbar.height()) + "px"  );
+			  socialbar.css("top", "0px"); 
+			  socialbar.css("bottom", "auto");  
+
+
+			  //socialbar.removeProp("bottom");  
+		      }
+		  //	  oldStSocialBarContainer = stSocialBarContainer;
+		  //          return;
+		  //      };
+
+
+		  //   if (oldStSocialBarContainer < stSocialBarContainer) { //This means we are traversing up
+		  //        if (stSocialBar  0
+		  //	  socialBar.attr("position", "relative");
+		  //   } else {
+		  //            socialBar.attr("position", "");
+		  //   }
+
+	      }
+       });
+
+      
+    </script>
+</head>
+<body>
+<div class="ng-app:testApp" id="ng-app" ng-app="testApp" xmlns:ng="http://angularjs.org">
+<div ng-init="initFunction()" ng-controller="mainController">
+<script type="text/ng-template" id="loginModalContent.html">
+  <!--<script src="//connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
+  <script type="text/javascript" src="/static/facebook/js/fbconnect.js"></script>
+  <script type="text/javascript">allauth.facebook.init({ appId: '648103061911848',
+    locale: 'en_US',
+    loginOptions: {"scope": "email,publish_stream"},
+    loginByTokenUrl: '/accounts/facebook/login/token/',
+    channelUrl : 'http://www.newsoftheworld.lo/accounts/facebook/channel/',
+    cancelUrl: '/accounts/social/login/cancelled/',
+    logoutUrl: '/accounts/logout/',
+    errorUrl: '/accounts/social/login/error/',
+    csrfToken: 'zzIMKt3qAbjNQ8naRGppPzVC9TZsZTKc' });
+  </script>
+  <script>allauth.facebook.onLoginCanceled = function(response) {}</script>-->
+
+    <div class="modal-body signin-modal-body">
+      <div class="text-center"><h4>{{signinModalHeading}}</h4></div>
+      <div class="form-group">
+	<a ng-click="fbLogin('/accounts/login_callback', 'authenticate', 'login')" class="btn btn-primary social-login-button">Sign in With Facebook</a>
+      </div>
+      <!-- <iframe id="iframe" src="/accounts/login?login_redirect_url={% url 'login_callback' %}" style="zoom:0.60" frameborder="0"  width="99.6%">
+      </iframe> -->  
+      <div collapse="signinCollapse">
+	<p>Don't have an account? Then please <a ng-click="openSignup()">sign up</a>.</p>
+	<form ng-submit="setAllFormFields('signin') && processForm('signin')">
+	  <p class="form-group signin-form-group">
+	    
+	    <input autofocus="autofocus" id="id_login" class="form-control" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.login" ui-event="{ keyup : 'modalKeyUp($event)' }" >
+	  </p>
+	  <p class="form-group signin-form-group">
+	    <input id="id_password" name="password" class="form-control" placeholder="Password" type="password" ng-model="loginFormData.password" ui-event="{ keyup : 'modalKeyUp($event)' }"></p>
+	  <p>
+	    <label for="id_remember">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
+	  <p>{{ messageSignin }}</p>
+	  <p class="text-danger">{{ errorMessageSignin }}</p>
+	  <a class="button secondaryAction" href="/accounts/password/reset/">Forgot Password?</a>
+	  <button class="btn btn-primary" type="submit">Sign In</button>
+	</form>
+      </div>
+      <div collapse="signupCollapse">
+	<p>Already have an account? Then please <a ng-click="openSignin()">sign in</a>.</p>
+	<form ng-submit="setAllFormFields('signup') && processForm('signup')">
+	  <p class="form-group signin-form-group">
+	    <input autofocus="autofocus" id="id_login_signup" class="form-control" maxlength="30" name="login" placeholder="Username" type="text" ng-model="loginFormData.username" auto-fill-sync>
+	  </p>
+	  <p class="form-group signin-form-group">
+	    <input id="id_password_signup" name="password" class="form-control" placeholder="Password" type="password" ng-model="loginFormData.password1" auto-fill-sync></p>
+	  <p>
+	  <p class="form-group signin-form-group">
+	    <input id="id_password_verify_signup" name="password" class="form-control" placeholder="Confirm Password" type="password" ng-model="loginFormData.password2" auto-fill-sync></p>
+	  <p>
+	    <label for="id_remember_signup">Remember Me:</label> <input id="id_remember" name="remember" type="checkbox"></p>
+	  <p>{{ messageSignup }}</p>
+	  <p class="text-danger">{{ errorMessageSignup }}</p>
+	  <button class="btn btn-primary" type="submit">Sign Up</button>
+	</form>
+      </div>
+
+    </div>
+</script>
+<script type="text/ng-template" id="signinNavBar.html">
+<ul id="navbar-right" class="nav navbar-nav navbar-right"><li id="navbar-right-lastchild"><a class="navbar-link" ng-click="signinModal()">Sign in</a></li></ul>
+</script>
+
+<script type="text/ng-template" id="loggedInNavBar.html">
+<ul id="navbar-right" class="nav navbar-nav navbar-right" ><li ng-class="linkDetailsMap.settings != null? linkDetailsMap.settings.className: ''"><a href="/user/settings" class="navbar-link" >Settings</a></li></ul>
+</script>
+
+<nav id="navbar-div" class="navbar navbar-inverse  navbar-fixed-top">
+  <div class="container" >
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">Opinion Junction</a>
+      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse" ng-click="navbarCollapsed=!navbarCollapsed">
+	<span class="sr-only">Toggle navigation</span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse oj-navbar-main" collapse="navbarCollapsed">
+      <ul class="nav navbar-nav">
+	<li  ng-class="linkDetailsMap.home != null? linkDetailsMap.home.className: ''"><a href="/">Home</a></li>
+	<li ng-repeat="category in categories" ng-class="linkDetailsMap[category.name] !=null ? linkDetailsMap[category.name].className : ''" ui-event="{hover : 'hoverCategory($event)', click : 'hoverCategory($event)'}" }>
+	  <a ng-href="/{{category.name}}" ng-class="linkDetailsMap[category.name] !=null ? linkDetailsMap[category.name].categoryLinkClassName : ''">{{category.friendly_name}}</a>
+	</li>
+	<!-- <li><a href="/about">About</a></li>--><!--Maybe e can bring About back later, have it in the footer instead -->
+      </ul>
+
+      <ng-include src="rightNavBar"></ng-include> 
+      <ul id="navbar-right" class="nav navbar-nav navbar-right"><li class="rightnavbar-preceder"><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li></ul>
+      <!--<ul id="navbar-right" class="nav navbar-right ng-scope"><li><a href="/user/settings" class="navbar-link">Settings</a></li></ul>-->
+    </div>
+  </div>
+</nav>
+
+<!--<div style="height: 600px"> -->
+<!--
+  <carousel interval="5000">
+    <slide ng-repeat="article in articles" active="article.active">
+      <img ng-src="{{article.image}}" style="margin:auto;">
+      <div class="carousel-caption">
+        <h4>Slide {{$index}}</h4>
+        <p>{{slide.text}}</p>
+      </div>
+    </slide>
+  </carousel>
+-->
+<!-- </div> -->
+<ui-view>
+  <!--[if lt IE 9]>
+  <div style="margin:50px">
+    <h1 class="articlepreviewheadline" style="font-size:40px">Hmm... maybe upgrading to modern browser such as Firefox wouldn't hurt?</h5>
+    <br/>
+    <br/>
+    <h4 class="articlepreviewheadline"><a href="/#/" class="articleheaderlink" style="color:grey">Opinion Junction Home Page</a></h4>
+  </div>
+  <![endif]-->
+</ui-view>
+{{category}}
+</div>
+</div>
+</body>
+</html>
+  

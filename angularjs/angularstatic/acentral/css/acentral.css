@@ -196,10 +196,47 @@ body { padding-top: 50px; }
     margin-bottom:30px;
 }
 
-.article-author-bio-text-section {
-    line-height: 150%; 
+.author-activity-image-container {
+    float:left;
+    width:80px;
+}
+
+.author-activity-image {
+    width:80px;
+    max-height:128px;
+}
+
+.author-activity-id-heading {
+    margin-bottom:15px;
+}
+
+.author-activity-bio-text-container {
+    margin-left:80px;
+}
+
+.public-profile-main-area {
+    padding-top:20px;
+}
+.author-activity-bio-text-section {
+    min-height:80px;
+    margin-left: 10px !important;
+}
+.article-author-bio-text-section, .author-activity-bio-text-section {
+    /*line-height: 150%; */
     margin-left: 10px;
     max-width:960px;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+    display: block;
+    padding: 9.5px;
+    /*margin: 0px 0px 10px;*/
+    font-size: 13px;
+    line-height: 1.42857;
+    /*word-break: break-all;*/
+    word-wrap: break-word;
+    color: #333;
+    background-color: #F5F5F5;
+    border: 1px solid #CCC;
+    border-radius: 4px;
 }
 
 .article-content-section {
@@ -420,4 +457,10 @@ div[data-attribution-label] {
     float:left;
     margin-top:50px;
     width:60px;
+}
+
+[ng-click],
+[data-ng-click],
+[x-ng-click] { /*http://stackoverflow.com/questions/18896859/change-the-mouse-pointer-on-ngclick*/
+    cursor: pointer;
 }

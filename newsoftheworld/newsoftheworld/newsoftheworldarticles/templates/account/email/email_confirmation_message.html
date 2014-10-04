@@ -1,0 +1,44 @@
+{% extends "inheritable/account/email/base.html" %}
+{% load account %}
+{% block styleblock %}
+<style type="text/css">
+/* CSS used here will be applied after bootstrap.css */
+.email-page {
+   margin-left: 20px; 
+}
+.email-logo {
+  display:inline-block;
+  background-color: #222; 
+  color: #FFF;
+  padding:20px;
+}
+.email-welcome {
+    position:relative;
+}
+.email-welcome-start {
+position: absolute;
+    bottom:0px;
+}
+</style>
+{% endblock %}
+{% block mainblock %}
+<div class="email-page">
+  <!--<h3 class="email-welcome"><span class="email-welcome-start">Welcome to </span><div class="email-logo">Opinion junction</div></h3> -->
+  <h3 ><span >Welcome to </span><div class="email-logo">Opinion junction</div></h3>
+  <div class="email-paragraph">  
+    {% user_display user as user_display %}{% load i18n %}{% autoescape off %}
+    <div> 
+      {% blocktrans with current_site.name as site_name %}
+      User {{ user_display }} at {{ site_name }} has given this as an email address.{% endblocktrans %}
+    </div>
+    <div>
+
+      {% blocktrans with current_site.name as site_name %}
+      To confirm this is correct, go to <a href="{{ activate_url }}">{{ activate_url }}{% endblocktrans %}</a>
+    </div>
+    {% endautoescape %}
+  </div>
+</div>
+
+
+{% endblock %}

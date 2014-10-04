@@ -1,0 +1,37 @@
+ <div class="container">
+  <div  id="floating-socialbar" >
+    <social-sidebar article="socialShareArticle" pageurl="{{articleUrl}}"/>
+    <!-- <ng-include src="'/angularstatic/acentral/partials/socialsidebar.html'"></ng-include> -->
+  </div>
+  <article id="article-main-area">
+    <header >
+      <div class="page-header">
+      <h1> {{article.title}}</h1>
+      <h4 class="articlepreviewheadline"><small><i><em>{{article.excerpt}}</em></i></small></h4>
+      </div>
+      <h5><small>By - {{article.author.first_name}} {{article.author.last_name}}</small></h5>
+    </header>
+    <div class="article-content-section" ng-bind-html="to_trusted(article.storytext)"> <!-- http://stackoverflow.com/questions/24178316/ng-bind-html-strips-elements-attributes -->
+    </div>
+  </article>
+  <div  class="article-author-bio-section">
+    <div id="comment-author-box">
+      <a href="/profile/{{article.author.id}}" class="comment-author-image-container">
+	<img ng-src="{{article.author.image}}" class="comment-author-image img-circle">
+      </a>
+      <div class="comment-author-details-container">
+	<a href="/profile/{{article.author.id}}"><h5 class="comment-author-name-text ng-binding">{{article.author.first_name}} {{article.author.last_name}}</h5></a>
+	<div class="article-author-bio-text-section" >
+	  <pre>{{article.author.user_bio}}</pre>
+	</div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div  class="article-comments-header text-center"><h4>JUNCTION HOUSE</h4></div>
+    <div comments-root discussion_id="{{article.id}}"></div>
+    <!--<iframe id="iframe_comments" width="100%" frameborder="0" ng-init="comments_init" src="/comments" scrolling="no" style="overflow:visible" >-->
+  </div>
+
+</div>
+<ng-include  src="'/angularstatic/acentral/partials/footer.html'"></ng-include>

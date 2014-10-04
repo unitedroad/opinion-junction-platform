@@ -1,0 +1,21 @@
+<div class="main-footer">
+  <div class="container">
+    <div style="clear:right" class="footer-site-details">
+      <div class="col-xs-3">About Us</div>
+      <div class="col-xs-3">Contact Us</div>
+      <div class="col-xs-2"></div>
+      <div class="col-xs-4 footer-newsletter">
+        
+        <!--<p>: &nbsp;&nbsp;&nbsp;    -->
+	  <div class="input-group input-group-xs" > 
+	    <input name="email" class="form-control" placeholder="Enter Email Address to subscribe to our newsletter" type="email">
+	    <div class="input-group-btn">
+              <button class="btn  btn-info"><span class="glyphicon glyphicon-play"/></button>
+	    </div>
+	  </div>
+	<!-- </p> -->
+      </div>
+    </div>
+    <div class="text-center font-white footer-copyright"> © Opinion Junction </div>
+  </div>
+</div>

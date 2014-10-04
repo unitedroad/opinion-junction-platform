@@ -21,8 +21,8 @@
       </a>
       <div class="comment-author-details-container">
 	<a href="/profile/{{article.author.id}}"><h5 class="comment-author-name-text ng-binding">{{article.author.first_name}} {{article.author.last_name}}</h5></a>
-	<div class="article-author-bio-text-section" >
-	  <pre>{{article.author.user_bio}}</pre>
+	<div class="article-author-bio-text-section" ng-bind-html="to_trusted(article.author.user_bio)">
+	 
 	</div>
       </div>
     </div>

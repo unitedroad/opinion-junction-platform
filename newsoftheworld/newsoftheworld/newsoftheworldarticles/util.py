@@ -18,7 +18,7 @@ from .models import Category
 from .models import Tag
 from .db import db
 from rest_framework import status
-from allauth.account.signals import user_logged_in
+from allauth.account.signals import user_logged_in, user_signed_up
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 import django.dispatch
@@ -273,6 +273,50 @@ def get_articles_by_category(category, GET):
 
 default_created_user_permissions = []
 
+def initialise_author_activity(authorid, **kwargs):
+    author = None
+    if "author" in kwargs and kwargs["author"] is not None:
+        author = kwargs["author"]
+    elif "user" in kwargs and kwargs["user"] is not None:
+        author = kwargs["user"]
+    else:
+        authors_array = Author.objects(id=authorid)
+        if len(authors_array) > 0:
+            author = authors_array[0]
+
+    author_activity = Author_Activity()
+    author_activity.author_id = authorid
+
+    if author is not None:
+        if isinstance(author, Author):
+            author_activity.author_bio = author.user_bio
+            author_activity.image = author.image
+        if author.first_name or author.last_name:
+            author_activity.author_name = author.first_name + author_last_name
+            author_activity.author_name = author_activity.author_name.strip()
+        else:
+            if isinstance(author, Author):
+                author_activity.author_name = author.author_name
+            elif isinstance(author, User):
+                author_activity.author_name = author.username
+
+    author_activity.save()
+
+    return author_activity
+
+#    author = None
+#    if "author" in kwargs and kwargs["author"] is not None:
+#        author = kwargs["author"]
+#    else:
+#        author = Author.get(id=authorid)
+
+#    pass
+
+
+@receiver(user_signed_up, dispatch_uid="108")
+def create_oj_user_activity(request, user, **kwargs):
+    initialise_author_activity(str(user.id), user=user)
+
 @receiver(user_logged_in, dispatch_uid="101")
 def create_oj_user_in_nosql(request, user, sociallogin=None, **kwargs):
 
@@ -396,7 +440,7 @@ def change_profile(user, data):
         user.save()
         author.save()
 
-        profile_updated.send(sender=change_profile, id=author.id, fields=updated_fields)
+        profile_updated.send(sender=change_profile, id=author.id, fields=updated_fields, author=author)
         return author
 
 
@@ -759,6 +803,25 @@ def update_tag_num_users_for_article(article, increment_number=1):
         if article_tag and article_tag.strip():
             Tag.objects(name=article_tag).update_one(upsert=True,set__name=article_tag,inc__num_users=increment_number)
         #http://stackoverflow.com/questions/14623430/mongoengine-how-to-perform-a-save-new-item-or-increment-counter-operation
+@receiver(profile_updated, dispatch_uid="109")
+def update_profile_in_author_activity(id, fields, author, **kwargs):
+    author_activity = None
+    author_activity_array = Author_Activity.objects(author_id=id)
+    if len(author_activity_array) > 0:
+        author_activity = author_activity_array[0]
+    else:
+        author_activity = Author_Activity()
+        author_activity.author_id = id
+
+    author_activity.author_bio = author.user_bio
+    author_activity.image = author.image
+    if author.first_name or author.last_name:
+        author_activity.author_name = author.first_name + " " + author.last_name
+        author_activity.author_name = author_activity.author_name.strip()
+    else:
+        author_activity.author_name = author.author_name
+
+    author_activity.save()
 
 @receiver(article_published, dispatch_uid="106")
 def handle_article_published(article, **kwargs):
@@ -842,3 +905,22 @@ def return_list_stripped_members(list_object,add_blank=False):
 
     
     return stripped_list
+
+def get_author_activity(authorid):
+    author_activity_array = Author_Activity.objects(author_id=authorid)
+    if len(author_activity_array) > 0:
+        return author_activity_array[0]
+    return None
+
+
+def get_or_initialise_author_activity(authorid):
+    author_activity = get_author_activity(authorid)
+    
+    if author_activity is None:
+        authors_array = Author.objects(id=authorid)
+        if len(authors_array) > 0:
+            return initialise_author_activity(authorid, author=authors_array[0])
+        else:
+            return None
+
+    return author_activity

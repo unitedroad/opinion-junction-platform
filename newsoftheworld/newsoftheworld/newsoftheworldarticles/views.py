@@ -1,5 +1,8 @@
 import json
 
+import traceback
+import sys
+
 from django.shortcuts import render
 
 from django.core.urlresolvers import reverse
@@ -100,9 +103,13 @@ class RestSignupView(SignupView):
     def form_valid(self, form):
         user = form.save(self.request)
         #print str(complete_signup)
-        return complete_signup(self.request, user,
-                               app_settings.EMAIL_VERIFICATION,
-                               self.get_success_url())
+        try:
+            return complete_signup(self.request, user,
+                                   app_settings.EMAIL_VERIFICATION,
+                                   self.get_success_url())
+        except Exception as e:
+            print "Exception in RestSignupView: " + str(traceback.extract_tb(sys.exc_info()[2]))
+            raise
     
 signup = RestSignupView.as_view()
 
@@ -258,3 +265,9 @@ class Category_Traditional_View(Main_Traditional_View):
         context['latest_comments'] = latest_comments
 #        context['article'] = article
         return context
+
+class Test_View(Main_Traditional_View):
+
+    template_name = "account/email/password_reset_key_message.html"
+
+test = Test_View.as_view()

@@ -78,9 +78,9 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    templateUrl: '/angularstatic/publicprofile/partials/index.html',
 	    controller: 'publicProfileController'
 	})
-        .state('profile.userid', {
+        .state('profileuserid', {
 	    title: "Opinion Junction - Profile",
-	    url : "/:userid",
+	    url : "/profile/:userid",
 	    templateUrl: '/angularstatic/publicprofile/partials/index.html',
 	    controller: 'publicProfileController'
 	})
@@ -326,6 +326,16 @@ testApp.factory('commonOJService', function($http, $location) {
 	
     }
 
+    
+    serviceInstance.convertWhiteSpaceToHtml = function(text) {
+	text = text.replace(/\t/g, '    ')
+           .replace(/  /g, '&nbsp; ')
+           .replace(/  /g, ' &nbsp;') // second pass
+                                      // handles odd number of spaces, where we 
+                                      // end up with "&nbsp;" + " " + " "
+           .replace(/\r\n|\n|\r/g, '<br />');
+	return text;
+    };
 
     serviceInstance.registerListeners = function(key, controllerId, listeners, runNow) {
 	data = serviceInstance[key];
@@ -1672,6 +1682,7 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
 		    socialbar.css("position", "relative");
 		    socialbar.css("top", "0px");
 		    socialbar.css("bottom", "auto");  
+		    $scope.article.author.user_bio = commonOJService.convertWhiteSpaceToHtml($scope.article.author.user_bio);
 
 		}
 	    });
@@ -1885,8 +1896,40 @@ testApp.controller('userProfileController', function($scope, $http, profileServi
     
 });
 
-testApp.controller('publicProfileController', function($scope, commonOJService, profileService, $stateParams) {
+testApp.controller('publicProfileController', function($scope, commonOJService, profileService, $http, $sce, $stateParams) {
+    console.log("$stateParams.userid: " + $stateParams.userid); 
+    $scope.to_trusted = function(html_code) { //http://stackoverflow.com/questions/24178316/ng-bind-html-strips-elements-attributes
+	return $sce.trustAsHtml(html_code);
+    };
+    var initUserid = function(commonOJService, scope) {
+	scope.userid = commonOJService.userData.id;
+	$http.get("/api/1.0/authors/" + $scope.userid + "/activity", {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) { 
+		$scope.authorActivity = data;
+		if ($scope.authorActivity.author_bio) {
+		    $scope.authorActivity.author_bio = commonOJService.convertWhiteSpaceToHtml($scope.authorActivity.author_bio);
+		} else {
+		    $scope.authorActivity.author_bio = ". . .";
+		}
+		$scope.authorActivity.image = profileService.getProfileImage($scope.authorActivity);
+	    });
+    };
 
+    if ("userid" in $stateParams) {
+	$scope.userid = $stateParams.userid;
+	$http.get("/api/1.0/authors/" + $scope.userid + "/activity", {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) { 
+		$scope.authorActivity = data;
+		if ($scope.authorActivity.author_bio) {
+		    $scope.authorActivity.author_bio = commonOJService.convertWhiteSpaceToHtml($scope.authorActivity.author_bio);
+		} else {
+		    $scope.authorActivity.author_bio = ". . .";
+		}
+		$scope.authorActivity.image = profileService.getProfileImage($scope.authorActivity);
+	    });
+    } else {
+	commonOJService.controllerInitOrRedirect([initUserid],$scope);
+    }
 });
 
 testApp.controller('createArticleFrontPagePreviewController', function($scope, $location) {
@@ -3231,8 +3274,8 @@ var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, common
     $scope.modeMap = {"signin" : {"ajaxUrl" : '/accounts/login/', "errorMessage" : "errorMessageSignin", 
 				  "fields": [{"id":"id_login"},{"id":"id_password"}]}, 
 		      "signup" : {"ajaxUrl" : '/accounts/signup/', "errorMessage" : "errorMessageSignup",
-				  "fields": [{"id":"id_login_signup"},{"id":"id_password_signup"},
-					    {"id":"id_password_verify_signup"},]}};
+				  "fields": [{"id":"id_login_signup"},{"id":"id_email_signup"},
+					    {"id":"id_password_signup"},{"id":"id_password_verify_signup"},]}};
   // process the form
     $scope.processForm = function(mode) {
 	$http({
@@ -3248,6 +3291,7 @@ var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, common
 	    .success(function(data) {
 		onSuccess(data);
 	    }).error(function(data) {
+		console.log(JSON.stringify(data));
 		data = getJsonFromResult(data);
 		if ("form_errors" in data) {
 		    form_errors = data["form_errors"];

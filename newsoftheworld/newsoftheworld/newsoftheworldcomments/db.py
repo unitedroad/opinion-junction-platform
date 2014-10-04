@@ -16,7 +16,7 @@ client = MongoClient('mongodb://localhost:27017/')
 db = client.notwcomments
 
 @receiver(profile_updated, dispatch_uid="102")
-def mark_author_change(id, fields, **kwargs):
+def mark_author_change(id, fields, author, **kwargs):
     print "hello profile_updated"
     changed_profile = db.changed_profiles.find_and_modify(query={"id":id,"status":None},update={"$addToSet": {"fields" : fields}}, upsert=True)
 #    if len(changed_profile_entries) > 0:
