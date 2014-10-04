@@ -1,3 +1,0 @@
-{% extends "inheritables/account/base.html" %}
-
-

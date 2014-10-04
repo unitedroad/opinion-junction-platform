@@ -1,7 +1,0 @@
-<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-<link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
-<link rel="stylesheet" href="/static/comments.css">
-{% if server_deliver_root and server_deliver_root.strip %}
-{% else %}
-<meta name="google-site-verification" content="RESiUdWQbwxIMMEoAzHiwj3SqjKyBAMo4Cm4WT7sTHo" />
-{% endif %}

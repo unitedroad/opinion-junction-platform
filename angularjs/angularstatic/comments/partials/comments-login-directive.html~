@@ -1,3 +1,0 @@
-<button id="login-button" class="comment-reply-button btn btn-primary center-block" style="width:100%" ng-click="openSigninModal()">
-  Login to Comment
-</button>
