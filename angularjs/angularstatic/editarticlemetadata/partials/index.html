@@ -1,0 +1,39 @@
+<div class="editarticlemetadata-form-group editarticlemetadata-author-form-group">
+  <div>
+    <a ng-click="handleAuthorCollapse()">Change Author {{authorCollapseSymbol}}</a>
+  </div>
+  <div collapse="authorCollapse">
+    <table class="table table-striped">
+      <thead>
+	<th>Author Name</th><th>First Name</th><th>Last Name</th>
+      </thead>
+      <tr>
+	<td><input type="text" ng-model="authorNameSearchKey"/></td>
+      </tr>
+      <tr ng-repeat="author in displayedAuthorResults">
+	<td>{{author.author_name}}</td><td>{{author.first_name}}</td><td>{{author.last_name}}</td>
+      </tr>
+    </table>
+    <div class="editarticlemetadata-field-container">Authors are great indebted friends of Axl Rose
+    
+    </div>
+  </div>
+</div>
+<div class="editarticlemetadata-form-group">
+  <div>
+    <a ng-click="handleDatePickerCollapse()">Change Published Date {{datePickerCollapseSymbol}}</a>
+  </div> 
+  <div collapse="datePickerCollapse">
+    <div class="row editarticlemetadata-field-container">
+      <div class="col-md-6">
+	<p class="input-group">
+	  <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="dt" is-open="opened" 
+		 datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" close-text="Close" />
+	  <span class="input-group-btn">
+            <button type="button" class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+	  </span>
+	</p>
+      </div>
+    </div>
+  </div>
+</div>

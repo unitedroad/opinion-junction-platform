@@ -136,6 +136,11 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    url: "/editarticle/:articleId",
 	    templateUrl: '/angularstatic/createarticle/partials/index.html',
 	    controller: 'createArticleController'
+	}).state('editarticlemetadata', {
+	    title: "Opinion Junction - Edit Article Metadata",
+	    url: "/editarticlemetadata/:articleId",
+	    templateUrl: '/angularstatic/editarticlemetadata/partials/index.html',
+	    controller: 'editArticleMetadataController'
 	}).state('default', {
 	    title: "Opinion Junction",
 	    url: "/default",
@@ -1976,6 +1981,145 @@ testApp.controller('createArticlePreviewController', function($scope, $location,
 
 });
 
+testApp.controller('editArticleMetadataController', function($scope, $http, commonOJService, $stateParams) {
+
+    $http.get("/api/1.0/authors", {"Content-Type": "application/json"}).success(function(data) {
+	$scope.allAuthors = data;
+	$scope.displayedAuthorResults = data;
+	searchAuthorResultsMap = {};
+	searchAuthorResultsMapByNumKeyChars[0] = searchAuthorResultsMap;
+	searchAuthorResultsMap[""] = data;
+	
+    });
+
+    $scope.today = function() {
+	$scope.dt = new Date();
+    };
+    $scope.today();
+
+    $scope.clear = function () {
+	$scope.dt = null;
+    };
+
+    $scope.open = function($event) {
+	$event.preventDefault();
+	$event.stopPropagation();
+
+	$scope.opened = true;
+    };
+
+    $scope.dateOptions = {
+	formatYear: 'yy',
+	startingDay: 1
+    };
+
+    $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
+    $scope.format = $scope.formats[0];
+    
+    $scope.authorCollapseSymbol = "+";
+
+    $scope.datePickerCollapseSymbol = "+";
+
+    $scope.authorCollapse = true;
+
+    $scope.handleAuthorCollapse = function() {
+	$scope.authorCollapse = !$scope.authorCollapse;
+    }
+
+    $scope.datePickerCollapse = true;
+
+    $scope.handleDatePickerCollapse = function() {
+	$scope.datePickerCollapse = !$scope.datePickerCollapse;
+    }
+
+    searchAuthorResultsMapByNumKeyChars = {};
+
+
+    $scope.getResultsForKey = function() {
+	var key = $scope.authorNameSearchKey;
+	if (!key) {
+	    $scope.displayedAuthorResults = $scope.allAuthors;
+	    return;
+	}
+	var localResults = $scope.getResultsForKeyFromCache(key, "author_name");
+	if (localResults != null) {
+	    $scope.displayedAuthorResults = localResults;
+	} else {
+	    $http.get("/api/1.0/authors" + "?author_name=" + key + "&use_contains=true", {headers: {"Content-Type": "application/json"}}).success(function(data) {
+		$scope.displayedAuthorResults = data;
+		var keyLength = key.length;
+		var searchAuthorResultsMap = null;
+		if (keyLength in searchAuthorResultsMapByNumKeyChars) {
+		    searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[keyLength];
+		} else {
+		    searchAuthorResultsMap = {};
+		    searchAuthorResultsMapByNumKeyChars[keyLength] = searchAuthorResultsMap;
+		}
+		searchAuthorResultsMap[key] = data;
+	    });
+	}
+    }
+
+    $scope.getResultsForKeyFromCache = function(key, key_type) {
+	if (!key || key == null || key.length <=0 ) {
+	    //$scope.displayedAuthorResults = $scope.allAuthors;
+	    return $scope.allAuthors;
+	} else {
+	    var numChars = key.length;
+	    if (numChars in searchAuthorResultsMapByNumKeyChars) {
+		var searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[numChars];
+		if (key in searchAuthorResultsMap) {
+		    return searchAuthorResultsMap[key];
+		}
+	    }
+	    for (var i = (numChars - 1); i >= 0; i--) {
+		var parentKey = key.substring(0,i);
+		if (i in searchAuthorResultsMapByNumKeyChars) {
+		    var searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[i];
+		    if (parentKey in searchAuthorResultsMap) {
+			result =  getArrayRegexMatches(".*" + key + ".*", searchAuthorResultsMap[parentKey], key_type);
+			var searchAuthorResultsMapForKey = null;
+			if (numChars in searchAuthorResultsMapByNumKeyChars) {
+			    searchAuthorResultsMapForKey = searchAuthorResultsMapByNumKeyChars[numChars];
+			} else {
+			    searchAuthorResultsMapForKey = {};
+			    searchAuthorResultsMapByNumKeyChars[numChars] = searchAuthorResultsMapForKey;
+			}
+			searchAuthorResultsMapForKey[key] = result;
+			return result;
+		    }   
+		}
+	    }
+	    
+	}
+	return null;
+    }
+
+    var getArrayRegexMatches = function(regex, array, key_type) {
+	var re = new RegExp(regex);
+	if (array != null && array.length > 0) {
+	    var results = [];
+	    var numArrayMembers = array.length;
+	    for (var i = 0; i < numArrayMembers; i++) {
+		var member = array[i];
+		if (member && key_type) {
+		    member = member[key_type];
+		}
+		if (re.test(member)) {
+		    results.push(array[i]);
+		}
+	    }
+	    return results;
+	}
+	return null;
+    }
+
+    $scope.$watch("authorNameSearchKey", $scope.getResultsForKey);
+
+//    $scope.$watch("authorNameSearchKey", function() {alert("Axl is GOD");});
+
+});
+
 testApp.controller('createArticleController', function($scope, $http, commonOJService,  $location, $stateParams) {
 
     //createEditPreviewArticleStateService.setArticleState(null);
@@ -2837,8 +2981,8 @@ testApp.controller('viewArticlesController', function($scope, commonOJService, $
 	if (commonOJService.userData == null) {
 	    return;
 	}
-	if (!(("edit_others_articles" in commonOJService.userData.user_permissions) || 
-	      ("publish_others_articles" in commonOJService.userData.user_permissions))) {
+	if (!(commonOJService.indexOf(commonOJService.userData.user_permissions, "edit_others_articles") > -1 || 
+	      commonOJService.indexOf(commonOJService.userData.user_permissions, "publish_others_articles") > -1)) {
 	    articlesUrl = articlesUrl + "&authorId=" + commonOJService.userData.id;
 	}
 	if (pageNumber !=0 ) {
@@ -4032,4 +4176,34 @@ testApp.directive('socialSidebar', function() {
 	    }
 	}
    }
+});
+
+testApp.directive('svgReplace', function() {
+    return {
+	restrict: 'AE',
+	compile: function(elem, attrs) {
+	    var $img = jQuery(elem);
+	    var imgID = $img.attr('id');
+	    var imgClass = $img.attr('class');
+	    var imgURL = $img.attr('src');
+	    console.log('in svg-replace compile');
+	    jQuery.get(imgURL, function(data) {
+//http://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
+		var $svg = jQuery(data).find('svg');
+		// Add replaced image's ID to the new SVG
+                if(typeof imgID !== 'undefined') {
+                    $svg = $svg.attr('id', imgID);
+                }
+		// Add replaced image's classes to the new SVG
+                if(typeof imgClass !== 'undefined') {
+                    $svg = $svg.attr('class', imgClass+' replaced-svg');
+                }
+		// Remove any invalid XML tags as per http://validator.w3.org
+                $svg = $svg.removeAttr('xmlns:a');
+
+                // Replace image with new SVG
+                $img.replaceWith($svg);
+	    }, 'xml');
+	}
+    };
 });

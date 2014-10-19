@@ -38,7 +38,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-touch.min.js"></script>
   <script src="https://code.angularjs.org/1.2.18/angular-route.min.js"></script>
   <script src="https://code.angularjs.org/1.2.18/angular-cookies.min.js"></script>
-  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <!-- <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"> -->
+  <link rel="stylesheet" href="/angularstatic/external/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
   <link rel="stylesheet" href="/static/comments.css">
   <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
@@ -242,7 +243,23 @@
       </ul>
 
       <ng-include src="rightNavBar"></ng-include> 
-      <ul id="navbar-right" class="nav navbar-nav navbar-right"><li class="rightnavbar-preceder"><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li></ul>
+      <ul id="navbar-right" class="nav navbar-nav navbar-right">
+	<!--<li class="rightnavbar-preceder">
+	  <p class="navbar-text navbar-text-likeus">Like us!</p>
+	  
+	</li> -->
+	<li class="rightnavbar-preceder rightnavbar-preceder-facebook">
+	  <a class="navbar-link navbar-socialinvite-link" href="https://www.facebook.com/pages/Opinion-Junction/944455988901836" target="_blank">
+	    <svg-replace svg-replace class="navbar-socialinvite-icons navbar-socialinvite-icons-facebook"  src="/static/facebook.svg"></svg-replace>
+	  </a>
+	</li>
+	<li class="rightnavbar-preceder">
+	  <a class="navbar-link navbar-socialinvite-link-twitter navbar-socialinvite-link navbar-link" href="https://twitter.com/ojunction_com" target="_blank">
+	    <svg-replace svg-replace class="navbar-socialinvite-icons navbar-socialinvite-icons-twitter"  src="/static/twitter_alt.svg"></svg-replace>
+	  </a>
+	</li>
+	<li class="rightnavbar-preceder"><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li>
+      </ul>
       <!--<ul id="navbar-right" class="nav navbar-right ng-scope"><li><a href="/user/settings" class="navbar-link">Settings</a></li></ul>-->
     </div>
   </div>

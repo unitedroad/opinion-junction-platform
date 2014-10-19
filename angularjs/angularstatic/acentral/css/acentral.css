@@ -464,3 +464,52 @@ div[data-attribution-label] {
 [x-ng-click] { /*http://stackoverflow.com/questions/18896859/change-the-mouse-pointer-on-ngclick*/
     cursor: pointer;
 }
+
+.editarticlemetadata-form-group {
+    margin-bottom:15px;
+}
+
+.editarticlemetadata-author-form-group {
+    margin-top: 20px;
+}
+
+.editarticlemetadata-field-container {
+    margin-top:10px;
+    margin-bottom:20px;
+    max-width:600px;
+}
+
+.navbar-socialinvite-link {
+    padding-bottom:13px !important;
+}
+
+.navbar-socialinvite-link-twitter {
+    padding-bottom:10px !important;
+}
+
+.navbar-socialinvite-icons {
+    width:25px;
+    height:17px;
+    fill:#ffffff;
+}
+
+.navbar-socialinvite-icons-facebook:hover {
+    fill:#3C549D;
+}
+
+.navbar-socialinvite-icons-twitter {
+    height:20px;
+}
+
+.navbar-socialinvite-icons-twitter:hover {
+    fill:#61A8DD;
+}
+
+.rightnavbar-preceder-facebook {
+    width:45px;
+}
+
+.navbar-text-likeus {
+    color:#CFCFCF !important;
+    margin-right:5px;
+}

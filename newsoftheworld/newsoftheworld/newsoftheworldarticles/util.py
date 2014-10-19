@@ -37,8 +37,8 @@ log_user_activity = django.dispatch.Signal(providing_args=["type", "id", "userid
 article_published = django.dispatch.Signal(providing_args=["article"])
 article_unpublished = django.dispatch.Signal(providing_args=["article"])
 
-crop_image_dimensions_dict = {"header_image" : (0,0,1280, 480), "thumbnail_image" : (0,0,180, 180)}
-fit_image_dimensions_dict = {"header_image" : (1280, 480), "thumbnail_image" : (180, 180)}
+crop_image_dimensions_dict = {"header_image" : (0,0,1280, 400), "thumbnail_image" : (0,0,180, 180)}
+fit_image_dimensions_dict = {"header_image" : (1280, 400), "thumbnail_image" : (180, 180)}
 
 image_format_dict = {"JPEG" : "jpg", "PNG" : "png", "GIF" : "gif"}
 
