@@ -215,17 +215,17 @@
     </div>
 </script>
 <script type="text/ng-template" id="signinNavBar.html">
-<ul id="navbar-right" class="nav navbar-nav navbar-right"><li id="navbar-right-lastchild"><a class="navbar-link" ng-click="signinModal()">Sign in</a></li></ul>
+<ul id="navbar-right" class="nav navbar-nav navbar-right"><li id="navbar-right-lastchild"><a class="navbar-link" ng-click="collapseNavbar();signinModal();">Sign in</a></li></ul>
 </script>
 
 <script type="text/ng-template" id="loggedInNavBar.html">
-<ul id="navbar-right" class="nav navbar-nav navbar-right" ><li ng-class="linkDetailsMap.settings != null? linkDetailsMap.settings.className: ''"><a href="/user/settings" class="navbar-link" >Settings</a></li></ul>
+<ul id="navbar-right" class="nav navbar-nav navbar-right" ><li ng-class="linkDetailsMap.settings != null? linkDetailsMap.settings.className: ''"><a href="/user/settings" ng-click="collapseNavbar();" class="navbar-link" >Settings</a></li></ul>
 </script>
 
 <nav id="navbar-div" class="navbar navbar-inverse  navbar-fixed-top">
   <div class="container" >
     <div class="navbar-header">
-      <a class="navbar-brand" href="/">Opinion Junction</a>
+      <a class="navbar-brand" ng-click="collapseNavbar();" href="/">Opinion Junction</a>
       <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse" ng-click="navbarCollapsed=!navbarCollapsed">
 	<span class="sr-only">Toggle navigation</span>
 	<span class="icon-bar"></span>
@@ -235,9 +235,9 @@
     </div>
     <div class="navbar-collapse collapse oj-navbar-main" collapse="navbarCollapsed">
       <ul class="nav navbar-nav">
-	<li  ng-class="linkDetailsMap.home != null? linkDetailsMap.home.className: ''"><a href="/">Home</a></li>
+	<li  ng-class="linkDetailsMap.home != null? linkDetailsMap.home.className: ''"><a href="/" ng-click="collapseNavbar();" >Home</a></li>
 	<li ng-repeat="category in categories" ng-class="linkDetailsMap[category.name] !=null ? linkDetailsMap[category.name].className : ''" ui-event="{hover : 'hoverCategory($event)', click : 'hoverCategory($event)'}" }>
-	  <a ng-href="/{{category.name}}" ng-class="linkDetailsMap[category.name] !=null ? linkDetailsMap[category.name].categoryLinkClassName : ''">{{category.friendly_name}}</a>
+	  <a ng-click="collapseNavbar();" ng-href="/{{category.name}}" ng-class="linkDetailsMap[category.name] !=null ? linkDetailsMap[category.name].categoryLinkClassName : ''" >{{category.friendly_name}}</a>
 	</li>
 	<!-- <li><a href="/about">About</a></li>--><!--Maybe e can bring About back later, have it in the footer instead -->
       </ul>
@@ -249,16 +249,16 @@
 	  
 	</li> -->
 	<li class="rightnavbar-preceder rightnavbar-preceder-facebook">
-	  <a class="navbar-link navbar-socialinvite-link" href="https://www.facebook.com/pages/Opinion-Junction/944455988901836" target="_blank">
+	  <a class="navbar-link navbar-socialinvite-link" href="https://www.facebook.com/pages/Opinion-Junction/944455988901836" target="_blank" ng-click="navbarCollapsed=true">
 	    <svg-replace svg-replace class="navbar-socialinvite-icons navbar-socialinvite-icons-facebook"  src="/static/facebook.svg"></svg-replace>
 	  </a>
 	</li>
 	<li class="rightnavbar-preceder">
-	  <a class="navbar-link navbar-socialinvite-link-twitter navbar-socialinvite-link navbar-link" href="https://twitter.com/ojunction_com" target="_blank">
+	  <a class="navbar-link navbar-socialinvite-link-twitter navbar-socialinvite-link navbar-link" href="https://twitter.com/ojunction_com" target="_blank" ng-click="navbarCollapsed=true">
 	    <svg-replace svg-replace class="navbar-socialinvite-icons navbar-socialinvite-icons-twitter"  src="/static/twitter_alt.svg"></svg-replace>
 	  </a>
 	</li>
-	<li class="rightnavbar-preceder"><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li>
+	<li class="rightnavbar-preceder"><a class="navbar-link" ng-click="navbarCollapsed=true"><span class="glyphicon glyphicon-search"></span></a></li>
       </ul>
       <!--<ul id="navbar-right" class="nav navbar-right ng-scope"><li><a href="/user/settings" class="navbar-link">Settings</a></li></ul>-->
     </div>
