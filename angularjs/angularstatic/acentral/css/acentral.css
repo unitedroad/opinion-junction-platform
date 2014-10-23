@@ -443,7 +443,7 @@ body { padding-top: 50px; }
 }
 
 .carousel-article-link h2 {
-    text-shadow: 2px 1px 2px #3F3F3F;
+    text-shadow: 2px 1px 2px #3F3F3F !important;
 }
 
 .carousel-article-link:hover {
