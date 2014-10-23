@@ -505,6 +505,12 @@ div[data-attribution-label] {
     padding-bottom:10px !important;
 }
 
+.navbar-socialinvite-link-gplus {
+    padding-top: 18px !important;
+    padding-bottom: 0px !important;
+    padding-left: 0px !important;
+}
+
 .navbar-socialinvite-icons {
     width:25px;
     height:17px;
@@ -519,6 +525,14 @@ div[data-attribution-label] {
     height:20px;
 }
 
+.navbar-socialinvite-icons-googleplus {
+    width: 40px !important;
+}
+
+.navbar-socialinvite-icons-googleplus:hover {
+    fill:#DA5646;
+}
+
 .navbar-socialinvite-icons-twitter:hover {
     fill:#61A8DD;
 }
@@ -527,6 +541,17 @@ div[data-attribution-label] {
     width:45px;
 }
 
+.rightnavbar-social-div {
+    padding-top:15px;
+}
+
+.rightnavbar-preceder-twitter-follow {
+    /*width:60px !important;*/
+}
+
+.rightnavbar-social-div {
+    padding-left:5px;
+}
 .navbar-text-likeus {
     color:#CFCFCF !important;
     margin-right:5px;
@@ -534,4 +559,13 @@ div[data-attribution-label] {
 
 .navbar-collapse {
     max-height:450px !important;
+}
+
+.collapsing-width {
+  position: relative;
+  overflow: hidden;
+  -webkit-transition: width 0.35s ease;
+    -moz-transition: width 0.35s ease;
+    -o-transition: width 0.35s ease;
+    transition: width 0.35s ease;
 }
