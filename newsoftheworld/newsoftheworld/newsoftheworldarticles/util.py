@@ -7,6 +7,7 @@ import binascii
 import io
 import urllib
 import urllib2
+import json
 from newsoftheworld import settings
 from .models import Article
 from .models import Author
@@ -791,7 +792,7 @@ def update_category_num_users_for_article(article, increment_number=1):
         #print "article_category: " + article_category
         for index, category in enumerate(categories):
             if article_category == category.name:
-                category.update(inc__num_users=increment_number)
+                category.update(inc__num_users=increment_number, add_to_set__user_ids = article.id)
                 category.save()
                 categories = categories[index:]
                 break
@@ -801,7 +802,7 @@ def update_tag_num_users_for_article(article, increment_number=1):
     print "update_tag_num_users_for_article: increment_number: " + str(increment_number)
     for article_tag in article_tags:
         if article_tag and article_tag.strip():
-            Tag.objects(name=article_tag).update_one(upsert=True,set__name=article_tag,inc__num_users=increment_number)
+            Tag.objects(name=article_tag).update_one(upsert=True,set__name=article_tag,inc__num_users=increment_number, add_to_set__user_ids = article.id)
         #http://stackoverflow.com/questions/14623430/mongoengine-how-to-perform-a-save-new-item-or-increment-counter-operation
 @receiver(profile_updated, dispatch_uid="109")
 def update_profile_in_author_activity(id, fields, author, **kwargs):
@@ -924,3 +925,11 @@ def get_or_initialise_author_activity(authorid):
             return None
 
     return author_activity
+
+#http://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+

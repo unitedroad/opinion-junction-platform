@@ -1,9 +1,23 @@
 from rest_framework import serializers
-
 from .models import Article
 from .models import Author
 from mongoengine.dereference import DeReference
+from bson.objectid import ObjectId
 
+class ArrayField(serializers.Field):
+    
+    def field_to_native(self, obj, field_name):
+        
+        return self.to_native(getattr(obj, field_name))
+
+    def to_native(self, obj):
+        if len(obj) > 0 and isinstance(obj[0], ObjectId):
+            obj_return = []
+            for member in obj:
+                obj_return.append(str(member))
+            return obj_return
+        return obj
+    
 class RelatedDocumentField(serializers.RelatedField):
 
     def to_native(self, obj):
@@ -114,9 +128,13 @@ class MetadataSerialiser(serializers.Serializer):
 class CategorySerialiser(serializers.Serializer):
     name = serializers.CharField()
     friendly_name = serializers.CharField()
+    num_users = serializers.IntegerField()
+    user_ids = ArrayField()
 
 class TagSerialiser(serializers.Serializer):
     name = serializers.CharField()
+    num_users = serializers.IntegerField()
+    user_ids = ArrayField()
 
 
 class Author_SettingsSerialiser(serializers.Serializer):

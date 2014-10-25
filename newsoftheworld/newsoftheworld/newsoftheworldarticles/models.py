@@ -136,6 +136,7 @@ class Category(Document):
     name= StringField(max_length=511)
     friendly_name = StringField(max_length=511, default='')
     num_users = IntField(default=0)
+    user_ids = ListField(ObjectIdField())
     meta = {
         'indexes': [ {'fields' : ['num_users', 'name'] }]
     }
@@ -143,6 +144,7 @@ class Category(Document):
 class Tag(Document):
     name= StringField(max_length=511)
     num_users = IntField(default=0)
+    user_ids = ListField(ObjectIdField())
     meta = {
         'indexes': [ {'fields' : ['num_users', 'name'] }]
     }

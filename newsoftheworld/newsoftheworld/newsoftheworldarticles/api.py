@@ -177,7 +177,7 @@ class ArticlesPost(APIView):
             else:
                 articlesList = Article.objects()
 
-            articlesList = articlesList.order_by("id")
+            articlesList = articlesList.order_by("published_date")
     
             if "authorId" in request.GET and request.GET["authorId"]:
                 articlesList = articlesList.filter(author=request.GET["authorId"])
@@ -341,6 +341,8 @@ class AuthorsList(APIView):
         #for comment in Comment.objects.all():
         serialisedList = AuthorSerialiser(Author.objects(id=authorid))
         
+
+
         return Response(serialisedList.data)
 
 
@@ -399,8 +401,16 @@ class AuthorsListAll(APIView):
 
     def get(self, request, format=None):
         #for comment in Comment.objects.all():
-        serialisedList = AuthorSerialiser(Author.objects().all())
-        
+        authors = Author.objects().all()
+
+        rargs = request.GET
+        if "author_name" in rargs and rargs["author_name"] is not None:
+            if "use_contains" in rargs and rargs["use_contains"] == "true":
+                authors = authors.filter(author_name__contains=rargs["author_name"])
+            else:
+                authors = authors.filter(author_name=rargs["author_name"])
+
+        serialisedList = AuthorSerialiser(authors)
         return Response(serialisedList.data)
 
 
@@ -463,6 +473,22 @@ class LoggedInUserDetails(APIView):
             print "exception in LoggedInUserDetails: " +  str(e)
             return Response({"ok" : "false", "status" : status.HTTP_500_INTERNAL_SERVER_ERROR }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
             
+class ArticlesByTag(APIView):
+    def get(self, request, tag_name, format=None):
+        tags = Tag.objects(name=tag_name)
+        if len(tags) > 0:
+            tag = tags[0]
+            serialisedList = TagSerialiser(tag, many=False)
+            return Response(serialisedList.data)
+        else:
+            return Response({"ok":"false","status":status.HTTP_404_NOT_FOUND, "code":"data_not_found","message":"Tag not found!"}, status = status.HTTP_404_NOT_FOUND)
+
+#class ArticlesByTagAll(APIView):
+#    def get(self, request, tag_name, format=None):
+#        tags = Tag.objects().all()
+#        serialisedList = TagSerialiser(tag, many=False)
+#        return Response(serialisedList.data)
+
 class TagsList(APIView):
 
     def get(self, request,  format=None):
@@ -475,12 +501,14 @@ class TagsList(APIView):
             num_docs = 10
             if "num_docs" in request.GET:
                 num_docs = int(request.GET["num_docs"])
-            print "num_docs = " + str(num_docs) 
+            #print "num_docs = " + str(num_docs) 
             #tag_list = Metadata.objects.filter(entry_type="tag").order_by("num_user")[0:num_docs]
             tag_list = Tag.objects.order_by("-num_users")[0:num_docs]
         else:
             #tag_list = Metadata.objects.filter(entry_type="tag")
             tag_list = Tag.objects()
+        if "get_user_fields" not in request.GET or request.GET["get_user_fields"] != "true":
+            tag_list = tag_list.exclude("num_users","user_ids")
         serialisedList = TagSerialiser(tag_list)
         return Response(serialisedList.data)
 
@@ -502,7 +530,7 @@ class CategoriesList(APIView):
 
         #tag_list = Metadata.objects.filter(entry_type="category")
         #serialisedList = MetadataSerialiser(tag_list)
-        category_list = Category.objects()
+        category_list = Category.objects().order_by("_id")
         serialisedList = CategorySerialiser(category_list)
 
         return Response(serialisedList.data)
