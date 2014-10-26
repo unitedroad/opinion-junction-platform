@@ -8,6 +8,7 @@ import io
 import urllib
 import urllib2
 import json
+import copy
 from newsoftheworld import settings
 from .models import Article
 from .models import Author
@@ -17,6 +18,7 @@ from .models import Author_Activity
 from .models import Author_Settings
 from .models import Category
 from .models import Tag
+from .models import ArticleForTagCategory
 from .db import db
 from rest_framework import status
 from allauth.account.signals import user_logged_in, user_signed_up
@@ -35,6 +37,7 @@ URL_FRONT_PAGE_IMAGES = settings.MEDIA_URL + 'ojfrontpageimages/'
 
 profile_updated = django.dispatch.Signal(providing_args=["id", "fields"])
 log_user_activity = django.dispatch.Signal(providing_args=["type", "id", "userid_from", "userid_to"])
+published_article_finalised = django.dispatch.Signal(providing_args=["article"])
 article_published = django.dispatch.Signal(providing_args=["article"])
 article_unpublished = django.dispatch.Signal(providing_args=["article"])
 
@@ -42,7 +45,8 @@ crop_image_dimensions_dict = {"header_image" : (0,0,1280, 400), "thumbnail_image
 fit_image_dimensions_dict = {"header_image" : (1280, 400), "thumbnail_image" : (180, 180)}
 
 image_format_dict = {"JPEG" : "jpg", "PNG" : "png", "GIF" : "gif"}
-
+category_delimiter_for_deser = "%,#@$"
+category_name_friendly_name_seperator = "%.#@$"
 
 def uses_transparency_filename(filename):
     img = Image.open(filename)
@@ -445,8 +449,17 @@ def change_profile(user, data):
         return author
 
 
-#def get_friendly_name(author):
+def get_friendly_name(author):
 #    return author.first_name + " " + author.last_name
+    author_name = None
+    if author.first_name or author.last_name:
+        author_name = author.first_name + " " + author.last_name
+        author_name = author_name.strip()
+    else:
+        author_name = author.author_name
+
+    return author_name
+
 
 #def convert_image_to_jpg(image):
 #    bg = Image.new("RGB", image.size, (255,255,255))
@@ -731,6 +744,84 @@ def convert_string_to_boolean(string):
         return True
     return False
 
+def get_category_string_for_deser_objects(categories):
+    category_string_ret = ""
+    if categories is None:
+        return category_string_ret
+
+    if len(categories) > 0:
+        category = categories[0]
+        categories = categories[1:]
+        category_string_ret = category
+
+    for category in categories:
+        category_string_ret = category_string_ret + category_delimiter_for_deser + category
+
+    return category_string_ret
+
+def get_articleForTagCategory_from_article(article):
+    articleForTagCategory = ArticleForTagCategory()
+    articleForTagCategory.article_id = str(article.id)
+    articleForTagCategory.title = article.title
+    articleForTagCategory.slug = article.slug
+    articleForTagCategory.excerpt = article.excerpt
+    articleForTagCategory.author_name = get_friendly_name(article.author)
+    articleForTagCategory.categories = get_category_string_for_deser_objects(article.categories)
+    if article.thumbnail_image:
+        articleForTagCategory.thumbnail_image = article.thumbnail_image
+    else:
+        articleForTagCategory.thumbnail_image = article.primary_image
+    return articleForTagCategory
+
+def update_category_users_for_article(article, increment_number=1):
+    article_categories = sorted(article.categories)
+    #print "article_categories: " + article_categories
+    categories_db = Category.objects().order_by("name")
+    categories = []
+    categories.extend(categories_db)
+    #print "update_category_num_users_for_article: increment_number: " + str(increment_number)
+    articleForCategoryOrig = get_articleForTagCategory_from_article(article)
+    for article_category in article_categories:
+        #print "article_category: " + article_category
+        for index, category in enumerate(categories):
+            if article_category == category.name:
+                if increment_number > 0:
+                    articleForCategory = copy.copy(articleForCategoryOrig) #since we are persisted this in mongo
+                    category.update(add_to_set__users = articleForCategory)
+                else:
+                    category.update(pull__users = ArticleForTagCategory(article_id=str(article.id)))
+                category.save()
+                categories = categories[index:]
+                break
+
+
+def update_tag_users_for_article(article, pub_or_unpub=1):
+    article_tags = article.tags
+    #print "update_tag_num_users_for_article: increment_number: " + str(increment_number)
+    if pub_or_unpub == 1:
+        articleForTagOrig = get_articleForTagCategory_from_article(article)
+        for article_tag in article_tags:
+            articleForTag = copy.copy(articleForTagOrig) #since we have persisted this in mongo
+            if article_tag and article_tag.strip():
+                Tag.objects(name=article_tag).update_one(set__name=article_tag, 
+                                                         add_to_set__users = articleForTag)
+    else:
+        for article_tag in article_tags:
+            if article_tag and article_tag.strip():
+                Tag.objects(name=article_tag).update_one(set__name=article_tag,
+                                                         pull__users = ArticleForTagCategory(article_id=str(article.id)))
+                                                     
+
+
+@receiver(published_article_finalised, dispatch_uid="110")
+def handle_finalise_published_article(article, **kwargs):
+    update_category_users_for_article(article, 1)
+    update_tag_users_for_article(article)
+
+def finalise_published_article(article):
+    published_article_finalised.send(sender=finalise_published_article, article=article)
+
+
 def create_article(article=None, **kwargs):
     user = kwargs["user"]
     articleid = None
@@ -792,18 +883,25 @@ def update_category_num_users_for_article(article, increment_number=1):
         #print "article_category: " + article_category
         for index, category in enumerate(categories):
             if article_category == category.name:
-                category.update(inc__num_users=increment_number, add_to_set__user_ids = article.id)
+                if increment_number > 0:
+                    category.update(inc__num_users=increment_number, add_to_set__user_ids = article.id)
+                else:
+                    category.update(inc__num_users=increment_number, pull__user_ids = article.id)
                 category.save()
                 categories = categories[index:]
                 break
+
 
 def update_tag_num_users_for_article(article, increment_number=1):
     article_tags = article.tags
     print "update_tag_num_users_for_article: increment_number: " + str(increment_number)
     for article_tag in article_tags:
         if article_tag and article_tag.strip():
-            Tag.objects(name=article_tag).update_one(upsert=True,set__name=article_tag,inc__num_users=increment_number, add_to_set__user_ids = article.id)
+            Tag.objects(name=article_tag).update_one(upsert=True,
+                                                     set__name=article_tag,inc__num_users=increment_number, 
+                                                     add_to_set__user_ids = article.id )
         #http://stackoverflow.com/questions/14623430/mongoengine-how-to-perform-a-save-new-item-or-increment-counter-operation
+
 @receiver(profile_updated, dispatch_uid="109")
 def update_profile_in_author_activity(id, fields, author, **kwargs):
     author_activity = None
