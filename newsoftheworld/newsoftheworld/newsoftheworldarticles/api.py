@@ -284,6 +284,9 @@ class ArticlesPost(APIView):
             if save_front_page_info:
                 article.save()
 
+            if article.status == "published":
+                util.finalise_published_article(article)
+            
             permission_check["articleid"] = str(article.id)
             permission_check["message"] = "Successfully Submitted your Opinion!"
             return Response(permission_check, status = status.HTTP_200_OK)
@@ -508,7 +511,7 @@ class TagsList(APIView):
             #tag_list = Metadata.objects.filter(entry_type="tag")
             tag_list = Tag.objects()
         if "get_user_fields" not in request.GET or request.GET["get_user_fields"] != "true":
-            tag_list = tag_list.exclude("num_users","user_ids")
+            tag_list = tag_list.exclude("num_users","user_ids", "users")
         serialisedList = TagSerialiser(tag_list)
         return Response(serialisedList.data)
 
@@ -531,6 +534,8 @@ class CategoriesList(APIView):
         #tag_list = Metadata.objects.filter(entry_type="category")
         #serialisedList = MetadataSerialiser(tag_list)
         category_list = Category.objects().order_by("_id")
+        if "get_user_fields" not in request.GET or request.GET["get_user_fields"] != "true":
+            category_list = category_list.exclude("num_users","user_ids", "users")
         serialisedList = CategorySerialiser(category_list)
 
         return Response(serialisedList.data)

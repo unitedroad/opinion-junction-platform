@@ -9,7 +9,17 @@
       <h1> {{article.title}}</h1>
       <h4 class="articlepreviewheadline"><small><i><em>{{article.excerpt}}</em></i></small></h4>
       </div>
-      <h5><small>By - {{article.author.first_name}} {{article.author.last_name}}</small></h5>
+      <h5>
+	<small>By - 
+	  <b>
+	    <strong>{{article.author.first_name}} {{article.author.last_name}}
+	    </strong>
+	  </b>
+	</small>
+	<small class="article-published-date-small">
+	  <time datetime="{{article.published_date}}" pubdate>{{article.friendly_published_date}}</time>
+	<small>
+      </h5>
     </header>
 
     <!-- 

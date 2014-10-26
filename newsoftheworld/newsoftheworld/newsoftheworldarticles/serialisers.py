@@ -4,6 +4,47 @@ from .models import Author
 from mongoengine.dereference import DeReference
 from bson.objectid import ObjectId
 
+
+class ArrayTagCategoryArticleSerialiser(serializers.Serializer):
+    def field_to_native(self, obj, field_name):
+        
+        return self.to_native(getattr(obj, field_name))
+
+    def to_native(self, obj):
+        obj_return = []
+
+        for member in obj:
+            member_return = self._dict_class()
+            member_return.fields = self._dict_class()
+
+            member_return["article_id"] = member.article_id
+            member_return.fields["article_id"] = "article_id"
+            
+            member_return["title"] = member.title
+            member_return.fields["title"] = "title"
+
+            member_return["slug"] = member.slug
+            member_return.fields["slug"] = "slug"
+            
+            member_return["author_name"] = member.author_name
+            member_return.fields["author_name"] = "author_name"
+
+            member_return["excerpt"] = member.excerpt
+            member_return.fields["excerpt"] = "excerpt"
+
+            member_return["categories"] = member.categories
+            member_return.fields["categories"] = "categories"
+
+
+            member_return["thumbnail_image"] = member.thumbnail_image
+            member_return.fields["thumnail_image"] = "thumbnail_image"
+
+
+            obj_return.append(member_return)
+
+
+        return obj_return
+
 class ArrayField(serializers.Field):
     
     def field_to_native(self, obj, field_name):
@@ -130,11 +171,13 @@ class CategorySerialiser(serializers.Serializer):
     friendly_name = serializers.CharField()
     num_users = serializers.IntegerField()
     user_ids = ArrayField()
+    users = ArrayTagCategoryArticleSerialiser()
 
 class TagSerialiser(serializers.Serializer):
     name = serializers.CharField()
     num_users = serializers.IntegerField()
     user_ids = ArrayField()
+    users = ArrayTagCategoryArticleSerialiser()
 
 
 class Author_SettingsSerialiser(serializers.Serializer):

@@ -141,6 +141,11 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    url: "/editarticlemetadata/:articleId",
 	    templateUrl: '/angularstatic/editarticlemetadata/partials/index.html',
 	    controller: 'editArticleMetadataController'
+	}).state('articlesByTag', {
+	    title: "Opinion Junction",
+	    url: "/tag/:tagName",
+	    templateUrl: '/angularstatic/articlesbytag/partials/index.html',
+	    controller: 'articlesByTagController'
 	}).state('default', {
 	    title: "Opinion Junction",
 	    url: "/default",
@@ -184,7 +189,20 @@ function initSidebarCapabilities(commonOJService, scope) {
 
 }
 
+testApp.factory('fieldPropertiesService', function() {
+    var serviceInstance = {};
+    serviceInstance.fieldProperties = {};
+    serviceInstance.getProperty = function (propertyName) {
+	return serviceInstance.fieldProperties[propertyName];
+    }
 
+    serviceInstance.setProperty = function (propertyName, property) {
+	serviceInstance.fieldProperties[propertyName] = property;
+    }
+
+    return serviceInstance;
+
+});
 
 testApp.factory('commonOJService', function($http, $location) {
     var serviceInstance = {};
@@ -549,6 +567,11 @@ testApp.factory('dateService', function($http, $location) {
 	    return num + " " + suffix + " ago";
 	}
 	return num + " " + suffix + "s ago";
+    }
+
+    serviceInstance.getFriendlyDateStringAbsolute = function(date) {
+	dateDate = new Date(date);
+	return date.toLocaleDateString();
     }
 
     serviceInstance.getFriendlyDateString = function(date) {
@@ -953,6 +976,9 @@ testApp.factory('fbService', function($window, $http, $location, $cookies) {
 	init: function(opts) {
             this.opts = opts;
 
+	    if ((!FB)) {
+		return;
+	    }
             //window.fbAsyncInit = function() {
                 FB.init({
                     appId      : opts.appId,
@@ -1039,9 +1065,13 @@ testApp.factory('fbService', function($window, $http, $location, $cookies) {
     var FB = $window.FB;
 
     // gripe if it's not there.
-    if(!FB) throw new Error('Facebook not loaded');
+    //if(!FB) throw new Error('Facebook not loaded');
 
+    if(!FB) console.log('Facebook not loaded');
     
+    serviceInstance.isFBAvailable = function() {
+	return !(!FB);
+    }
     //FB.init();
 
     //make sure FB is initialized.
@@ -1135,6 +1165,107 @@ testApp.factory('profileService', function() {
 testApp.controller('testController', function($scope) {
     $scope.totalResults = 5;
     $scope.message = "Welcome to Opinion Junction";
+});
+
+testApp.controller('articlesByTagController', function($scope, commonOJService, $http, $stateParams) {
+
+    $scope.tagName = $stateParams.tagName;
+
+    createCategoriesMap = function(categories) {
+	var categoriesMap = {};
+	if (categories == null) {
+	    return; // not the end of the world
+	}
+	var numCategories = categories.length;
+	for (i = 0; i < numCategories; i++) {
+	    category = categories[i];
+	    categoriesMap[category.name] = category;
+	}
+	return categoriesMap;
+    }
+
+    setCategories = function() {
+	$scope.categories = commonOJService.categories;
+    }
+
+    commonOJService.registerCategoryListener(setCategories);	
+
+    get_category_non_friendly_name_string_for_tag_article = function(article) {
+	if (!(categories in article) || !article,categories) {
+	    return "";
+	}
+	return article.categories.split("%,#@$").join(",");
+    }
+
+    get_category_friendly_name_string_for_tag_article = function(article) {
+	if (!article.categories) {
+	    return "";
+	}
+	var category_return = ""
+	var categories = article.categories.split("%,#@$");
+	var startUsingCommas = false;
+	if (categories.length > 0) {
+	    var category = categories[0];
+	    if (category) {
+		var categoryObject = $scope.categoriesMap[category]
+		if (categoryObject.friendly_name) {
+		    category_return = $scope.categoriesMap[category].friendly_name;
+		    startUsingCommas = true;
+		}
+		
+		
+	    }
+
+	}
+	for (var i = 1; i < categories.length; i++) {
+	    var category = categories[i];
+	    if (category) {
+		var categoryObject = $scope.categoriesMap[category]
+		if (categoryObject.friendly_name) {
+		    if (startUsingCommas) {
+			category_return = category_return + ", " + $scope.categoriesMap[category].friendly_name;
+		    } else {
+			category_return = $scope.categoriesMap[category].friendly_name;
+			startUsingCommas = true;
+		    }
+		    
+		}
+		
+		
+	    }
+	    
+	}
+	
+	return category_return;
+    }
+
+
+    $http.get("/api/1.0/tags/" + $scope.tagName, {headers: {"Content-Type": "application/json"}}).
+	success(function(data){
+	    $scope.data = data;
+	    $scope.articleInfos = data.users;
+	    if (!$scope.categoriesMapCreated) {
+		var categoriesMap = createCategoriesMap($scope.categories);
+		if (categoriesMap != null) {
+		    $scope.categoriesMap = categoriesMap;
+		    $scopecategoriesMap = true;
+		    for (var i = 0; i < $scope.articleInfos.length; i++) {
+			var article = $scope.articleInfos[i];
+			article.friendly_categories = get_category_friendly_name_string_for_tag_article(article);
+		    }
+		} else {
+		    for (var i = 0; i < $scope.articleInfos.length; i++) {
+			var article = $scope.articleInfos[i];
+			article.friendly_categories = get_category_non_friendly_name_string_for_tag_article(article);
+		    }
+		    
+		}
+	    }
+	});
+
+    
+
+
 });
 
 testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, profileService, $stateParams) {
@@ -1680,7 +1811,7 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 });
 
 
-testApp.controller('articleController', function($scope, $http, $stateParams, $sce, commonOJService) {
+testApp.controller('articleController', function($scope, $http, $stateParams, $sce, commonOJService, dateService) {
 
     $scope.message = "Welcome to Opinion Junction's First Article";
     $scope.articleId = $stateParams.articleId;
@@ -1698,7 +1829,7 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
 		    socialbar.css("top", "0px");
 		    socialbar.css("bottom", "auto");  
 		    $scope.article.author.user_bio = commonOJService.convertWhiteSpaceToHtml($scope.article.author.user_bio);
-
+		    $scope.article.friendly_published_date = dateService.getFriendlyDateString(new Date($scope.article.published_date));
 		}
 	    });
 
@@ -1717,7 +1848,6 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
     }
 
     $scope.articleUrl = window.location.href;
-
 
 });
 
@@ -3410,11 +3540,35 @@ testApp.controller('messageViewController', function($scope, $location, commonOJ
     }
 });
 
-var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, commonOJService, fbService) {
+var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, commonOJService, fbService, fieldPropertiesService) {
+
+    $scope.fbLoginDisabled = fieldPropertiesService.getProperty("fbLoginDisabled");
+
+    var showError = function(errorMessage, onAll) {
+	if (onAll) {
+	    $scope.errorMessageSignup = $scope.errorMessageSignin = errorMessage;
+	} else {
+	    if (!signupCollapse) {
+		$scope.errorMessageSignup = errorMessage;
+	    } else if (!signinCollapse) {
+		$scope.errorMessageSignin = errorMessage;
+	    }
+	}
+    }
+
 
     $scope.fbLogin = function(nextUrl, action, process) {
-	fbService.login(nextUrl, action, process, [onSuccess]);
+	if (fbService.isFBAvailable()) {
+	    fbService.login(nextUrl, action, process, [onSuccess]);
+	} else {
+	    showError("Problems with logging in with Facebook. Log in with Opinion Junction Account instead, or sign up for one", false);
+	    fieldPropertiesService.setProperty("fbLoginDisabled", true);
+	    $scope.fbLoginDisabled = true;
+	}
+	
     }
+
+
     $scope.message="";
     $scope.errorMessage = "";
     $scope.loginFormData = {};

@@ -132,19 +132,33 @@ class Metadata(models.Model):
         'indexes': [ {'fields' : ['num_user', 'name'] }]
     }
 
+
+class ArticleForTagCategory(EmbeddedDocument):
+    article_id = StringField(required=True)
+    title = StringField()
+    slug = StringField()
+    author_name = StringField()
+    excerpt = StringField()
+    categories = StringField()
+    thumbnail_image = StringField()
+
+
 class Category(Document):
     name= StringField(max_length=511)
     friendly_name = StringField(max_length=511, default='')
     num_users = IntField(default=0)
     user_ids = ListField(ObjectIdField())
+    users = ListField(EmbeddedDocumentField(ArticleForTagCategory))
     meta = {
         'indexes': [ {'fields' : ['num_users', 'name'] }]
     }
 
+    
 class Tag(Document):
     name= StringField(max_length=511)
     num_users = IntField(default=0)
     user_ids = ListField(ObjectIdField())
+    users = ListField(EmbeddedDocumentField(ArticleForTagCategory))
     meta = {
         'indexes': [ {'fields' : ['num_users', 'name'] }]
     }

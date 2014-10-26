@@ -181,7 +181,7 @@ body { padding-top: 50px; }
     line-height:135%;
 }
 
-.main-page-articles-header {
+.main-page-articles-header, .tag-articles-header {
     width:100%;
     border-bottom:1px solid #A0A0A0;
 }
@@ -568,4 +568,12 @@ div[data-attribution-label] {
     -moz-transition: width 0.35s ease;
     -o-transition: width 0.35s ease;
     transition: width 0.35s ease;
+}
+
+.article-published-date-small {
+    margin-left:10px;
+}
+
+.tag-articles-header {
+    padding-top:15px
 }
