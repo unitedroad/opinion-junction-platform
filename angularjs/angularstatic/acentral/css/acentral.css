@@ -102,6 +102,16 @@ body { padding-top: 50px; }
     font-size: 65%;
 }
 
+.article-page-tags-div {
+    margin-top:20px;
+    margin-left:70px;
+}
+
+.article-page-tags-text {
+    //margin-left:10px;
+    margin-right:8px;
+}
+
 .user-container {
 
     padding-top:20px;
