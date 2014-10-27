@@ -1830,6 +1830,13 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
 		    socialbar.css("bottom", "auto");  
 		    $scope.article.author.user_bio = commonOJService.convertWhiteSpaceToHtml($scope.article.author.user_bio);
 		    $scope.article.friendly_published_date = dateService.getFriendlyDateString(new Date($scope.article.published_date));
+		    if ($scope.article.tags && $scope.article.tags.length > 0) {
+			$scope.firstTag = $scope.article.tags[0];
+			$scope.tagsAfterFirst = $scope.article.tags.slice(1);
+			$scope.articleTagsDivVisible = true;
+		    } else {
+			$scope.articleTagsDivVisible = false;
+		    }
 		}
 	    });
 
