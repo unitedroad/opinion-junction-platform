@@ -1024,6 +1024,8 @@ def get_or_initialise_author_activity(authorid):
 
     return author_activity
 
+
+
 #http://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):

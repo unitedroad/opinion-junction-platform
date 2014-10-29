@@ -17,12 +17,32 @@
 	    <h1> {{article.title}}</h1>
 	    <h4 class="articlepreviewheadline"><small><i><em>{{article.excerpt}}</em></i></small></h4>
 	  </div>
-	  <h5><small>By - {{article.author.first_name}} {{article.author.last_name}}</small></h5>
+	  <h5>
+	    <small>By - 
+	      <b>
+		<strong>{{article.author.first_name}} {{article.author.last_name}}
+		</strong>
+	      </b>
+	    </small>
+	    <small class="article-published-date-small">
+	      <time datetime="{{article.published_date}}" pubdate>{{article.published_date}}</time>
+	    </small>
+	  </h5>
 	</header>
 	<div class="article-content-section" >
 	  {{article.storytext|safe}}
 	</div>
       </article>
+      <div class="article-page-tags-div" ng-show="articleTagsDivVisible">
+	<span class="article-page-tags-text"><b>Tags: </b></span>
+	{% for tag in article.tags %}
+	  {% if forloop.last %}
+	<a  href="{{serverdeliverroot}}/tag/{{tag}}" rel="tag">{{tag}}</a>
+	  {% else %}
+	<a  href="{{server_deliver_root}}/tag/{{tag}}" rel="tag">{{tag}}</a>, 
+	  {% endif %}
+	{% endfor %}
+      </div>
       <div  class="article-author-bio-section">
 	<div id="comment-author-box">
 	  <a href="/profile/{{article.author.id}}" class="comment-author-image-container">
@@ -31,7 +51,7 @@
 	  <div class="comment-author-details-container">
 	    <a href="/profile/{{article.author.id}}"><h5 class="comment-author-name-text ng-binding">{{article.author.first_name}} {{article.author.last_name}}</h5></a>
 	    <div class="article-author-bio-text-section" >
-	      <pre>{{article.author.user_bio}}</pre>
+	      {{article.author.user_bio}}
 	    </div>
 	  </div>
 	</div>

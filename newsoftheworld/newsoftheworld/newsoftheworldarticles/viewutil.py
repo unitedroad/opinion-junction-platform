@@ -1,3 +1,42 @@
+def set_category_friendly_name_string_for_article_for_tag_category(context,article):
+    if hasattr(article, "friendly_categories"):
+        return 
+    
+    categories = context['categories']
+
+    article_categories = article.categories
+
+    if not article_categories:
+        article.friendly_Categories = ""
+        return 
+
+    article_categories_array = article.categories.split("%,#@$")
+
+    categories_return = ""
+
+    use_comma = False
+
+    if 'categoriesMap' not in context:
+        setCategoriesMap(categories, context)
+
+    categoriesMap = context['categoriesMap']
+
+    if len(article_categories_array) > 0:
+        category = article_categories_array[0]
+        if category and category in categoriesMap:
+            use_comma = True
+            categories_return = categoriesMap[category].friendly_name
+
+    for category in article_categories:
+        if category and category in categoriesMap:
+            if use_comma:
+                categories_return = categories_return + ", " + categoriesMap[category].friendly_name
+            else:
+                categories_return = categoriesMap[category].friendly_name
+                use_comma = True
+
+    article.friendly_categories = categories_return
+
 def setCategoriesMap(categories, context):
     categoriesMap = {}
     for category in categories:

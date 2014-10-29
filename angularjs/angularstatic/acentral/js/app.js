@@ -1171,6 +1171,8 @@ testApp.controller('articlesByTagController', function($scope, commonOJService, 
 
     $scope.tagName = $stateParams.tagName;
 
+    $("title").text("Opinion Junction - Tag - " + $scope.tagName);	    
+
     createCategoriesMap = function(categories) {
 	var categoriesMap = {};
 	if (categories == null) {

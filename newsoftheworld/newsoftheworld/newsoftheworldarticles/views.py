@@ -42,6 +42,8 @@ from .models import Article
 
 from .models import Metadata
 
+from .models import Tag
+
 class RedirectAuthenticatedUserAjaxCompatibleMixin(RedirectAuthenticatedUserMixin):
     def dispatch(self, request, *args, **kwargs):
         self.request = request
@@ -152,6 +154,14 @@ class Article_Traditional_View(Main_Traditional_View):
                 article = articles[0]
             else:
                 article = util.get_bad_article("no_article_found")
+
+        if len(article.tags) > 0:
+            article.firstTag = article.tags[0]
+        else:
+            article.firstTag = None
+        
+        article.tagsAfterFirst = article.tags[1:]
+
         context = super(Article_Traditional_View, self).get_context_data(**kwargs)
         context['article'] = article
         return context
@@ -205,6 +215,31 @@ class Home_Traditional_View(Main_Traditional_View):
         return context
     
 
+
+class ArticlesByTag_Traditional_View(Main_Traditional_View):
+
+    template_name = "articlesbytag/index.html"
+
+
+    def get_context_data(self, **kwargs):
+        tag_name = kwargs["tag_name"]
+
+        tags = Tag.objects(name=tag_name)
+
+        context = super(ArticlesByTag_Traditional_View, self).get_context_data(**kwargs)
+
+        if tags is not None and len(tags) > 0:
+            tag = tags[0]
+            users = tag.users
+            if users is not None and len(users) > 0:
+                for user in users:
+                    viewutil.set_category_friendly_name_string_for_article_for_tag_category(context,user)
+
+        context['tagName'] = tag_name
+
+        context['articleInfos'] = users
+
+        return context
 
 class Category_Traditional_View(Main_Traditional_View):
 
