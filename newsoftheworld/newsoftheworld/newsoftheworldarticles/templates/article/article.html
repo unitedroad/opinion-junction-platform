@@ -37,7 +37,7 @@
 	<span class="article-page-tags-text"><b>Tags: </b></span>
 	{% for tag in article.tags %}
 	  {% if forloop.last %}
-	<a  href="{{serverdeliverroot}}/tag/{{tag}}" rel="tag">{{tag}}</a>
+	<a  href="{{server_deliver_root}}/tag/{{tag}}" rel="tag">{{tag}}</a>
 	  {% else %}
 	<a  href="{{server_deliver_root}}/tag/{{tag}}" rel="tag">{{tag}}</a>, 
 	  {% endif %}

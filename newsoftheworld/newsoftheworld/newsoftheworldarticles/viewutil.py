@@ -10,7 +10,7 @@ def set_category_friendly_name_string_for_article_for_tag_category(context,artic
         article.friendly_Categories = ""
         return 
 
-    article_categories_array = article.categories.split("%,#@$")
+    article_categories_array = article_categories.split("%,#@$")
 
     categories_return = ""
 
@@ -26,10 +26,11 @@ def set_category_friendly_name_string_for_article_for_tag_category(context,artic
         if category and category in categoriesMap:
             use_comma = True
             categories_return = categoriesMap[category].friendly_name
+            article_categories_array = article_categories_array[1:]
 
-    for category in article_categories:
-        if category and category in categoriesMap:
-            if use_comma:
+    for category in article_categories_array:
+        if category and (category in categoriesMap):
+            if use_comma is True:
                 categories_return = categories_return + ", " + categoriesMap[category].friendly_name
             else:
                 categories_return = categoriesMap[category].friendly_name
