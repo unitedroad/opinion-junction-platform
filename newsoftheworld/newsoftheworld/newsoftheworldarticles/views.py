@@ -215,6 +215,26 @@ class Home_Traditional_View(Main_Traditional_View):
         return context
     
 
+class AuthorsActivity_Traditional_View(Main_Traditional_View):
+
+    template_name = "publicprofile/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(AuthorsActivity_Traditional_View, self).get_context_data(**kwargs)
+        authorid = kwargs["authorid"]
+        author_activity = util.get_or_initialise_author_activity(authorid)
+        context["show_activity"] = True
+        context["show_error"] = False
+        context["message"] = ""
+        if author_activity is not None:
+            context["authorActivity"] = author_activity
+        else:
+            context["authorActivity"] = None
+            context["show_activity"] = False
+            context["show_error"] = True
+            context["message"] = "Author does not exist"
+
+        return context
 
 class ArticlesByTag_Traditional_View(Main_Traditional_View):
 

@@ -36,7 +36,27 @@
 	<ul id="navbar-right" class="nav navbar-nav navbar-right"><li id="navbar-right-lastchild"><a class="navbar-link" ng-click="signinModal()">Sign in</a></li></ul>
 	{% endif %}
 </ng-include> 
-      <ul id="navbar-right" class="nav navbar-nav navbar-right"><li class="rightnavbar-preceder"><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li></ul>
+	
+
+      <ul id="navbar-right" class="nav navbar-nav navbar-right">
+	<li class="rightnavbar-preceder rightnavbar-preceder-facebook" id="headerFacebookCommunity">
+	  <a class="navbar-link navbar-socialinvite-link" href="https://www.facebook.com/pages/Opinion-Junction/944455988901836" target="_blank" ng-click="navbarCollapsed=true">
+	    <img class="navbar-socialinvite-icons navbar-socialinvite-icons-facebook"  src="/static/facebook.svg" style="-webkit-filter: invert(100%);filter: invert(100%)"></img>
+	  </a>
+	</li>
+	<li class="rightnavbar-preceder" id="headerTwitterCommunity">
+	  <a class="navbar-link navbar-socialinvite-link-twitter navbar-socialinvite-link navbar-link" 
+	     href="https://twitter.com/ojunction_com" target="_blank" ng-click="navbarCollapsed=true">
+	    <img class="navbar-socialinvite-icons navbar-socialinvite-icons-twitter"  src="/static/twitter_alt.svg" style="-webkit-filter: invert(100%);filter: invert(100%)"></img>
+	  </a>
+	</li>
+	<li class="rightnavbar-preceder rightnavbar-preceder-googleplus" id="headerGoogleplusCommunity">
+	  <a class="navbar-link navbar-socialinvite-link navbar-socialinvite-link-gplus" href="https://www.facebook.com/pages/Opinion-Junction/944455988901836" 
+	     target="_blank" ng-click="navbarCollapsed=true">
+	    <img class="navbar-socialinvite-icons navbar-socialinvite-icons-googleplus"  src="/static/gplus-1.svg" style="-webkit-filter: invert(100%);filter: invert(100%)"></img>
+	  </a>
+	</li>
+	<li class="rightnavbar-preceder"><a class="navbar-link" ><span class="glyphicon glyphicon-search"></span></a></li></ul>
       <!--<ul id="navbar-right" class="nav navbar-right ng-scope"><li><a href="/user/settings" class="navbar-link">Settings</a></li></ul>-->
     </div>
   </div>

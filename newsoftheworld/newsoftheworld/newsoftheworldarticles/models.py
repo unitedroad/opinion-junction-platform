@@ -173,3 +173,12 @@ class Author_Settings(Document):
     privacy_hide_others_comments = BooleanField(default=False)
     privacy_hide_others_replies = BooleanField(default=False)
     privacy_hide_others_votes = BooleanField(default=False)
+
+class AuthorForAboutus(EmbeddedDocument):
+    author_id = StringField()
+    first_name = StringField()
+    last_name = StringField()
+
+class AboutUs(Document):
+    aboutus_message = StringField()
+    authors = ListField(AuthorForAboutus())

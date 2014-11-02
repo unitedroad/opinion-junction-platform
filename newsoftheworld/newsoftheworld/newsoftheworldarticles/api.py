@@ -629,3 +629,7 @@ class AuthorsActivity(APIView):
             return Response(serialisedList.data)
         else:
             return Response({"ok":"false", "code": "user_does_not_exist","message":"User does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+class AboutUs(APIView):
+    def get(self, request, format=None):
+        pass

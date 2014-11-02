@@ -49,7 +49,9 @@
 	    <img src="{{article.author.image}}" class="comment-author-image img-circle">
 	  </a>
 	  <div class="comment-author-details-container">
-	    <a href="/profile/{{article.author.id}}"><h5 class="comment-author-name-text ng-binding">{{article.author.first_name}} {{article.author.last_name}}</h5></a>
+	    <a href="{{server_deliver_root}}/profile/{{article.author.id}}">
+	      <h5 class="comment-author-name-text ng-binding">{{article.author.first_name}} {{article.author.last_name}}</h5>
+	    </a>
 	    <div class="article-author-bio-text-section" >
 	      {{article.author.user_bio}}
 	    </div>

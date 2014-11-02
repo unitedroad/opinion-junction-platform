@@ -2066,10 +2066,11 @@ testApp.controller('publicProfileController', function($scope, commonOJService, 
 		    $scope.authorActivity.author_bio = ". . .";
 		}
 		$scope.authorActivity.image = profileService.getProfileImage($scope.authorActivity);
+		$("title").text("Opinion Junction - Profile - " + $scope.authorActivity.author_name);
 	    });
     };
 
-    if ("userid" in $stateParams) {
+    if ("userid" in $stateParams && $stateParams.userid) {
 	$scope.userid = $stateParams.userid;
 	$http.get("/api/1.0/authors/" + $scope.userid + "/activity", {headers: {"Content-Type": "application/json"}})
 	    .success( function(data) { 
@@ -2080,6 +2081,7 @@ testApp.controller('publicProfileController', function($scope, commonOJService, 
 		    $scope.authorActivity.author_bio = ". . .";
 		}
 		$scope.authorActivity.image = profileService.getProfileImage($scope.authorActivity);
+		$("title").text("Opinion Junction - Profile - " + $scope.authorActivity.author_name);
 	    });
     } else {
 	commonOJService.controllerInitOrRedirect([initUserid],$scope);
