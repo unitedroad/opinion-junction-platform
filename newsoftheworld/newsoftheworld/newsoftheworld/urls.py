@@ -29,6 +29,7 @@ from newsoftheworldarticles.api import CategoriesList
 from newsoftheworldarticles.views import Article_Traditional_View
 from newsoftheworldarticles.views import Category_Traditional_View
 from newsoftheworldarticles.views import Home_Traditional_View
+from newsoftheworldarticles.views import AuthorsActivity_Traditional_View
 
 from django.http import HttpResponse
 
@@ -61,6 +62,8 @@ urlpatterns = patterns('',
     url(r'^(?P<server_deliver_root>ojserverdeliver)/article/(?P<articleid>.+)/(?P<articletext>.+)/?$', Article_Traditional_View.as_view()),
     url(r'^(?P<server_deliver_root>ojserverdeliver)/(?P<category_name>politics|technology|identities|hoist|art)/?$', 
         Category_Traditional_View.as_view()),
+
+    url(r'^(?P<server_deliver_root>ojserverdeliver)/profile/(?P<authorid>.+)/?$', AuthorsActivity_Traditional_View.as_view()),     
 
     url(r'^accounts/test$', 'newsoftheworldarticles.views.test', name='account_test'),
 )
