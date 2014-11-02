@@ -1,0 +1,31 @@
+{% extends "index.html" %}
+{% block headblock %}
+  {% if authorActivity %}
+    <meta property="og:title" content="Opinion Junction - Profile - {{authorActivity.author_name}}" />
+    <title>Opinion Junction - Profile - {{authorActivity.author_name}}</title>
+  {% endif %}
+{% endblock %}
+    {% block maincontent %}
+<div class="container">
+{% if show_activity == True %}
+  <div class="public-profile-main-area">
+    <h4 class="author-activity-id-heading" >{{authorActivity.author_name}}</h4>
+    <div class="author-activity-image-container">
+      <img src="{{authorActivity.image}}" class="author-activity-image img-circle"/>
+    </div>
+    <div class="author-activity-bio-text-container">
+      <div class="author-activity-bio-text-section" >
+	{% autoescape off %}
+	{{ authorActivity.author_bio }}
+	{% endautoescape %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% if show_error %}
+<div class="alert alert-danger">
+{{ message }}
+</div>
+{% endif %}
+</div>
+  {% endblock %}

@@ -1,0 +1,12 @@
+<div class="container">
+  <div class="public-profile-main-area">
+    <h4 class="author-activity-id-heading" >{{authorActivity.author_name}}</h4>
+    <div class="author-activity-image-container">
+      <img ng-src="{{authorActivity.image}}" class="author-activity-image img-circle"/>
+    </div>
+    <div class="author-activity-bio-text-container">
+      <div class="author-activity-bio-text-section" ng-bind-html="to_trusted(authorActivity.author_bio)">
+      </div>
+    </div>
+  </div>
+</div>
