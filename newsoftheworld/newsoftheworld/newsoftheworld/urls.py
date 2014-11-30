@@ -112,3 +112,12 @@ rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?
 rest_patterns=format_suffix_patterns(rest_patterns, allowed=['json','html'])
 
 urlpatterns += rest_patterns
+
+handler400 = Error_400_Traditional_View.as_view()
+
+handler403 = Error_403_Traditional_View.as_view()
+
+
+handler404 = Error_404_Traditional_View.as_view()
+
+handler500 = Error_500_Traditional_View.as_view()
