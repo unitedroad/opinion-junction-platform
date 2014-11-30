@@ -1,6 +1,0 @@
-{% extends "index.html" %}
-    {% block maincontent %}
-    <div class="container">
-      <p class="text-danger"> The server could handle he request. </p>
-    </div>
-    {% endblock %}
