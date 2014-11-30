@@ -1,0 +1,18 @@
+<div class="aboutus-encompass">
+  <h4>About Us:</h4>
+    <div id="submiterror" class="alert alert-danger aboutusaboutus-submiterror-div" ng-show="showError">
+      {{ errorMessage }}
+    </div>
+    <div id="submitsuccess" class="alert alert-success aboutusaboutus-submiterror-div" ng-show="showSuccess">
+      {{ successMessage }}
+    </div>
+  <form name="form">
+    <div class="form-group aboutuso-aboutus-message-form-group" >
+      <label>About Us Message:</label>
+      <input type="text" class="form-control" ng-model="form.aboutus_message"></input>
+    </div>
+  </form>
+  <div class="form-group">
+    <button class="btn btn-primary" ng-click="updateAboutus()" ng-disabled="form.$pristine">Submit</button>
+  </div>
+</div>

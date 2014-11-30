@@ -1,0 +1,37 @@
+<div class="aboutus-encompass">
+  <h4>Contact Us:</h4>
+    <div id="submiterror" class="alert alert-danger aboutusaboutus-submiterror-div" ng-show="showError">
+      {{ errorMessage }}
+    </div>
+    <div id="submitsuccess" class="alert alert-success aboutusaboutus-submiterror-div" ng-show="showSuccess">
+      {{ successMessage }}
+    </div>
+  <form name="form">
+    <div class="form-group">
+      <button class="btn btn-success aboutuso-addmore-button" ng-click="addMoreAboutus()">Add More</button>
+      <button class="btn btn-danger aboutuso-removeselected-button" ng-click="removeSelectedAboutus()">Remove Selected</button>
+      <button class="btn btn-primary" ng-click="updateContactus()" ng-disabled="form.$pristine">Submit</button>
+    </div>
+    <div class="form-group aboutuso-aboutus-message-form-group" ng-repeat="contactUs in contactusListVisible">
+      
+      <div class="col col-md-4 aboutuso-contactus-row-header-div" ng-class="contactUs.contactus_description_error? 'has-error': ''">
+	<div class="aboutuso-contactus-row-checkbox"><input type="checkbox" ng-model="contactUs.selected"/></div> 
+	<input type="text" class="form-control aboutuso-contactus-header-input" ng-model="contactUs.contactus_description" placeholder="Contact Us Header"></input>
+      </div>
+      <div class="col col-md-4 col-sm-6" ng-class="contactUs.contactus_details_error? 'has-error': ''">
+	<input type="text" class="form-control" ng-model="contactUs.contactus_details" placeholder="Contact Us text"></input>
+      </div>
+      <div class="col col-md-4 col-sm-6" ng-class="contactUs.contactus_type_error? 'has-error': ''">
+	<select ng-model="contactUs.contactus_type" ng-options="contactUsType for contactUsType in contactUsTypes"></select>
+      </div>
+      
+    </div>
+    <div class="form-group" ng-show="contactusListVisible.length > 3">
+      <button class="btn btn-success aboutuso-addmore-button" ng-click="addMoreAboutus()">Add More</button>
+      <button class="btn btn-danger aboutuso-removeselected-button" ng-click="removeSelectedAboutus()">Remove Selected</button>
+      <button class="btn btn-primary" ng-click="updateContactus()" ng-disabled="form.$pristine">Submit</button>
+    </div>
+  </form>
+
+</div>
+

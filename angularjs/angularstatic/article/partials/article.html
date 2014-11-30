@@ -1,4 +1,4 @@
- <div class="container">
+ <div class="container" ng-hide="noArticle || !articleInitialised">
   <div  id="floating-socialbar" >
     <social-sidebar article="socialShareArticle" pageurl="{{articleUrl}}"/>
     <!-- <ng-include src="'/angularstatic/acentral/partials/socialsidebar.html'"></ng-include> -->
@@ -36,6 +36,7 @@
       </iframe>
     </div>
   </article>
+  
   <div class="article-page-tags-div" ng-show="articleTagsDivVisible">
     <span class="article-page-tags-text"><b>Tags: </b></span>
     <a  href="/tag/{{firstTag}}" rel="tag">{{firstTag}}</a><span ng-repeat="tag in tagsAfterFirst">, <a  href="/tag/{{tag}}" rel="tag">{{tag}}</a></span>
@@ -60,4 +61,7 @@
   </div>
 
 </div>
-<ng-include  src="'/angularstatic/acentral/partials/footer.html'"></ng-include>
+<div class="container" ng-show="noArticle">
+  <p class="text-danger"> {{ noArticleMessage }} </p>
+</div>
+<ng-include  src="'/angularstatic/acentral/partials/footer.html'" ng-hide="noArticle || !articleInitialised"></ng-include>

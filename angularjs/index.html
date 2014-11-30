@@ -70,9 +70,13 @@
 
   <script type="text/javascript">
     (function($) {
-        $.fn.goTo = function() {
+        $.fn.goTo = function(offset) {
+           if (!offset) {
+               offset = 0;
+           }
            $('html, body').animate({
-                scrollTop: $(this).offset().top + 'px'
+               scrollTop: ($(this).offset().top + offset) + 'px'
+
            }, 'fast');
            return this; // for chaining...
         }
@@ -260,7 +264,7 @@
 	       iframe-collapse="headerFacebookLikeCollapse" iframe-collapse-element="headerFacebookCommunity">      
 	    <iframe 
 	       src="//www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fpages%2FOpinion-Junction%2F944455988901836%2F&amp;width&amp;layout=button&amp;action=like" 
-	       scrolling="no" style="border: medium none; overflow: hidden; height: 20px; width: 70px;" allowtransparency="true" frameborder="0"></iframe>
+	       scrolling="no" style="border: medium none; overflow: hidden; height: 20px; width: 50px;" allowtransparency="true" frameborder="0"></iframe>
 	  </div>
 
 	  

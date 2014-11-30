@@ -1,0 +1,7 @@
+     <ul class="aboutusview-sectionul">
+       <li ng-class="memberMetadata[$index].ngClass" ng-repeat="member in members">
+	 <a class="navbar-brand aboutusview-section-selector-link" ng-click="handleMemberClicked($index)">
+	   {{ member.friendly_text }}
+	 </a>
+       </li>
+     </ul>

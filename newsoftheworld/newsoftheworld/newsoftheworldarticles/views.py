@@ -7,13 +7,17 @@ from django.shortcuts import render
 
 from django.core.urlresolvers import reverse
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
+
+from django.template import RequestContext, loader
 
 from django.views.generic import TemplateView
 
 from django.template import RequestContext, Template
 
 from django.utils.cache import patch_response_headers 
+
+from django.shortcuts import render
 
 from allauth.account import app_settings
 
@@ -115,6 +119,7 @@ class RestSignupView(SignupView):
     
 signup = RestSignupView.as_view()
 
+
 class Main_Traditional_View(TemplateView):
     
     template_name = "index.html"
@@ -146,14 +151,16 @@ class Article_Traditional_View(Main_Traditional_View):
         article = None
         articleid = kwargs["articleid"]
         if util.check_valid_object_id(id=articleid) is not True:
-            article = util.get_bad_article("incorrect_articleid")
+            #article = util.get_bad_article("incorrect_articleid")
+            raise Http404
         else:
             articles = Article.objects(id=articleid)
             if len(articles) > 0:
                 articles.select_related()
                 article = articles[0]
             else:
-                article = util.get_bad_article("no_article_found")
+                #article = util.get_bad_article("no_article_found")
+                raise Http404
 
         if len(article.tags) > 0:
             article.firstTag = article.tags[0]
@@ -165,6 +172,105 @@ class Article_Traditional_View(Main_Traditional_View):
         context = super(Article_Traditional_View, self).get_context_data(**kwargs)
         context['article'] = article
         return context
+
+def view_for_404(request):
+    return render(request, "errors/404.html")
+
+
+class Error_400_Traditional_View(Main_Traditional_View):
+
+    template_name = "errors/400.html"
+
+    def head(self, *args, **kwargs):
+        context =  RequestContext(self.request, {})
+        template = loader.get_template(self.template_name)
+        print "in 400 head"
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=400)
+
+    def get(self, *args, **kwargs):
+        #self.object = self.get_object()
+        #context = self.get_context_data(**kwargs)
+        context =  RequestContext(self.request, self.get_context_data(**kwargs))
+        template = loader.get_template(self.template_name)
+        #context = self.get_context_data(object=self.object)
+        #context = get_context_data()
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=400)
+
+class Error_403_Traditional_View(Main_Traditional_View):
+
+    template_name = "errors/403.html"
+
+    def head(self, *args, **kwargs):
+        context =  RequestContext(self.request, {})
+        template = loader.get_template(self.template_name)
+        print "in 403 head"
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=403)
+
+    def get(self, *args, **kwargs):
+        #self.object = self.get_object()
+        #context = self.get_context_data(**kwargs)
+        context =  RequestContext(self.request, self.get_context_data(**kwargs))
+        template = loader.get_template(self.template_name)
+        #context = self.get_context_data(object=self.object)
+        #context = get_context_data()
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=403)
+
+
+class Error_404_Traditional_View(Main_Traditional_View):
+
+    template_name = "errors/404.html"
+
+    def head(self, *args, **kwargs):
+        context =  RequestContext(self.request, {})
+        template = loader.get_template(self.template_name)
+        print "in 404 head"
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=404)
+
+    def get(self, *args, **kwargs):
+        #self.object = self.get_object()
+        #context = self.get_context_data(**kwargs)
+        context =  RequestContext(self.request, self.get_context_data(**kwargs))
+        template = loader.get_template(self.template_name)
+        #context = self.get_context_data(object=self.object)
+        #context = get_context_data()
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=404)
+
+
+
+class Error_500_Traditional_View(Main_Traditional_View):
+
+    template_name = "errors/500.html"
+
+    def head(self, *args, **kwargs):
+        context =  RequestContext(self.request, {})
+        template = loader.get_template(self.template_name)
+        print "in 500 head"
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=500)
+
+    def get(self, *args, **kwargs):
+        #self.object = self.get_object()
+        #context = self.get_context_data(**kwargs)
+        context =  RequestContext(self.request, self.get_context_data(**kwargs))
+        template = loader.get_template(self.template_name)
+        #context = self.get_context_data(object=self.object)
+        #context = get_context_data()
+        return HttpResponse(content=template.render(context), 
+                            content_type='text/html; charset=utf-8', 
+                            status=500)
 
 
 class Home_Traditional_View(Main_Traditional_View):

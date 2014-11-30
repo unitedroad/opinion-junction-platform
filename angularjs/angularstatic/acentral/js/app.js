@@ -72,6 +72,12 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    templateUrl: '/angularstatic/signin/partials/index.html',
 	    controller: 'signinController'
 	})
+        .state('aboutus', {
+	    title: "Opinion Junction - About Us",
+	    url : "/aboutus",
+	    templateUrl: '/angularstatic/aboutus/partials/index.html',
+	    controller: 'aboutusController'
+	})
         .state('profile', {
 	    title: "Opinion Junction - Profile",
 	    url : "/profile",
@@ -106,7 +112,26 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    url: "/createarticle",
 	    templateUrl: '/angularstatic/createarticle/partials/index.html',
 	    controller: 'createArticleController'
-	}).state('createarticlepfrontpagereview', {
+	})
+	.state('user.setaboutus', {
+	    title: "Opinion Junction - Set About us",
+	    url: "/setaboutus",
+	    templateUrl: '/angularstatic/setaboutus/partials/index.html',
+	    controller: 'setAboutusController'
+	})
+	.state('user.setcontactus', {
+	    title: "Opinion Junction - Set Contact us",
+	    url: "/setcontactus",
+	    templateUrl: '/angularstatic/setcontactus/partials/index.html',
+	    controller: 'setContactusController'
+	})
+	.state('user.setourteam', {
+	    title: "Opinion Junction - Set Our Team",
+	    url: "/setourteam",
+	    templateUrl: '/angularstatic/setourteam/partials/index.html',
+	    controller: 'setOurTeamController'
+	})
+	.state('createarticlepfrontpagereview', {
 	    title: "Opinion Junction - Preview Article",
 	    url: "/user/createarticle/frontpagepreview",
 	    templateUrl: '/angularstatic/home/partials/index.html',
@@ -172,20 +197,71 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    commonOJService.getCategories();
 	}]);
 
+function addCapabilitiesForPermission(commonOJService, capabilities, linksForPermission) {
+    if (linksForPermission!=null && commonOJService.isArray(linksForPermission)) {
+	var num_links = linksForPermission.length;
+	for (var j=0; j < num_links; j++) {
+	    capabilities.push(linksForPermission[j]);
+	}
+    }
+}
 
 function initSidebarCapabilities(commonOJService, scope) {
 
+    if (!scope.sidebarCapabilitiesSet) {
 	permissions = commonOJService.userData.user_permissions;
 	var sidebarArticlePermissionkeys = commonOJService.getKeys(commonOJService.sidebarArticlePermissions);
+        var sidebarOtherMainPermissionkeys = commonOJService.getKeys(commonOJService.sidebarOtherMainPermissions);
+        var sidebarAboutusPermissionkeys = commonOJService.getKeys(commonOJService.sidebarAboutusPermissions);
+
 	if (permissions!=null && commonOJService.isArray(permissions)) {
-		var numPermissions = permissions.length;
-		for (var i=0; i < numPermissions; i++) {
-		    permission = permissions[i];
-		    if (commonOJService.indexOf(sidebarArticlePermissionkeys, permission) > -1){
-			scope.sidebarArticleCapabilities.push(commonOJService.sidebarArticlePermissions[permission]);
+	    var numPermissions = permissions.length;
+	    for (var i=0; i < numPermissions; i++) {
+		var permission = permissions[i];
+		if (commonOJService.indexOf(sidebarArticlePermissionkeys, permission) > -1){
+		    if (permission != null) {
+			var linksForPermission = commonOJService.sidebarArticlePermissions[permission];
+			addCapabilitiesForPermission(commonOJService, scope.sidebarArticleCapabilities, linksForPermission);
+		//	if (linksForPermission!=null && commonOJService.isArray(linksForPermission)) {
+		//	    var num_links = linksForPermission.length;
+		//	    for (var j=0; j < num_links; j++) {
+		//		scope.sidebarArticleCapabilities.push(linksForPermission[j]);
+		//	    }
+		//	}
+
+		    }
+
+		}
+		if (commonOJService.indexOf(sidebarOtherMainPermissionkeys, permission) > -1) {
+		    scope.sidebarOtherMainCapabilities.push(commonOJService.sidebarOtherMainPermissions[permission]);
+		}
+
+		if (commonOJService.indexOf(sidebarAboutusPermissionkeys, permission) > -1) {
+		    if (permission != null) {
+			var linksForPermission = commonOJService.sidebarAboutusPermissions[permission];
+			addCapabilitiesForPermission(commonOJService, scope.sidebarAboutusCapabilities, linksForPermission);
 		    }
 		}
+
+	    }
+	    if (scope.sidebarArticleCapabilities.length > 0) {
+		scope.articleCapabilitiesAvailable = true;
+	    } else {
+		scope.articleCapabilitiesAvailable = false;
+	    }
+	    if (scope.sidebarAboutusCapabilities.length > 0) {
+		scope.aboutusCapabilitiesAvailable = true;
+	    } else {
+		scope.aboutusCapabilitiesAvailable = false;
+	    }
+	} else {
+	    scope.aboutusCapabilitiesAvailable = false;
 	}
+	scope.sidebarCapabilitiesSet = true;
+	//var sidebarOtherMainPermissionkeys = commonOJService.getKeys(commonOJService.sidebarOtherMainPermissions);
+        //scope.sidebarOtherMainCapabilities = [];
+    }
+
 
 }
 
@@ -215,11 +291,25 @@ testApp.factory('commonOJService', function($http, $location) {
 
 
     serviceInstance.sidebarArticlePermissions = 
-	{"create_articles" : {"id" : "create_articles", "title" : "Create Article", "content" : "Create Article", "url" : "/user/createarticle" }
-	 ,"edit_articles" : {"id" : "edit_articles", "title" : "View Articles", "content" : "View Articles", "url" : "/user/articles"}};
+	{"create_articles" : [{"id" : "create_articles", "title" : "Create Article", "content" : "Create Article", "url" : "/user/createarticle" }]
+	 ,"edit_articles" : [{"id" : "edit_articles", "title" : "View Articles", "content" : "View Articles", "url" : "/user/articles"}]};
+
+    serviceInstance.sidebarOtherMainPermissions = 
+	{"set_aboutus" : {"id" : "set_ourteam", "title" : "Change Our Team", "content" : "Change Our Team", "url" : "/user/setourteam" }};
+
+    serviceInstance.sidebarOtherMainPermissions = {};
+
+    serviceInstance.sidebarAboutusPermissions = 
+	{"set_aboutus" : [{"id" : "set_aboutus", "title" : "Change About Us", "content" : "Change About Us", "url" : "/user/setaboutus" },
+			  {"id" : "set_contactus", "title" : "Change Contact Us", "content" : "Change Contact Us", "url" : "/user/setcontactus" },
+			 {"id" : "set_ourteam", "title" : "Change Our Team", "content" : "Change Our Team", "url" : "/user/setourteam" }]};
 
     serviceInstance.isUserLoggedIn = function() {
 	return serviceInstance.userData && (serviceInstance.userData.id || (serviceInstance.userData.code === "user_not_setup_for_oj"));
+    }
+
+    serviceInstance.isSupportedImageType = function(file_name) {
+
     }
 
     serviceInstance.getKeys = function(obj) {
@@ -297,6 +387,20 @@ testApp.factory('commonOJService', function($http, $location) {
 	
     }
 
+    serviceInstance.indexOfByMemberField = function(array, needle, field) {
+    	var i = -1, index = -1;
+    
+    	for(i = 0; i < array.length; i++) {
+                if(array[i][field] === needle) {
+    		index = i;
+    		break;
+                }
+    	}
+    
+    	return index;
+    };
+    
+    
     serviceInstance.callablesMapForEveryChange = {};
 
 
@@ -937,6 +1041,100 @@ testApp.factory('commentsService', function(commonOJService, dateService, $http,
 
 });
 
+testApp.factory('authorCacheService', function($http) {
+    
+    var serviceInstance = {};
+
+    var getArrayRegexMatches = function(regex, array, key_type) {
+	var re = new RegExp(regex);
+	if (array != null && array.length > 0) {
+	    var results = [];
+	    var numArrayMembers = array.length;
+	    for (var i = 0; i < numArrayMembers; i++) {
+		var member = array[i];
+		if (member && key_type) {
+		    member = member[key_type];
+		}
+		if (re.test(member)) {
+		    results.push(array[i]);
+		}
+	    }
+	    return results;
+	}
+	return null;
+    }
+
+    serviceInstance.initCache = function(searchAuthorResultsMapByNumKeyChars, scope, callablesArray)  {
+	$http.get("/api/1.0/authors", {"Content-Type": "application/json"}).success(function(data) {
+	    scope.allAuthors = data;
+	    scope.displayedAuthorResults = data;
+	    var searchAuthorResultsMap = {};
+	    searchAuthorResultsMapByNumKeyChars[0] = searchAuthorResultsMap;
+	    searchAuthorResultsMap[""] = data;
+	    if (callablesArray != null) {
+		var numCallables = callablesArray.length;
+		for (var i = 0; i < numCallables; i++) {
+		    callablesArray[i]();
+		} 
+	    }
+	});
+    }
+
+    serviceInstance.getResultsForKeyFromRest = function(key, searchAuthorResultsMapByNumKeyChars, scope) {
+	$http.get("/api/1.0/authors" + "?author_name=" + key + "&use_contains=true", 
+		  {headers: {"Content-Type": "application/json"}}).success(function(data) {
+		      scope.displayedAuthorResults = data;
+		      var keyLength = key.length;
+		      var searchAuthorResultsMap = null;
+		      if (keyLength in searchAuthorResultsMapByNumKeyChars) {
+			  searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[keyLength];
+		      } else {
+			  searchAuthorResultsMap = {};
+			  searchAuthorResultsMapByNumKeyChars[keyLength] = searchAuthorResultsMap;
+		      }
+		      searchAuthorResultsMap[key] = data;
+	});
+    }
+
+
+    serviceInstance.getResultsForKeyFromCache = function(key, searchAuthorResultsMapByNumKeyChars, key_type) {
+	if (!key || key == null || key.length <=0 ) {
+	    //$scope.displayedAuthorResults = $scope.allAuthors;
+	    return searchAuthorResultsMapByNumKeyChars[0];
+	} else {
+	    var numChars = key.length;
+	    if (numChars in searchAuthorResultsMapByNumKeyChars) {
+		var searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[numChars];
+		if (key in searchAuthorResultsMap) {
+		    return searchAuthorResultsMap[key];
+		}
+	    }
+	    for (var i = (numChars - 1); i >= 0; i--) {
+		var parentKey = key.substring(0,i);
+		if (i in searchAuthorResultsMapByNumKeyChars) {
+		    var searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[i];
+		    if (parentKey in searchAuthorResultsMap) {
+			result =  getArrayRegexMatches(".*" + key + ".*", searchAuthorResultsMap[parentKey], key_type);
+			var searchAuthorResultsMapForKey = null;
+			if (numChars in searchAuthorResultsMapByNumKeyChars) {
+			    searchAuthorResultsMapForKey = searchAuthorResultsMapByNumKeyChars[numChars];
+			} else {
+			    searchAuthorResultsMapForKey = {};
+			    searchAuthorResultsMapByNumKeyChars[numChars] = searchAuthorResultsMapForKey;
+			}
+			searchAuthorResultsMapForKey[key] = result;
+			return result;
+		    }   
+		}
+	    }
+	    
+	}
+
+    }
+
+    return serviceInstance;
+
+});
 
 testApp.factory('fbService', function($window, $http, $location, $cookies) {
 
@@ -1812,12 +2010,530 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 
 });
 
+testApp.controller('setAboutusController', function($scope, $http  ) {
+    //$scope.form.aboutusMessage = "";
+    $scope.originalData = null;
+
+    $scope.showSuccess = false;
+    $scope.showError = false;
+
+    var init = function() {
+	$http.get("/api/1.0/aboutus/?get_metadata_information=true", {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) {
+		$scope.aboutusMessage = data["team_metadata"]["aboutus_message"];
+		$scope.originalData = JSON.parse(JSON.stringify(data.team_metadata));
+		$scope.form = data.team_metadata;
+	    }).error(function () {
+		$scope.originalData = {};
+		$scope.form = {};
+	    });
+
+    };
+
+    init();
+
+    $scope.updateAboutus = function() {
+	var updated_details = {};
+	$scope.showSuccess = false;
+	$scope.showError = false;
+	updated_details.update_metadata_information = "true";  
+//	console.log("$scope.form.aboutusMessage.$dirty: " + $scope.form.aboutusMessage.$dirty);
+	for (field in $scope.originalData) {
+	    if($scope.originalData.hasOwnProperty(field)) {
+		if ($scope.originalData[field] != $scope.form[field]) {
+		    updated_details[field] = $scope.form[field];
+		}
+	    }
+	}
+
+	$scope.originalData = JSON.parse(JSON.stringify($scope.form));
+	$http.post('/api/1.0/aboutus', JSON.stringify(updated_details), {headers: {"Content-Type": "application/json"}})
+	    .success( function() {
+		$scope.showSuccess = true;
+		$scope.successMessage = "Changes submitted successfully";
+	    })
+	    .error( function() {
+		$scope.showError = true;
+		$scope.errorMessage = "Error while submitting changes";
+	    });
+    }
+});
+
+testApp.controller('setContactusController', function($scope, $http  ) {
+    $scope.message = "Reach us in Axlotopia";
+//    var contactUs_row_test = {};
+//    contactUs_row_test.contactus_details = "";
+//    contactUs_row_test.contactus_description = "";
+//    contactUs_row_test.contactus_type = "";
+//
+//    $scope.contactusListVisible = [];
+//    $scope.contactusListVisible.push(contactUs_row_test);
+//    
+    $scope.contactUsTypes  = ["email", "physical location"];
+
+    $scope.addedContactUsList = [];
+    $scope.removedContactUsIdList = []; 
+
+    var originalContactusMap = {};
+
+    $scope.removeSelectedAboutus = function() {
+	var numContactus = $scope.contactusListVisible.length;
+	for (var i = numContactus - 1; i >= 0; i--) {
+	    var contactUs = $scope.contactusListVisible[i];
+	    if (contactUs.selected) {
+		$scope.contactusListVisible.splice(i,1);
+		if (contactUs.id && (contactUs.id in originalContactusMap)) {
+		    $scope.removedContactUsIdList.push(contactUs.id);
+		}
+	    }	    
+	}
+
+    }
+
+    $scope.addMoreAboutus = function() {
+	var contactUs_row = {};
+	contactUs_row.contactus_details = "";
+	contactUs_row.contactus_description = "";
+	contactUs_row.contactus_type = "";
+	$scope.contactusListVisible.unshift(contactUs_row);
+	$scope.addedContactUsList.push(contactUs_row);
+    };
+
+    var compareContactusFieldsSame = function(newContactus, oldContactus) {
+	var same = true;
+	for (var key in newContactus) {
+	    if (newContactus.hasOwnProperty(key) && oldContactus.hasOwnProperty(key)) {
+		if (newContactus[key] !== oldContactus[key]) {
+		    same = false;
+		    break;
+		}
+	    }
+	}
+	return same;
+    }
+
+    var validateContactusInputField = function(contactusMember, field, clazz) {
+	var returnValue = !(!contactusMember[field]);
+	if (!returnValue) {
+	    contactusMember[clazz] = true;
+	} else {
+	    contactusMember[clazz] = false;
+	}
+	return returnValue;
+
+
+    }
+    $scope.updateContactus = function() {
+	$scope.showError = false;
+	$scope.showSuccess = false;
+	var numContactusVisible = $scope.contactusListVisible.length;
+	var changes = {};
+	var changed_contactus = [];
+	var validInputs = true;
+	for (var i = 0; i < numContactusVisible; i++) {
+	    var contactusMember = $scope.contactusListVisible[i];
+	    validInputs = validInputs & 
+		validateContactusInputField(contactusMember, "contactus_description", 
+					"contactus_description_error") & 
+		validateContactusInputField(contactusMember, 
+					    "contactus_details", "contactus_details_error") &
+		validateContactusInputField(contactusMember,
+					   "contactus_type", "contactus_type_error");
+	    if (!validInputs) {
+		continue;
+	    }
+	    if ("id" in contactusMember && (contactusMember.id in originalContactusMap)) {
+		if (!compareContactusFieldsSame(contactusMember, originalContactusMap[contactusMember.id])){
+		    changed_contactus.push(contactusMember);
+		}
+	    }
+	}
+	if (!validInputs) {
+	    $scope.errorMessage = "Some of the fields have been left blank";
+	    $scope.showError = true;
+	    return;
+	}
+	changes['update_contactus_information'] = "true";
+	changes['changed_contactus'] = changed_contactus;
+	changes['removed_contactus'] = $scope.removedContactUsIdList;
+	changes['added_contactus'] = $scope.addedContactUsList;
+	
+
+	$http.post('/api/1.0/aboutus', JSON.stringify(changes), {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) {
+		$scope.showSuccess = true;
+		$scope.successMessage = "Changes submitted successfully";
+		init();
+	    })
+	    .error( function(data) {
+		$scope.showError = true;
+		$scope.errorMessage = "Error while submitting changes";
+	    });
+	
+    }
+
+    var getMapForKeyFromArray = function(array, key) {
+	
+	var mapForKey = {};
+
+	var numMembers = array.length;
+
+	for (var i = 0; i < numMembers; i++) {
+	    var member = array[i];
+	    mapForKey[member[key]] = member;
+	}
+
+	return mapForKey;
+    }
+
+    var init = function() {
+	$scope.addedContactUsList = [];
+	$scope.removedContactUsIdList = []; 
+
+	$http.get("/api/1.0/aboutus/?get_contactus_information=true", {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) {
+		$scope.contactusListVisible = data["team_contactus"];
+		var originalContactusList = JSON.parse(JSON.stringify(data.team_contactus));
+		originalContactusMap = getMapForKeyFromArray(originalContactusList, "id");
+		//$scope.form = data.team_metadata;
+	    }).error(function () {
+		//$scope.originalData = {};
+		//$scope.form = {};
+	    });
+    }
+
+    init();
+    
+});
+
+testApp.controller('setOurTeamController', function($scope, $http, authorCacheService, commonOJService ) {
+
+    $scope.added_team_authors_map = {};
+    $scope.removed_team_authors_map = {};
+    //$scope.modified_team_authors_map = {};
+
+    var compareByAuthorId = function(author1, author2) {
+	var authorId1  = author1.id;
+	var authorId2 = author2.id;
+	if (!authorId1) {
+	    authorId1 = -1;
+	} else {
+	    authorId1 = parseInt(authorId1);
+	}
+	if (!authorId2) {
+	    authorId2 = -1;
+	} else {
+	    authorId2 = parseInt(authorId2);
+	}
+
+	if (authorId1 < authorId2) {
+	    return -1;
+	}
+	if (authorId1 > authorId2) {
+	    return 1;
+	}
+	return 0;
+    }
+
+    var createAuthorsIdMapFromArray = function(authors) {
+	map = {};
+	var numAuthors = authors.length;
+	for (var i = 0; i < numAuthors; i++) {
+	    var author = authors[i];
+	    map[author.id] = author;
+	}
+	return map;
+    }
+
+    var processTeamAuthorsOnLoad = function(authors) {
+	var numAuthors = authors.length;
+	for (var i = 0; i < numAuthors; i++) {
+	    var author = authors[i];
+	    author.id = author.author_id;
+	    author.changeablefirst_name = author.first_name;
+	    author.changeablelast_name = author.last_name;
+	}
+    }
+ 
+//    var setIdFieldOnAuthorsArray = function(authors) {
+//	var numAuthors = authors.length;
+//	for (var i = 0; i < numAuthors; i++) {
+//	    author = authors[i];
+//	    author.id = author.author_id;
+//	}
+//    }
+
+
+    var initOurTeam = function() {
+	$http.get("/api/1.0/aboutus/?get_author_information=true", {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) {
+		//setIdFieldOnAuthorsArray(data.team_authors);
+		processTeamAuthorsOnLoad(data.team_authors);
+		$scope.team_authors_displayed = data.team_authors;
+		$scope.team_authors_original = 
+		    JSON.parse(JSON.stringify(data.team_authors));
+		$scope.original_team_authors_map = createAuthorsIdMapFromArray($scope.team_authors_original);
+		$scope.team_authors = data.team_authors.slice(0);
+		$scope.team_authors = $scope.team_authors
+		    .sort(compareByAuthorId);
+	    });
+	$scope.added_team_authors_map = {};
+	$scope.removed_team_authors_map = {};
+
+
+    };
+
+    initOurTeam();
+
+    $scope.message = "Axl provides roles and privileges to people";
+    $scope.displayedAuthorResults = [];
+    var searchAuthorResultsMapByNumKeyChars = {};
+    authorCacheService.initCache(searchAuthorResultsMapByNumKeyChars, 
+				 $scope, 
+				 [function() {
+				     $scope.displayedAuthorResults
+					 = $scope.
+					 displayedAuthorResults.slice(0)
+					 .sort(compareByAuthorId);
+				     filterOutTeamAuthorsFromDisplayedAuthors();
+				 }]);
+
+    var filterOutTeamAuthorsFromDisplayedAuthors = function() {
+//	var team_authors = $scope.team_authors.slice(0);
+//	for (var key in $scope.added_team_authors_map) {
+//	    if ($scope.added_team_authors_map.hasOwnProperty(key)) {
+//		team_authors.push($scope.added_team_authors_map[key]);
+//	    }
+//	}
+//	team_authors.sort(compareByAuthorId);
+	
+	var team_authors = $scope.team_authors_displayed.slice();
+	team_authors.sort(compareByAuthorId);
+	var num_team_authors = team_authors.length;
+	var num_displayed_authors = $scope.displayedAuthorResults.length;
+	var i = 0;
+	var j = 0;
+	for (; i < num_team_authors; i++) {
+	    var team_author = team_authors[i];
+	    for (; j < num_displayed_authors; j++) {
+		var displayed_author = $scope.displayedAuthorResults[j];
+		if (displayed_author.id == team_author.id) {
+		    $scope.displayedAuthorResults.splice(j, 1);
+		    //j = j - 1;
+		    break;
+		}
+		if (parseInt(displayed_author.id) > 
+		    parseInt(team_author.id)) {
+		    break;
+		}
+	    }
+	}
+    }
+
+
+    $scope.getResultsForKey = function() {
+	if ($scope.displayedAuthorResults) {
+	    var numDisplayedAuthors = $scope.displayedAuthorResults.length;
+	    for (var i = 0; i < numDisplayedAuthors; i++) {
+		var author = $scope.displayedAuthorResults[i];
+		author.selected = false;
+	    }
+	}
+	var key = $scope.authorNameSearchKey;
+	if (!key) {
+	    $scope.displayedAuthorResults = $scope.allAuthors.slice(0)
+		.sort(compareByAuthorId);
+	    filterOutTeamAuthorsFromDisplayedAuthors();
+	    return;
+	}
+
+	var localResults = authorCacheService.getResultsForKeyFromCache(key, searchAuthorResultsMapByNumKeyChars, "author_name");
+	
+	if (localResults != null) {
+	    $scope.displayedAuthorResults = localResults.slice(0)
+		.sort(compareByAuthorId);
+	} else {
+	    authorCacheService.getResultsForKeyFromRest(key, searchAuthorResultsMapByNumKeyChars, $scope);
+	    $scope.displayedAuthorResults = 
+		$scope.displayedAuthorResults.slice(0)
+		.sort(compareByAuthorId);
+	}
+	filterOutTeamAuthorsFromDisplayedAuthors();
+    }
+
+
+    $scope.addToTeamAuthors = function() {
+	var numAuthorResults = $scope.displayedAuthorResults.length;
+	var new_team_authors = [];
+	for (var i = 0; i < numAuthorResults ; i++) {
+	    var author = $scope.displayedAuthorResults[i];
+	    if (author.selected == true) {
+		author.selected = false;
+		author.changeablefirst_name = author.first_name;
+		author.changeablelast_name = author.last_name;
+		
+		//$scope.team_authors.push(author);
+		var indexInTeamAuthors = commonOJService.indexOfByMemberField($scope.team_authors, author.id, "id");
+		if (indexInTeamAuthors <= -1) {
+		    new_team_authors.unshift(author);
+		    if (author.id in $scope.removed_team_authors_map 
+			&& $scope.removed_team_authors_map[author.id] != null) {
+			$scope.removed_team_authors_map[author.id] = null;
+		    } else {
+			$scope.added_team_authors_map[author.id] 
+			    = author;		    
+		    }
+		} else {
+		    new_team_authors.unshift($scope.team_authors[indexInTeamAuthors]);
+		}
+	    }
+	} 
+	//$scope.team_authors = $scope.team_authors.sort(compareByAuthorId);
+	var num_new_team_authors = new_team_authors.length;
+	for (var i = 0; i < num_new_team_authors; i++) {
+	    var author = new_team_authors[i];
+	    $scope.team_authors_displayed.unshift(author);
+	}
+	filterOutTeamAuthorsFromDisplayedAuthors();
+    }
+
+    $scope.$watch("authorNameSearchKey", $scope.getResultsForKey);
+    
+    var validateInputsAndSetErrorClasses = function(author) {
+	var error = false;
+	if (!author.first_name && !author.last_name) {
+	    error = true;
+	    author.name_error = true;
+	} else{
+	    author.name_error = false;
+	}
+	
+	if (!author.role) {
+	    error = true;
+	    author.role_error = true;
+	} else {
+	    author.role_error = false;
+	}
+	return error;
+    }
+
+    var compareAuthorFieldsSame = function(newAuthor, oldAuthor) {
+	var same = true;
+	for (var key in newAuthor) {
+	    if (newAuthor.hasOwnProperty(key) && oldAuthor.hasOwnProperty(key)) {
+		if (newAuthor[key] !== oldAuthor[key]) {
+		    same = false;
+		    break;
+		}
+	    }
+	}
+	return same;
+    }
+
+    $scope.submitTeamAuthors = function() {
+	$scope.showError = false;
+	$scope.errorMessage = "";
+	$scope.showSuccess = false;
+	$scope.successMessage = "";
+
+	var numTeamAuthors = $scope.team_authors.length;
+	var error = false;
+	var changes = {};
+	changes['update_author_information'] = 'true';
+	var removed_team_authors_array = [];
+	for (var key in $scope.removed_team_authors_map) {
+	    if ($scope.removed_team_authors_map.hasOwnProperty(key)) {
+		removed_team_authors_array.push($scope.removed_team_authors_map[key].id);
+	    }
+	}
+	changes['removed_authors'] = removed_team_authors_array;
+	var changed_team_authors_array = [];
+	for (var i = 0; i < numTeamAuthors; i++) {
+	    var author = $scope.team_authors[i];
+	    if (author.id in $scope.removed_team_authors_map && 
+		$scope.removed_team_authors_map[author.id] != null) { 
+		//since this author is not being persisted in the final result
+		continue;
+	    }
+	    if (author.id in $scope.original_team_authors_map) {
+		if (!compareAuthorFieldsSame(author, $scope.original_team_authors_map[author.id])) {
+		    author.first_name = author.changeablefirst_name;
+		    author.last_name = author.changeablelast_name;
+		    changed_team_authors_array.push(author);
+		}
+	    }
+	    error = validateInputsAndSetErrorClasses(author);
+	}
+	changes['changed_authors'] = changed_team_authors_array;
+	var added_team_authors_array = [];
+	for (var key in $scope.added_team_authors_map) {
+	    if ($scope.added_team_authors_map.hasOwnProperty(key)) {
+		var author = $scope.added_team_authors_map[key];
+		author.first_name = author.changeablefirst_name;
+		author.last_name = author.changeablelast_name;
+		error = validateInputsAndSetErrorClasses(author);
+		added_team_authors_array.push(author);
+	    }
+	}
+	changes['added_authors'] = added_team_authors_array;
+
+
+	
+	
+	//var numTeamAddedAuthors = $scope.team_authors.length;
+	if (error) {
+	    $scope.showError = true;
+	    $scope.errorMessage = "Some fields are left blank";
+	    return;
+	} else {
+	    $scope.showError = false;
+	    $http.post('/api/1.0/aboutus', JSON.stringify(changes), {headers: {"Content-Type": "application/json"}})
+	    .success( function() {
+		$scope.showSuccess = true;
+		$scope.successMessage = "Changes submitted successfully";
+		initOurTeam();
+	    })
+	    .error( function() {
+		$scope.showError = true;
+		$scope.errorMessage = "Error while submitting changes";
+	    });
+	}
+    }
+
+    $scope.deleteTeamAuthors = function() {
+	var numAuthors = $scope.team_authors.length;
+	for (var i = 0; i < numAuthors ; i++) {
+	    var author = $scope.team_authors[i];
+	    if (author.selected == true) {
+		var indexInTeamAuthors = commonOJService.indexOfByMemberField($scope.team_authors, author.id, "id");
+		if (indexInTeamAuthors <= -1) {
+		    if (author.id in $scope.added_team_authors_map 
+			&& $scope.added_team_authors_map[author.id] != null) {
+			$scope.added_team_authors_map[author.id] = null;
+		    } else {
+			$scope.removed_team_authors_map[author.id] 
+			    = author;		    
+		    }
+		} else {
+		    author.selected = false;
+		}
+
+		var indexOfAuthorInDisplayedAuhors = commonOJService.indexOfByMemberField($scope.team_authors_displayed, author.id, "id");
+		$scope.team_authors_displayed.splice(indexOfAuthorInDisplayedAuhors, 1);
+	    }
+	}
+	$scope.getResultsForKey();
+	$scope.filterOutTeamAuthorsFromDisplayedAuthors();
+    }
+});
 
 testApp.controller('articleController', function($scope, $http, $stateParams, $sce, commonOJService, dateService) {
 
     $scope.message = "Welcome to Opinion Junction's First Article";
     $scope.articleId = $stateParams.articleId;
     $("title").text("Opinion Junction - Article");
+    $scope.noArticle = false;
+    $scope.articleInitialised = false;
     $http.get("/api/1.0/articles/" + $scope.articleId, {headers: {"Content-Type": "application/json"}})
 	    .success( function(data) {
 		if (data.length > 0) {
@@ -1839,8 +2555,9 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
 		    } else {
 			$scope.articleTagsDivVisible = false;
 		    }
+		    $scope.articleInitialised = true;
 		}
-	    });
+	    }).error(function() { $scope.noArticle= true; $scope.noArticleMessage = "The article you are looking for doesn't exist.";});
 
 
     $scope.to_trusted = function(html_code) { //http://stackoverflow.com/questions/24178316/ng-bind-html-strips-elements-attributes
@@ -1862,6 +2579,43 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
 
 testApp.controller('signinController', function($scope) {
     $scope.message = "Welcome to Opinion Junction's First Article";
+});
+
+testApp.controller('aboutusController', function($scope, $timeout, $http) {
+
+    var processTeamAuthors = function(team_authors) {
+	var numTeamAuthors = team_authors.length;
+	for (var i = 0; i < numTeamAuthors; i++) {
+	    var team_author = team_authors[i];
+	    if (!team_author.image) {
+		team_author.image = "/static/blank-grey.jpg";
+	    }
+	}
+    }
+
+
+    $http.get("/api/1.0/aboutus/?get_all_information=true", {headers: {"Content-Type": "application/json"}})
+    .success(function(data) {
+	$scope.team_authors = data["team_authors"];
+	processTeamAuthors($scope.team_authors);
+	$scope.team_metadata = data["team_metadata"];
+	$scope.team_contactus_array = data["team_contactus"];
+    });
+    $scope.message = "Axl provides people knowledge about roles and privileges of the people who keep things working";
+    $scope.members = [{"href": "#aboutus", "friendly_text": "About Us"},
+		      {"href": "#ourteam", "friendly_text": "Our Team"},
+		      {"href": "#contactus", "friendly_text": "Contact Us"}
+		     ];
+    $scope.activeMember = 0;
+    $scope.callableOnSelect = function(index) {
+	$timeout(function() { $($scope.members[index].href ).goTo(-100); }, 200);
+	console.log("Axl is GOD");
+	
+    }
+
+    $scope.aboutusmessage = "In Axl we trust";
+    $scope.ourteammessage = "We work with the grace of Axl Rose";
+    $scope.contactusmessage = "Reach us in Axlotopia";
 });
 
 testApp.controller('userProfileController', function($scope, $http, profileService, commonOJService) {
@@ -2132,16 +2886,18 @@ testApp.controller('createArticlePreviewController', function($scope, $location,
 
 });
 
-testApp.controller('editArticleMetadataController', function($scope, $http, commonOJService, $stateParams) {
+testApp.controller('editArticleMetadataController', function($scope, $http, commonOJService, authorCacheService, $stateParams) {
 
-    $http.get("/api/1.0/authors", {"Content-Type": "application/json"}).success(function(data) {
-	$scope.allAuthors = data;
-	$scope.displayedAuthorResults = data;
-	searchAuthorResultsMap = {};
-	searchAuthorResultsMapByNumKeyChars[0] = searchAuthorResultsMap;
-	searchAuthorResultsMap[""] = data;
-	
-    });
+    var searchAuthorResultsMapByNumKeyChars = {};
+    authorCacheService.initCache(searchAuthorResultsMapByNumKeyChars, $scope);
+    //$http.get("/api/1.0/authors", {"Content-Type": "application/json"}).success(function(data) {
+    //	$scope.allAuthors = data;
+    //	$scope.displayedAuthorResults = data;
+    //	searchAuthorResultsMap = {};
+    //	searchAuthorResultsMapByNumKeyChars[0] = searchAuthorResultsMap;
+    //	searchAuthorResultsMap[""] = data;
+    //	
+    //});
 
     $scope.today = function() {
 	$scope.dt = new Date();
@@ -2183,7 +2939,6 @@ testApp.controller('editArticleMetadataController', function($scope, $http, comm
 	$scope.datePickerCollapse = !$scope.datePickerCollapse;
     }
 
-    searchAuthorResultsMapByNumKeyChars = {};
 
 
     $scope.getResultsForKey = function() {
@@ -2192,22 +2947,26 @@ testApp.controller('editArticleMetadataController', function($scope, $http, comm
 	    $scope.displayedAuthorResults = $scope.allAuthors;
 	    return;
 	}
-	var localResults = $scope.getResultsForKeyFromCache(key, "author_name");
+	//var localResults = $scope.getResultsForKeyFromCache(key, "author_name");
+	var localResults = authorCacheService.getResultsForKeyFromCache(key, searchAuthorResultsMapByNumKeyChars, "author_name");
+	
 	if (localResults != null) {
 	    $scope.displayedAuthorResults = localResults;
 	} else {
-	    $http.get("/api/1.0/authors" + "?author_name=" + key + "&use_contains=true", {headers: {"Content-Type": "application/json"}}).success(function(data) {
-		$scope.displayedAuthorResults = data;
-		var keyLength = key.length;
-		var searchAuthorResultsMap = null;
-		if (keyLength in searchAuthorResultsMapByNumKeyChars) {
-		    searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[keyLength];
-		} else {
-		    searchAuthorResultsMap = {};
-		    searchAuthorResultsMapByNumKeyChars[keyLength] = searchAuthorResultsMap;
-		}
-		searchAuthorResultsMap[key] = data;
-	    });
+	    authorCacheService.getResultsForKeyFromRest(key, searchAuthorResultsMapByNumKeyChars, $scope);
+	    //$http.get("/api/1.0/authors" + "?author_name=" + key + "&use_contains=true", 
+	    //	      {headers: {"Content-Type": "application/json"}}).success(function(data) {
+	    //	$scope.displayedAuthorResults = data;
+	    //	var keyLength = key.length;
+	    //	var searchAuthorResultsMap = null;
+	    //	if (keyLength in searchAuthorResultsMapByNumKeyChars) {
+	    //	    searchAuthorResultsMap = searchAuthorResultsMapByNumKeyChars[keyLength];
+	    //	} else {
+	    //	    searchAuthorResultsMap = {};
+	    //	    searchAuthorResultsMapByNumKeyChars[keyLength] = searchAuthorResultsMap;
+	    //	}
+	    //	searchAuthorResultsMap[key] = data;
+	    //});
 	}
     }
 
@@ -2265,7 +3024,7 @@ testApp.controller('editArticleMetadataController', function($scope, $http, comm
 	return null;
     }
 
-    $scope.$watch("authorNameSearchKey", $scope.getResultsForKey);
+    $scope.$watch("authorNameSearchKey", $scope.getResultsForKey);w
 
 //    $scope.$watch("authorNameSearchKey", function() {alert("Axl is GOD");});
 
@@ -3245,6 +4004,9 @@ testApp.controller('viewArticlesController', function($scope, commonOJService, $
 testApp.controller('userController', function($scope, $location, commonOJService) {
 
     $scope.sidebarArticleCapabilities = [];
+    $scope.sidebarOtherMainCapabilities = [];
+    $scope.sidebarAboutusCapabilities = [];
+
 
     $scope.init = function() {
 	console.log("userController.init()");
@@ -3268,6 +4030,7 @@ testApp.controller('userController', function($scope, $location, commonOJService
     $scope.message = "Welcome to your User Settings";
     $scope.capabilities = getCapabilities();
     $scope.isArticleDivCollapsed = true;
+    $scope.isAboutusDivCollapsed = true;
     $scope.activeItem = "";
 
 
@@ -4492,3 +5255,103 @@ testApp.directive('collapseWidth', ['$transition', function ($transition, $timeo
       }
     };
 }]);
+
+testApp.directive('ojDropdown', function() {
+//http://www.grobmeier.de/angular-js-the-show-on-mouseenter-hide-on-mouseleave-directive-31082012.html#.VEiHTSuSyb8
+    return {
+       restrict: 'AE',
+       templateUrl: '/angularstatic/acentral/partials/oj-dropdown.html',
+       scope: {
+	   members: "=",
+	   activeMember: "=",
+	   callableOnSelect: "="
+       },
+	compile: function(elem, attrs) {
+	    return function(scope,elem,attrs) {
+		scope.memberMetadata = [];
+		var numMembers = scope.members.length;
+		for (var i = 0; i < numMembers; i++) {
+		    var memberMetadataRow = {};
+		    if (scope.activeMember != i) {
+			memberMetadataRow.ngClass = "inactive";
+		    } else {
+			memberMetadataRow.ngClass = "active";
+		    }
+		    scope.memberMetadata[i] = memberMetadataRow;
+		}
+
+		scope.dropDownOpened = false;
+
+		var openDropDown = function() {
+		    var numMembers = scope.members.length;
+		    for (var i = 0; i < numMembers; i++) {
+			var memberMetadataRow = scope.memberMetadata[i];
+			if (scope.activeMember != i) {
+			    memberMetadataRow.ngClass = "inactive-visible";
+			} else {
+			    memberMetadataRow.ngClass = "active";
+			}
+		    }
+
+		}
+
+		var closeDropDown = function(activeMemberIndex) {
+		    var numMembers = scope.members.length;
+		    for (var i = 0; i < numMembers; i++) {
+			var memberMetadataRow = scope.memberMetadata[i];
+			if (activeMemberIndex != i) {
+			    memberMetadataRow.ngClass = "inactive";
+			} else {
+			    memberMetadataRow.ngClass = "active";
+			}
+		    }
+		    scope.activeMember = activeMemberIndex;
+
+		}
+
+		scope.handleMemberClicked = function(index) {
+		    if (!scope.dropDownOpened) {
+			openDropDown();
+			scope.dropDownOpened = true;
+		    } else {
+			closeDropDown(index);
+			scope.dropDownOpened = false;
+			scope.callableOnSelect(index);
+		    }
+		}
+	    }
+	}
+    }
+});
+
+testApp.directive('ojDropdownLi', function() {
+    return {
+       restrict: 'AE',
+       scope: {
+	   members: "=",
+	   iframeCollapseElement: "@"
+       },
+	compile: function(elem, attrs) {
+	    return function(scope,elem,attrs) {
+	    }
+	}
+    }
+});
+
+
+//http://stackoverflow.com/questions/5445491/height-equal-to-dynamic-width-css-fluid-layout
+testApp.directive('imgProportionate', function() {
+    return {
+       restrict: 'AE',
+       scope: {
+	   heightRatio: "@",
+	   maxMinRule: "@"
+       },
+	compile: function(elem, attrs) {
+	    return function(scope,elem,attrs) {
+		var finalHeight = elem.width() * scope.heightRatio;
+		elem.css({'height':finalHeight+'px'});
+	    }
+	}
+    }
+});

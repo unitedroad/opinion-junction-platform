@@ -57,6 +57,8 @@ MEDIA_ROOT = '/newsoftheworld/newsoftheworldmedia'
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = '/media/'
 
+ALLOWED_HOSTS = ['*', 'opinionjunction.com', '*.opinionjunction.com']
+
 TEMPLATE_DIRS = (
     '/newsoftheworld/newsoftheworld/newsoftheworldcomments/templates',
     '/newsoftheworld/newsoftheworld/newsoftheworldarticles/templates',
@@ -307,3 +309,42 @@ LOGGING = {
         }
     }
 }
+
+#http://blog.lysender.com/2013/05/django-verbose-console-logging-in-development-server/
+#LOGGING = {
+#    'version': 1,
+#    'disable_existing_loggers': False,
+#    'filters': {
+#        'require_debug_false': {
+#            '()': 'django.utils.log.RequireDebugFalse'
+#        }
+#    },
+#    'formatters': {
+#        'verbose': {
+#            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
+#        },
+#        'simple': {
+#            'format': '%(levelname)s %(message)s',
+#        },
+#    },
+#    'handlers': {
+#        'mail_admins': {
+#            'level': 'ERROR',
+#            'filters': ['require_debug_false'],
+#            'class': 'django.utils.log.AdminEmailHandler'
+#        },
+#        'console': {
+#            'level': 'DEBUG',
+#            'class': 'logging.StreamHandler',
+#            'formatter': 'verbose',
+#        },
+#    },
+#    'loggers': {
+#        'django.request': {
+#            # 'handlers': ['mail_admins'],
+#            'handlers': ['console'],
+#            'level': 'ERROR',
+#            'propagate': True,
+#        },
+#    }
+#}

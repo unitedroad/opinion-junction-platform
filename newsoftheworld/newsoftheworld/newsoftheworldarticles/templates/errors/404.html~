@@ -1,0 +1,6 @@
+
+    {% block maincontent %}
+    <div class="container">
+      <p class="text-danger"> The page you are looking for doesn't exist. </p>
+    </div>
+    {% endblock %}

@@ -1,0 +1,100 @@
+<style >
+/* CSS used here will be applied after bootstrap.css */
+
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(http://fonts.gstatic.com/s/lato/v11/1bHRUMxmJHoup12DnI9XmQ.woff) format('woff');
+}
+
+
+</style>
+<nav id="navbar-div" class="navbar  navbar-fixed-top second-navbar">
+  <div class="container aboutusview-second-navbar-container">
+    <div class="col-md-3 col-md-offset-4 aboutusview-section-selector">
+      <oj-dropdown members="members" active-member="activeMember" callable-on-select="callableOnSelect"/>
+<!--
+     <ul class="aboutusview-sectionul">
+       <li class="active first">
+	 <a class="navbar-brand aboutusview-section-selector-link" href="#aboutus">
+	   About Us
+	 </a>
+       </li>
+       <li class="inactive-visible">
+	 <a class="navbar-brand aboutusview-section-selector-link" href="#ourteam">
+	   Our Team
+	 </a>
+       </li>
+       <li class="inactive-visible">
+	 <a class="navbar-brand aboutusview-section-selector-link" href="#contactus">
+	   Contact Us
+	 </a>
+       </li>
+     </ul>
+    -->
+    </div>
+  </div>
+</nav>
+<!-- <div class="container"> -->
+  <div class="aboutusview-main-section">
+    <section class="aboutusview-aboutustext-section" id="aboutus">
+      <div class="container">
+	<div class="col-md-3 col-md-offset-4 text-center">
+	  <h4>
+	    About Us
+	  </h4>
+	</div>
+      </div>
+      <div class="container">
+	<div class="col-md-3 col-md-offset-4 text-center">
+	  {{ team_metadata.aboutus_message }}
+	</div>
+      </div>
+    </section>
+    <section class="aboutusview-ourteam-section" id="ourteam">
+      <div class="container">
+	<div class="col-md-3 col-md-offset-4 text-center">
+	  <h4>
+	    Our Team
+	  </h4>
+	</div>
+      </div>
+      <div >
+	<div class="aboutusview-ourteam-authorimageuldiv"> 
+	  <ul class="aboutusview-ourteam-authorimageul">
+	    <li class="aboutusview-ourteam-authorimageli" 
+		ng-repeat="team_author in team_authors">
+	      <div class="aboutusview-ourteam-authorimagediv">
+		<div class="aboutusview-ourteam-authorrolediv text-center">
+		  <div class="aboutusview-ourteam-authorrolerolediv" >
+		    <div>{{team_author.first_name}} {{team_author.last_name}}</div>
+		    <div>{{team_author.role}}</div>
+		  </div>
+		</div>
+		<div class="aboutusview-ourteam-authorimageimagedummy">
+		</div>
+		<img ng-src="{{team_author.image}}" 
+		     class="aboutusview-ourteam-authorimage"/>
+	      </div>
+	    </li>
+	  </ul>
+	</div>
+      </div>
+    </section>
+    <section class="aboutusview-contactustext-section" id="contactus">
+      <div class="container">
+	<div class="col-md-3 col-md-offset-4 text-center">
+	  <h4>
+	    Contact Us
+	  </h4>
+	</div>
+      </div>
+      <div class="container">
+	<div class="col-md-3 col-md-offset-4 text-center">
+	  {{ contactusmessage }}
+	</div>
+      </div>
+    </section>
+  </div>
+<!-- </div> -->

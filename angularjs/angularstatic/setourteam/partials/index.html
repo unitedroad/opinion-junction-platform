@@ -1,0 +1,95 @@
+<div class="aboutus-encompass">
+  <div class="input-group aboutusauthorslist-button-group">
+    <button class="btn btn-primary btn-sm" 
+	    ng-click="addToTeamAuthors()">Add to About Us</button>
+  </div>
+  <div class="aboutusauthorslist-encompass">
+    <div>
+      <table class="table table-striped">
+	<thead>
+	  <th></th><th>Author Name</th><th>First Name</th><th>Last Name</th>
+	</thead>
+	<tbody>
+	  <tr>
+	    <td></td><td><input type="text" ng-model="authorNameSearchKey"/></td>
+	  </tr>
+	  <tr ng-repeat="author in displayedAuthorResults">
+	    <td><input type="checkbox" ng-model="author.selected"/></td>
+	    <td>{{author.author_name}}</td>
+	    <td>{{author.first_name}}</td><td>{{author.last_name}}</td>
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="input-group aboutusauthorslist-button-group">
+    <button class="btn btn-primary btn-sm" 
+	    ng-click="addToTeamAuthors()">Add to About Us</button>
+  </div>
+  <div>
+    <div class="input-group aboutusauthorslist-button-group">
+      <button class="btn btn-danger btn-sm" 
+	      ng-click="deleteTeamAuthors()">Delete Team Author(s)</button>
+      <button class="btn btn-primary btn-sm" 
+	      ng-click="submitTeamAuthors()">Submit</button>
+    </div>
+    <div id="submiterror" class="alert alert-danger aboutusauthorslist-submiterror-div" ng-show="showError">
+      {{ errorMessage }}
+    </div>
+    <div id="submitsuccess" class="alert alert-success aboutusauthorslist-submiterror-div" ng-show="showSuccess">
+      {{ successMessage }}
+    </div>
+    <div ng-repeat="team_author in team_authors_displayed" class="col-xs-12 aboutusteamauthors-row" >
+      <h4>{{team_author.author_name}}</h4>
+      <div class="aboutusteamauthors-column-checkbox">
+	<input type="checkbox" ng-model="team_author.selected"/>
+      </div>
+      <div class="col-xs-12 aboutusteamauthors-column-main">
+	<div class="col col-md-2 col-lg-2 ">
+	  <img class="aboutusteamauthors-img" ng-src="{{team_author.image}}" alt="...">
+	</div>
+	<div class="col col-md-10">
+	  <div class="col col-xs-12 aboutusteamauthors-row-details">
+	    <div class="col col-md-4">
+	      <label>First Name:</label>
+	    </div>
+	    <div class="col col-md-8">
+	      <div ng-class="team_author.name_error? 'has-error': ''">
+		<input type="text" ng-model="team_author.changeablefirst_name" class="form-control"
+		       />
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col col-xs-12 aboutusteamauthors-row-details">
+	    <div class="col col-md-4">
+	      <label>Last Name:</label>
+	    </div>
+	    <div class="col col-md-8">
+	      <div ng-class="team_author.name_error? 'has-error': ''">
+		<input type="text" ng-model="team_author.changeablelast_name" class="form-control"
+		       />
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col col-xs-12 aboutusteamauthors-row-details">
+	    <div class="col col-md-4">
+	      <label>Role:</label>
+	    </div>
+	    <div class="col col-md-8">
+	      <div ng-class="team_author.role_error? 'has-error': ''">
+		<input type="text" ng-model="team_author.role" class="form-control"
+		       />
+	      </div>
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+    <div class="input-group aboutusauthorslist-button-group" ng-show="team_authors_displayed.length > 0">
+      <button class="btn btn-danger btn-sm" 
+	      ng-click="deleteTeamAuthors()">Delete Team Author(s)</button>
+      <button class="btn btn-primary btn-sm" 
+	      ng-click="submitTeamAuthors()">Submit</button>
+    </div>
+  </div>
+</div>

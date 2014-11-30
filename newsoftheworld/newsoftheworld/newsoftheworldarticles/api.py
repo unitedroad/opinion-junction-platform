@@ -7,6 +7,9 @@ from .models import Metadata
 from .models import Category
 from .models import Tag
 from .models import Author_Settings
+from .models import Team_Author
+from .models import Team_ContactUs
+from .models import Team_Metadata
 from .serialisers import ArticleSerialiser
 from .serialisers import AuthorSerialiser
 from .serialisers import MetadataSerialiser
@@ -14,6 +17,8 @@ from .serialisers import CategorySerialiser
 from .serialisers import TagSerialiser
 from .serialisers import Author_SettingsSerialiser
 from .serialisers import Author_ActivitySerialiser
+from .serialisers import Team_All_DataSerialiser
+from .serialisers import Team_AuthorSerialiser
 from . import util
 #from . import db
 #from .serialisers import AuthorSerialiser2
@@ -26,6 +31,7 @@ from rest_framework import status
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.exceptions import PermissionDenied
 
 import bson
 
@@ -632,4 +638,68 @@ class AuthorsActivity(APIView):
 
 class AboutUs(APIView):
     def get(self, request, format=None):
-        pass
+        team_object = util.Extensible_class()
+        team_object.team_authors = []
+        team_object.team_metadata = None
+        team_object.team_contactus = []
+        if "get_all_information" in request.GET and request.GET["get_all_information"] == "true":
+            team_authors = Team_Author.objects()
+            if len(team_authors) > 0:
+                team_object.team_authors = list(team_authors)
+            team_metadata_array = Team_Metadata.objects()
+            if len(team_metadata_array) > 0:
+                team_metadata = team_metadata_array[0]
+                #print "team_metadata: " + team_metadata
+                team_object.team_metadata = team_metadata
+            else:
+                team_metadata = util.Extensible_class()
+                team_metadata.aboutus_message = ""
+                team_object.team_metadata =  team_metadata
+            team_contactus = Team_ContactUs.objects()
+            if len(team_contactus) > 0:
+                team_object.team_contactus = list(team_contactus)
+            serialisedList = Team_All_DataSerialiser(team_object, many=False)
+            return Response(serialisedList.data)
+
+        if "get_author_information" in request.GET and request.GET["get_author_information"] == "true":
+            team_authors = Team_Author.objects.all()
+            print team_authors
+            if len(team_authors) > 0:
+                team_authorserialisers = []
+                #team_object.team_authors = team_authorserialisers
+                team_object.team_authors = list(team_authors)
+
+        if "get_metadata_information" in request.GET  and request.GET["get_metadata_information"] == "true":
+            team_metadata_array = Team_Metadata.objects()
+            if len(team_metadata_array) > 0:
+                team_metadata = team_metadata_array[0]
+                #print "team_metadata: " + team_metadata
+                team_object.team_metadata = team_metadata
+            else:
+                team_metadata = util.Extensible_class()
+                team_metadata.aboutus_message = ""
+                team_object.team_metadata =  team_metadata
+
+        if "get_contactus_information" in request.GET  and request.GET["get_contactus_information"] == "true":
+            team_contactus = Team_ContactUs.objects()
+            if len(team_contactus) > 0:
+                team_object.team_contactus = list(team_contactus)
+        
+        serialisedList = Team_All_DataSerialiser(team_object, many=False)
+        return Response(serialisedList.data)
+
+    def post(self, request, format=None):
+        try:
+            if "update_author_information" in request.DATA and request.DATA["update_author_information"] == "true":
+                util.update_aboutus_authors(request.user, **request.DATA)
+            if "update_metadata_information" in request.DATA and request.DATA["update_metadata_information"] == "true":
+                util.update_aboutus_metadata(request.user, **request.DATA)
+            if "update_contactus_information" in request.DATA and request.DATA["update_contactus_information"] == "true":
+                util.update_aboutus_contactus(request.user, **request.DATA)
+        except PermissionDenied as e:
+            return Response({"ok" : "false",  "message" : "You dont have permission to change About Us", "code" : "permission_denied" }, status = status.HTTP_403_FORBIDDEN )
+        except Exception as e:
+            print "Exception in aboutusspost: " + str(e)
+            print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2]))
+            return Response({"ok" : "false",  "message" : str(e) }, status = status.HTTP_500_INTERNAL_SERVER_ERROR )
+        return Response({"ok" : "true"})

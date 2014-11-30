@@ -25,12 +25,19 @@ from newsoftheworldarticles.api import UpdateProfileSelf
 from newsoftheworldarticles.api import ArticlesByTag
 from newsoftheworldarticles.api import TagsList
 from newsoftheworldarticles.api import CategoriesList
+from newsoftheworldarticles.api import AboutUs
 
 from newsoftheworldarticles.views import Article_Traditional_View
 from newsoftheworldarticles.views import Category_Traditional_View
 from newsoftheworldarticles.views import Home_Traditional_View
 from newsoftheworldarticles.views import ArticlesByTag_Traditional_View
 from newsoftheworldarticles.views import AuthorsActivity_Traditional_View
+from newsoftheworldarticles.views import Error_400_Traditional_View
+from newsoftheworldarticles.views import Error_403_Traditional_View
+from newsoftheworldarticles.views import Error_404_Traditional_View
+from newsoftheworldarticles.views import Error_500_Traditional_View
+
+from newsoftheworldarticles.views import view_for_404
 
 from django.http import HttpResponse
 
@@ -97,6 +104,7 @@ rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?
     url(r'^api/1.0/tags/(?P<tag_name>.+)/?$', ArticlesByTag.as_view(), name='articles-by-tag'),     
     url(r'^api/1.0/tags/?$', TagsList.as_view(), name='tags-list'),     
     url(r'^api/1.0/categories/?$', CategoriesList.as_view(), name='categories-list'),
+    url(r'^api/1.0/aboutus/?$', AboutUs.as_view(), name='about-us'),
 
     url(r'comments/login/?$', 'newsoftheworldcomments.views.commentslogin' ),
 )

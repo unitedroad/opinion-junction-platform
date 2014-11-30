@@ -3,7 +3,7 @@ from .models import Article
 from .models import Author
 from mongoengine.dereference import DeReference
 from bson.objectid import ObjectId
-
+from mongoengine import Document
 
 class ArrayTagCategoryArticleSerialiser(serializers.Serializer):
     def field_to_native(self, obj, field_name):
@@ -52,12 +52,21 @@ class ArrayField(serializers.Field):
         return self.to_native(getattr(obj, field_name))
 
     def to_native(self, obj):
-        if len(obj) > 0 and isinstance(obj[0], ObjectId):
+        if len(obj) > 0 and (isinstance(obj[0], ObjectId) or isinstance(obj[0], Document)):
             obj_return = []
             for member in obj:
                 obj_return.append(str(member))
             return obj_return
         return obj
+    
+
+class ObjectIdField(serializers.Field):
+    def field_to_native(self, obj, field_name):
+        
+        return self.to_native(getattr(obj, field_name))
+
+    def to_native(self, obj):
+        return str(obj)
     
 class RelatedDocumentField(serializers.RelatedField):
 
@@ -199,3 +208,25 @@ class Author_ActivitySerialiser(serializers.Serializer):
 #    latest_votes = ListField(EmbeddedDocumentField(Activity_Vote))
 #    latest_replies_from = ListField(EmbeddedDocumentField(Activity_Comment))
 #    latest_votes_from = ListField(EmbeddedDocumentField(Activity_Vote))
+
+class Team_AuthorSerialiser(serializers.Serializer):
+    author_id = serializers.CharField()
+    author_name = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    image = serializers.CharField()
+    role = serializers.CharField()
+
+class Team_MetadataSerialiser(serializers.Serializer):
+    aboutus_message = serializers.CharField()
+
+class Team_ContactUsSerialiser(serializers.Serializer):
+    id = ObjectIdField()
+    contactus_description = serializers.CharField()
+    contactus_details = serializers.CharField()
+    contactus_type = serializers.CharField()
+
+class Team_All_DataSerialiser(serializers.Serializer):
+    team_authors = Team_AuthorSerialiser(many=True)
+    team_metadata = Team_MetadataSerialiser(many=False)
+    team_contactus = Team_ContactUsSerialiser(many=True)

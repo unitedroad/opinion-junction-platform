@@ -19,6 +19,9 @@ from .models import Author_Settings
 from .models import Category
 from .models import Tag
 from .models import ArticleForTagCategory
+from .models import Team_Author
+from .models import Team_Metadata
+from .models import Team_ContactUs
 from .db import db
 from rest_framework import status
 from allauth.account.signals import user_logged_in, user_signed_up
@@ -27,6 +30,8 @@ from django.contrib.auth.models import User
 import django.dispatch
 from lxml import etree, html
 from PIL import Image, ImageOps, ImageChops
+from django.core.exceptions import PermissionDenied
+from bson.objectid import ObjectId
 
 LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
 LOCATION_ARTICLE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojarticleimages')
@@ -1025,6 +1030,134 @@ def get_or_initialise_author_activity(authorid):
     return author_activity
 
 
+def update_aboutus_authors(user, **kwargs):
+#    for member in kwargs:
+#        print "update_aboutus request.DATA parameter: " + str(member)
+    authors = Author.objects(id=str(user.id))
+    
+    author = None
+    if len(authors) > 0:
+        author = authors[0]
+    else:
+        raise PermissionDenied()
+
+    user_permissions = author.user_permissions
+
+
+    if "set_aboutus" not in user_permissions:
+        raise PermissionDenied()
+
+    if 'removed_authors' in kwargs and kwargs['removed_authors'] is not None:
+        authors_to_remove = kwargs['removed_authors']
+        for author in authors_to_remove:
+            team_author = Team_Author.objects(author_id=author)
+            team_author.delete()
+
+    if 'added_authors' in kwargs:
+        authors_to_add = kwargs['added_authors']
+        print "type of authors_to_add: " + str(type(authors_to_add))
+        print "number of authors_add: "+ str(len(authors_to_add))
+        for author in authors_to_add:
+            team_author = Team_Author()
+            team_author.author_id = author['id']
+            team_author.author_name = author['author_name']
+            team_author.first_name = author['first_name']
+            team_author.last_name = author['last_name'] 
+            team_author.image = author['image']
+            team_author.role = author['role']
+            team_author.save()
+
+    if 'changed_authors' in kwargs:
+        authors_to_change = kwargs['changed_authors']
+        for author in authors_to_change:
+            team_authors = Team_Author.objects(author_id=author['id'])
+            if len(team_authors) > 0:
+                team_author = team_authors[0]
+                team_author.author_id = author['id']
+                team_author.author_name = author['author_name']
+                team_author.first_name = author['first_name']
+                team_author.last_name = author['last_name'] 
+                team_author.image = author['image']
+                team_author.role = author['role']
+                team_author.save()
+            else:
+                print 'team author not found: ' + author['id']
+
+
+def update_aboutus_metadata(user, **kwargs):
+    authors = Author.objects(id=str(user.id))
+    
+    author = None
+    if len(authors) > 0:
+        author = authors[0]
+    else:
+        raise PermissionDenied()
+
+    user_permissions = author.user_permissions
+
+
+    if "set_aboutus" not in user_permissions:
+        raise PermissionDenied()
+
+    team_metadata = None
+
+    team_metadata_array = Team_Metadata.objects()
+    if len(team_metadata_array) > 0:
+        team_metadata = team_metadata_array[0]
+    else:
+        team_metadata = Team_Metadata()
+
+    for key in kwargs:
+        print "key: " + str(key)
+
+    if "aboutus_message" in kwargs:
+        team_metadata.aboutus_message = kwargs["aboutus_message"]
+
+    team_metadata.save()
+
+def update_aboutus_contactus(user, **kwargs):
+    authors = Author.objects(id=str(user.id))
+    
+    author = None
+    if len(authors) > 0:
+        author = authors[0]
+    else:
+        raise PermissionDenied()
+
+    user_permissions = author.user_permissions
+
+
+    if "set_aboutus" not in user_permissions:
+        raise PermissionDenied()
+    if 'removed_contactus' in kwargs and kwargs['removed_contactus'] is not None:
+        contactus_to_remove = kwargs['removed_contactus']
+        for contactus in contactus_to_remove:
+            team_contactUs = Team_ContactUs.objects(id=ObjectId(contactus))
+            team_contactUs.delete()
+
+    if 'added_contactus' in kwargs:
+        contactus_to_add = kwargs['added_contactus']
+        for contactus in contactus_to_add:
+            team_contactUs = Team_ContactUs()
+            team_contactUs.contactus_description = contactus['contactus_description']
+            team_contactUs.contactus_details = contactus['contactus_details']
+            team_contactUs.contactus_type = contactus['contactus_type']
+            team_contactUs.save()
+
+    if 'changed_contactus' in kwargs:
+        contactus_to_change = kwargs['changed_contactus']
+        for contactus in contactus_to_change:
+            team_contactUs_array = Team_ContactUs.objects(id=ObjectId(contactus['id']))
+            if len(team_contactUs_array) > 0:
+                team_contactUs = team_contactUs_array[0]
+                team_contactUs.contactus_description = contactus['contactus_description']
+                team_contactUs.contactus_details = contactus['contactus_details']
+                team_contactUs.contactus_type = contactus['contactus_type']
+
+                team_contactUs.save()
+            else:
+                print 'team contactus not found: ' + contactus['id']
+
 
 #http://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
 class JSONEncoder(json.JSONEncoder):
@@ -1033,3 +1166,5 @@ class JSONEncoder(json.JSONEncoder):
             return str(o)
         return json.JSONEncoder.default(self, o)
 
+class Extensible_class(object):
+    pass
