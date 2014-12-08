@@ -2872,6 +2872,7 @@ testApp.controller('createArticlePreviewController', function($scope, $location,
     if (articleState != null) {
 	$scope.article = articleState.article;
 	$scope.mode = articleState.mode;
+	$scope.articleInitialised = true;
     } else {
 	commonOJService.messageForControllers.messageViewErrorMessage = "It seems you aren't editing any opinion, click on Home above to go back to the home page";
 	
@@ -3146,7 +3147,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
       "#p,-ol,-ul,-li,br,img[src|style],-sub,-sup,-b,-i," +
       "-span,hr,div[data-label|data-caption-label|data-source-label|data-attribution-label|class]," + 
       "object[width|height|classid|codebase|type|data],param[name|value],iframe[data|width|height|src|allowfullscreen|frameborder|style]," +
-      "h1,h2,h3,h4,h5,em,strong",
+      "h1,h2,h3,h4,h5,em,strong,blockquote",
       extended_valid_elements : "embed[src|type|width|height|flashvars|wmode]"
 
     };
@@ -4625,7 +4626,7 @@ angular.module('ui.tinymce', [])
 		    "#p,-ol,-ul,-li,br,img[src|style],-sub,-sup,-b,-i," +
 		    "-span,hr,div[data-label|data-caption-label|data-source-label|data-attribution-label|class]," + 
 		    "object[width|height|classid|codebase|type|data],param[name|value],iframe[data|width|height|src|allowfullscreen|frameborder|style]," +
-		    "h1,h2,h3,h4,h5,em,strong",
+		    "h1,h2,h3,h4,h5,em,strong,blockquote",
 		extended_valid_elements : "embed[src|type|width|height|flashvars|wmode]"
 
 

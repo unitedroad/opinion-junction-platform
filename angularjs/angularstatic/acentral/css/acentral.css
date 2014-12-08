@@ -469,6 +469,19 @@ body { padding-top: 50px; }
     text-align: center;
 }
 
+
+
+
+@media (max-width: 480px){
+    .input-group-footer-newsletter {
+	margin-bottom: 4px;
+	
+    }
+    .col-xs-0 {
+	width: 0px;
+    }
+}
+
 .input-group-xs>.form-control,
 .input-group-xs>.input-group-addon,
 .input-group-xs>.input-group-btn>.btn {
