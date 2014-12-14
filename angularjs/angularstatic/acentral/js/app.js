@@ -455,6 +455,9 @@ testApp.factory('commonOJService', function($http, $location) {
 
     
     serviceInstance.convertWhiteSpaceToHtml = function(text) {
+	if (!text) {
+	    return '';
+	} 
 	text = text.replace(/\t/g, '    ')
            .replace(/  /g, '&nbsp; ')
            .replace(/  /g, ' &nbsp;') // second pass
