@@ -3044,12 +3044,72 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     $scope.articleFields = ["topic","slug"];
 
+    var setMetadataFieldsOnUi = function(metadata) {
+	var robots_tag = metadata.robots_tag.toLowerCase();
+	var robots_tagArray = robots_tag.split(",");
+	if (commonOJService.indexOf(robots_tagArray, "noindex") > -1) {
+	    $scope.robotnoindex = true;
+	}
+    }
+
+    var managedMetadataAttributes = {};
+    var getArticleMetadata = function() {
+	var metadata = {};
+	var robots_tag = "";
+	if ($scope.robotnoindex) {
+	    robots_tag = robots_tag.concat("noindex, ");
+	}
+	robots_tag = robots_tag.trim();
+	if (robots_tag) {
+	    if (robots_tag.substr(robots_tag.length - 1) == ",") {
+		robots_tag = robots_tag.substr(0, robots_tag.length - 1);
+	    }
+	}
+	
+	metadata["robots_tag"] = robots_tag;
+	return metadata;
+//	if (oldArticle) {
+//	    if ("article_metadata" in oldArticle && oldArticle.hasOwnProperty("article_metadata")) {
+//		var oldArticle_metadata = oldArticle.article_metadata;
+//		if ("robots_tag" in oldArticle_metadata && oldArticle_metadata.hasOwnProperty("robots_tag") {
+//		    var oldRobots_tag = oldArticle.robots_tag;
+//		    if (oldRobots_tag) {
+//			var oldRobots_tagArray = oldRobots_Tag.split(",");
+//			var numOldRobots_tagArray = oldRobots_tagArray.length;
+//			if (commonOJService.indexOf("noindex") > -1|| commonOJService.indexOf("NOINDEX") > -1) {
+//			    if ($scope.robotsnoindex) {
+//				
+//			    }
+//			}
+//			for (var i = 0; i < numOldRobots_tagArray; i++) {
+//			    var oldRobots_tagMember = oldRobots_tagArray[i];
+//			    
+//			}
+//		    }
+//		}
+//
+//	    }
+//	}
+    }
+
+    var resetCategories = function() {
+	for (var i = 0; i < numCategories; i++) {
+	    if (category === $scope.categories[i].name) {
+		$scope.categories[i].selected = true;
+		break;
+	    }
+	}
+
+    }
+
     $scope.articleAuthor = null;
 
     $scope.editEnabled = true;
 
     $scope.displayImagesVisible = false
     $scope.previewDisplayImageCollapseSymbol = "+";
+
+    $scope.robotnoindex = false;
 
     $scope.toggleDisplayImageDivCollapse = function() {
 	$scope.displayImagesVisible = $scope.displayImagesVisible;
@@ -3266,6 +3326,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 		    }
 		    setSelectedTagsForEditMode(article);
 
+		    setMetadataFieldsOnUi(article.article_metadata);
 		} else {
 		    $scope.errorMessage="Opinion not found";
 		    $scope.submitError = true;
@@ -3303,7 +3364,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
 
     commonOJService.registerCategoryListener(setCategories);
-    $scope.categories = commonOJService.categories;
+    //$scope.categories = commonOJService.categories;
     $scope.showPopularTags = false;
     $scope.popularTagsDivCollapse = true;
 
@@ -3678,6 +3739,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	    article.thumbnail_image = $scope.thumbnail;
 	}
 
+	article.article_metadata = getArticleMetadata();
 	return article;
 
     }
@@ -3734,6 +3796,7 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	}
 	var article = $scope.getArticleObject();
 
+	
 	permission_logic = {};
 
 
