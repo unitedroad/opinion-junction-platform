@@ -1,0 +1,77 @@
+<!doctype html>
+<html xmlns:ng="http://angularjs.org">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+  <title >Opinion Junction</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <!-- <script src="https://code.angularjs.org/snapshot/angular.min.js"></script> -->
+  <script src="https://code.angularjs.org/1.2.18/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-touch.min.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-route.min.js"></script>
+  <script src="https://code.angularjs.org/1.2.18/angular-cookies.min.js"></script>
+  <!-- <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"> -->
+  <link rel="stylesheet" href="/angularstatic/external/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
+  <link rel="stylesheet" href="/static/comments.css">
+  <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-animate.js"></script> -->
+  <!-- GitHub won't like me -->
+<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/angular-strap.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/popover.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-strap/2.0.0/modules/tooltip.js"></script> -->
+<!--  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
+  <script src="https://connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
+  <script src="/angularstatic/acentral/js/app.js"></script>
+  <script src="/angularstatic/external/angular-crop/js/image-crop.js"></script> 
+  <link rel="stylesheet" href="/angularstatic/external/angular-crop/css/image-crop-styles.css"
+	type="text/css"></link>
+  <!-- <script src="js/controllers.js"></script> -->
+  
+
+</head>
+<body>
+<div class="ng-app:testApp" id="ng-app" ng-app="testApp" xmlns:ng="http://angularjs.org">
+<div ng-init="initFunction()" ng-controller="mainController">
+
+<nav id="navbar-div" class="navbar navbar-inverse  navbar-fixed-top">
+  <div class="container" >
+    <div class="navbar-header">
+      <a class="navbar-brand" ng-click="collapseNavbar();" href="/">Opinion Junction</a>
+    </div>
+  </div>
+</nav>
+Opinion Junction is down for maintenance, please visit again after some time.
+<!--<div style="height: 600px"> -->
+<!--
+  <carousel interval="5000">
+    <slide ng-repeat="article in articles" active="article.active">
+      <img ng-src="{{article.image}}" style="margin:auto;">
+      <div class="carousel-caption">
+        <h4>Slide {{$index}}</h4>
+        <p>{{slide.text}}</p>
+      </div>
+    </slide>
+  </carousel>
+-->
+<!-- </div> -->
+<ui-view>
+  <!--[if lt IE 9]>
+  <div style="margin:50px">
+    <h1 class="articlepreviewheadline" style="font-size:40px">Hmm... maybe upgrading to modern browser such as Firefox wouldn't hurt?</h5>
+    <br/>
+    <br/>
+    <h4 class="articlepreviewheadline"><a href="/#/" class="articleheaderlink" style="color:grey">Opinion Junction Home Page</a></h4>
+  </div>
+  <![endif]-->
+</ui-view>
+
+</div>
+</div>
+</body>
+</html>
+  
