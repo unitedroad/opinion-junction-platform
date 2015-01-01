@@ -12,6 +12,7 @@ import copy
 from newsoftheworld import settings
 from .models import Article
 from .models import Author
+from .models import Article_Metadata
 from .models import STATUS_VALUE_DICT
 from .models import Metadata
 from .models import Author_Activity
@@ -1158,6 +1159,14 @@ def update_aboutus_contactus(user, **kwargs):
             else:
                 print 'team contactus not found: ' + contactus['id']
 
+def set_article_metadata(article, **kwargs):
+    if "article_metadata" in kwargs:
+        article.article_metadata = Article_Metadata() 
+        metadata_in_request = kwargs["article_metadata"]
+        if metadata_in_request  is not None:
+            if "robots_tag" in metadata_in_request:
+                article.article_metadata.robots_tag = metadata_in_request["robots_tag"]
+                
 
 #http://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
 class JSONEncoder(json.JSONEncoder):

@@ -48,6 +48,8 @@ from .models import Metadata
 
 from .models import Tag
 
+from .models import Category
+
 class RedirectAuthenticatedUserAjaxCompatibleMixin(RedirectAuthenticatedUserMixin):
     def dispatch(self, request, *args, **kwargs):
         self.request = request
@@ -127,7 +129,9 @@ class Main_Traditional_View(TemplateView):
 
     def get_context_data(self, **kwargs):
         
-        tag_list = Metadata.objects.filter(entry_type="category")
+        #tag_list = Metadata.objects.filter(entry_type="category")
+        
+        tag_list = Category.objects().order_by("_id").exclude("num_users","user_ids", "users")
 
         context = super(Main_Traditional_View, self).get_context_data(**kwargs)
         context['categories'] = tag_list

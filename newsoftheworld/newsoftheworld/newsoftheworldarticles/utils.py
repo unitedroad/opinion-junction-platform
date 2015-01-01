@@ -39,7 +39,7 @@ def perform_login(request, user, email_verification,
                 response['message'] = 'Email Confirmation Sent'
                 c = RequestContext(request,{'response':json.dumps(response)})
                 t = Template("{% autoescape off %}{{response}}{% endautoescape %}") # A dummy template
-                return HttpResponse(t.render(c), mimetype="application/json")
+                return HttpResponse(t.render(c), content_type="application/json")
             else:
                 return HttpResponseRedirect(
                 reverse('account_email_verification_sent'))
@@ -54,7 +54,7 @@ def perform_login(request, user, email_verification,
             response['message'] = 'Account Inactive'
             c = RequestContext(request,{'response':json.dumps(response)})
             t = Template("{% autoescape off %}{{response}}{% endautoescape %}") # A dummy template
-            return HttpResponse(t.render(c), mimetype="application/json")
+            return HttpResponse(t.render(c), content_type="application/json")
             #return HttpResponse(json.dumps(response), content_type="application/json")
         else:
             return HttpResponseRedirect(reverse('account_inactive'))
@@ -74,7 +74,7 @@ def perform_login(request, user, email_verification,
         response['message'] = 'Logged in Successfully'
         c = RequestContext(request,{'response':json.dumps(response)})
         t = Template("{% autoescape off %}{{response}}{% endautoescape %}") # A dummy template
-        return HttpResponse(t.render(c), mimetype="application/json")
+        return HttpResponse(t.render(c), content_type="application/json")
         #return HttpResponse(json.dumps(response), content_type="application/json")
     else:
         return HttpResponseRedirect(get_login_redirect_url(request, redirect_url))

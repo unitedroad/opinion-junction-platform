@@ -50,6 +50,9 @@ class Author(Document):
     num_draft = IntField()
 
 
+class Article_Metadata(EmbeddedDocument):
+    robots_tag = StringField()
+
 class Article(Document):
     author = ReferenceField(Author)
     title = StringField(required=True)
@@ -64,6 +67,7 @@ class Article(Document):
     slug = StringField()
     tags = ListField(StringField(), required=False)
     categories = ListField(StringField(), required=False)
+    article_metadata = EmbeddedDocumentField(Article_Metadata)
 
     meta = {
         'indexes': [ {'fields' : ['published_date', 'id'] } ]

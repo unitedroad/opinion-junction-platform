@@ -50,7 +50,7 @@ class ArticlesList(APIView):
         #for comment in Comment.objects.all():
         if util.check_valid_object_id(id=articleid) is not True:
             return Response({"ok" : "false", "code" : "incorrect_id", "message" : "Incorrect Article Id", "status" : status.HTTP_400_BAD_REQUEST }, status = status.HTTP_400_BAD_REQUEST)
-        serialisedList = ArticleSerialiser(Article.objects(id=articleid).select_related())
+        serialisedList = ArticleSerialiser(Article.objects(id=articleid).select_related(), many=True)
         
         return Response(serialisedList.data)
 
@@ -117,6 +117,7 @@ class ArticlesList(APIView):
         article.tags =  util.return_list_stripped_members(request.DATA[u"tags"])
         article.categories = util.return_list_stripped_members(request.DATA[u"categories"])
 
+        util.set_article_metadata(article, **request.DATA)
         article.save()
 
         save_front_page_info = False
@@ -195,7 +196,7 @@ class ArticlesPost(APIView):
                 articlesList = articlesList.limit(int(request.GET["limit"]))
     
     
-            serialisedList = ArticleSerialiser(articlesList.select_related())
+            serialisedList = ArticleSerialiser(articlesList.select_related(), many=True)
             return Response(serialisedList.data)
         except Exception as e:
             "Exception in ArticlesPost: " + str(e)
@@ -256,20 +257,29 @@ class ArticlesPost(APIView):
     #            author = Author.objects(id=request.DATA[u"authorid"])
     #            article.author = author
             article.author = author
-            article.save()
+
+            util.set_article_metadata(article, **request.DATA)
+#            if "article_metadata" in request.DATA:
+#                article.article_metadata = Article_Metadata() 
+#                metadata_in_request = request.DATA["article_metadata"]
+#                if metadata_in_request  is not None:
+#                    if "robot_tag" in metadata_in_request:
+#                        article.article_metadata = metadata_in_request["robots_tag"]
+
+            article = article.save()
 
             if article.storytext:
                 result = util.save_binary_images_in_content(article, article.storytext)
                 if "ok" in result and result["ok"] == "false":
                     return Response(result, status = status.HTTP_400_BAD_REQUEST)
                 permission_check["storytext"] = article.storytext
-            article.save()
+            article = article.save()
 
             util.create_article(article,user=request.user)
 
             #print "article.primary_image: " + article.primary_image
 
-
+            
             save_front_page_info = False
 
             if "header_image" in request.DATA and request.DATA["header_image"] is not None:
@@ -309,7 +319,7 @@ class ArticlesByCategory(APIView):
 
         articlesByCategories = util.get_articles_by_categories(categories, request.GET)
 
-        serialisedList = ArticleSerialiser(articlesByCategories)
+        serialisedList = ArticleSerialiser(articlesByCategories, many=True)
         
         return Response(serialisedList.data)
     
@@ -317,7 +327,7 @@ class ArticlesByEachCategory(APIView):
     def get(self, request, category, format=None):
         articlesByCategories = util.get_articles_by_category(category, request.GET)
 
-        serialisedList = ArticleSerialiser(articlesByCategories)
+        serialisedList = ArticleSerialiser(articlesByCategories, many=True)
         
         return Response(serialisedList.data)
 
@@ -348,7 +358,7 @@ class AuthorsList(APIView):
 
     def get(self, request, authorid, format=None):
         #for comment in Comment.objects.all():
-        serialisedList = AuthorSerialiser(Author.objects(id=authorid))
+        serialisedList = AuthorSerialiser(Author.objects(id=authorid), many=True)
         
 
 
@@ -419,7 +429,7 @@ class AuthorsListAll(APIView):
             else:
                 authors = authors.filter(author_name=rargs["author_name"])
 
-        serialisedList = AuthorSerialiser(authors)
+        serialisedList = AuthorSerialiser(authors, many=True)
         return Response(serialisedList.data)
 
 
@@ -487,6 +497,8 @@ class ArticlesByTag(APIView):
         tags = Tag.objects(name=tag_name)
         if len(tags) > 0:
             tag = tags[0]
+            tag.id = None # hack for ObjectId(<tag id>) is not JSON serializable
+            tag._id = None # hack for ObjectId(<tag id>) is not JSON serializable
             serialisedList = TagSerialiser(tag, many=False)
             return Response(serialisedList.data)
         else:
@@ -518,7 +530,7 @@ class TagsList(APIView):
             tag_list = Tag.objects()
         if "get_user_fields" not in request.GET or request.GET["get_user_fields"] != "true":
             tag_list = tag_list.exclude("num_users","user_ids", "users")
-        serialisedList = TagSerialiser(tag_list)
+        serialisedList = TagSerialiser(tag_list, many=True)
         return Response(serialisedList.data)
 
     def post(self, request, format=None):
@@ -542,7 +554,7 @@ class CategoriesList(APIView):
         category_list = Category.objects().order_by("_id")
         if "get_user_fields" not in request.GET or request.GET["get_user_fields"] != "true":
             category_list = category_list.exclude("num_users","user_ids", "users")
-        serialisedList = CategorySerialiser(category_list)
+        serialisedList = CategorySerialiser(category_list, many=True)
 
         return Response(serialisedList.data)
 

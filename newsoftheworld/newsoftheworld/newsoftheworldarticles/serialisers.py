@@ -5,6 +5,16 @@ from mongoengine.dereference import DeReference
 from bson.objectid import ObjectId
 from mongoengine import Document
 
+#creating the following class here to prevent any future cyclic dependencies between modules
+
+def serialisable_object(obj):
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    return obj
+
+class Extensible_class(object):
+    pass
+
 class ArrayTagCategoryArticleSerialiser(serializers.Serializer):
     def field_to_native(self, obj, field_name):
         
@@ -14,12 +24,12 @@ class ArrayTagCategoryArticleSerialiser(serializers.Serializer):
         obj_return = []
 
         for member in obj:
+            member_return = None
             member_return = self._dict_class()
             member_return.fields = self._dict_class()
-
+            
             member_return["article_id"] = member.article_id
             member_return.fields["article_id"] = "article_id"
-            
             member_return["title"] = member.title
             member_return.fields["title"] = "title"
 
@@ -45,7 +55,54 @@ class ArrayTagCategoryArticleSerialiser(serializers.Serializer):
 
         return obj_return
 
-class ArrayField(serializers.Field):
+    def to_representation(self, obj):
+        obj_return = []
+
+        for member in obj:
+            member_return = None
+            if hasattr(self, "_dict_class"):
+                member_return = self._dict_class()
+                member_return.fields = self._dict_class()
+            else:
+                member_return = {}
+                #member_return.fields = Extensible_class()
+            member_return["article_id"] = member.article_id
+            #member_return.fields.article_id = "article_id"
+            
+            member_return["title"] = member.title
+            #member_return.fields.title = "title"
+
+            member_return["slug"] = member.slug
+            #member_return.fields.slug = "slug"
+            
+            member_return["author_name"] = member.author_name
+            #member_return.fields.author_name = "author_name"
+
+            member_return["excerpt"] = member.excerpt
+            #member_return.fields.excerpt = "excerpt"
+
+            member_return["categories"] = member.categories
+            #member_return.fields.categories = "categories"
+
+
+            member_return["thumbnail_image"] = member.thumbnail_image
+            #member_return.fields.thumnail_image = "thumbnail_image"
+
+            obj_return.append(member_return)
+
+
+        return obj_return
+
+
+class HiddenField(serializers.ReadOnlyField):
+    def to_representation(self, obj):
+        return None
+
+    def get_attribute(self, obj):
+        return None
+
+
+class ArrayField(serializers.ReadOnlyField):
     
     def field_to_native(self, obj, field_name):
         
@@ -59,8 +116,11 @@ class ArrayField(serializers.Field):
             return obj_return
         return obj
     
+    def to_representation(self, obj):
+        return self.to_native(obj)
 
-class ObjectIdField(serializers.Field):
+
+class ObjectIdField(serializers.ReadOnlyField):
     def field_to_native(self, obj, field_name):
         
         return self.to_native(getattr(obj, field_name))
@@ -69,6 +129,27 @@ class ObjectIdField(serializers.Field):
         return str(obj)
     
 class RelatedDocumentField(serializers.RelatedField):
+
+    def to_representation(self, obj):
+
+        ret = {}
+        #ret.fields = {}
+        if not hasattr(obj, '_fields'):
+            return ret
+
+        print "obj: " + str(obj)
+
+        for field_name,field in obj._fields.iteritems():
+            value = obj._data.get(field_name, None)
+            if value is not None:
+                value = field.to_python(value)
+            ret[field_name] = serialisable_object(value)
+            #ret.fields[k] = v
+
+        print "ret: " + str(ret)
+
+        return ret
+
 
     def to_native(self, obj):
         
@@ -93,6 +174,24 @@ class RelatedDocumentField(serializers.RelatedField):
 
 class RelatedAuthorDocumentField(RelatedDocumentField):
 
+    def to_representation(self, obj):
+
+        ret = {}
+        #ret.fields = {}
+        if not hasattr(obj, '_fields'):
+            return ret
+
+        for field_name,field in obj._fields.iteritems():
+            if field_name == "user_permissions":
+                continue
+
+            value = obj._data.get(field_name, None)
+            if value is not None:
+                value = field.to_python(value)
+            ret[field_name] = serialisable_object(value)
+            #ret.fields[k] = v
+
+        return ret
 
     def to_native(self, obj):
         
@@ -112,7 +211,7 @@ class RelatedAuthorDocumentField(RelatedDocumentField):
 
         return ret
 
-class SetField(serializers.Field):
+class SetField(serializers.ReadOnlyField):
     def to_native(self, obj):
         returnedSet = set()
         for val in obj:
@@ -122,7 +221,7 @@ class SetField(serializers.Field):
 
 class ArticleSerialiser(serializers.Serializer):
     id = serializers.CharField()
-    author = RelatedAuthorDocumentField(Author)
+    author = RelatedAuthorDocumentField(read_only=True)
     title = serializers.CharField(required=True)
     published_date = serializers.DateTimeField()
     status = serializers.CharField()
@@ -135,7 +234,7 @@ class ArticleSerialiser(serializers.Serializer):
     slug = serializers.CharField()
     tags = SetField()
     categories = SetField()
-    
+    article_metadata = RelatedDocumentField(read_only=True)
 #    class Meta:
 #        unique_together = ('tags')
 #    def restore_object(self, attrs, instance=None):
@@ -156,7 +255,8 @@ class AuthorSerialiser(serializers.Serializer):
     gender = serializers.CharField()
     user_bio = serializers.CharField()
     user_role = serializers.CharField()
-    user_permissions = serializers.WritableField()
+    #user_permissions = serializers.WritableField()
+    user_permissions = ArrayField()
     user_image = serializers.CharField()
 
 #class AuthorSerialiser2(serializers.Serializer):
@@ -187,6 +287,8 @@ class TagSerialiser(serializers.Serializer):
     num_users = serializers.IntegerField()
     user_ids = ArrayField()
     users = ArrayTagCategoryArticleSerialiser()
+    #users = serializers.ListField(child=RelatedDocumentField(read_only=True)) #TODO Wil move to this implementation 
+                                                                               #once 1.7 upgrade is completely successful for long
 
 
 class Author_SettingsSerialiser(serializers.Serializer):

@@ -3,6 +3,9 @@
     <meta property="og:title" content="Opinion Junction - Article - {{article.title}}" />
     <meta property="og:description" content="{{article.excerpt}}" />
     <meta property="og:image" content="{{article.primary_image}}" />
+    {% if article.article_metadata and article.article_metadata.robots_tag %}
+    <meta name="robots" content="{{article.article_metadata.robots_tag}}" />
+    {% endif %}
     <title>Opinion Junction - Article - {{article.title}}</title>
 {% endblock %}
     {% block maincontent %}
