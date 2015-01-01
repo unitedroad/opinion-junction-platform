@@ -23,6 +23,16 @@ class AuthorSerialiser(serializers.Serializer):
     author_name = serializers.CharField(required=True,max_length=50)
     #pass
 
+    def to_representation(self, obj):
+        ret = {}
+
+        ret["id"]=obj.id
+        ret["name"]=obj.author_name
+        
+        ret["image"]=obj.image
+ 
+        return ret
+        
     def to_native(self, obj):
         """
         Serialize objects -> primitives.
@@ -64,6 +74,13 @@ class Num_Votes_Field(serializers.Field):
     def field_to_native(self, obj, field_name):
         return self.to_native(obj)
 
+    def get_attribute(self, obj):
+        # Pass the entire object through to `to_representation()`,
+        # instead of the standard attribute lookup.
+        return obj
+
+    def to_representation(self, obj):
+        return self.to_native(obj)
 
 class Vote_Field(serializers.Field):
 
@@ -86,6 +103,14 @@ class Vote_Field(serializers.Field):
                 return 'up'
 
         return 'none'
+
+    def to_representation(self, obj):
+        return self.to_native(obj)
+
+    def get_attribute(self, obj):
+        # Pass the entire object through to `to_representation()`,
+        # instead of the standard attribute lookup.
+        return obj
 
     def field_to_native(self, obj, field_name):
         return self.to_native(obj)
