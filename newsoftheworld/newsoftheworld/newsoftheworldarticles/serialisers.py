@@ -127,6 +127,10 @@ class ObjectIdField(serializers.ReadOnlyField):
 
     def to_native(self, obj):
         return str(obj)
+
+    def to_representation(self, obj):
+        return self.to_native(obj)
+
     
 class RelatedDocumentField(serializers.RelatedField):
 
