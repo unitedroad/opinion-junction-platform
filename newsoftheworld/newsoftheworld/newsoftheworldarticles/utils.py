@@ -1,3 +1,6 @@
+import traceback
+import sys
+
 import json
 from django.contrib import messages
 from allauth.account.adapter import get_adapter
@@ -30,10 +33,18 @@ def perform_login(request, user, email_verification,
     elif email_verification == EmailVerificationMethod.OPTIONAL:
         # In case of OPTIONAL verification: send on signup.
         if not has_verified_email and signup:
-            send_email_confirmation(request, user, signup=signup)
+            try:
+                send_email_confirmation(request, user, signup=signup)
+            except Exception as e:
+                "Exception while sending mail in perform_login: " + str(e)
+                print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2]))
     elif email_verification == EmailVerificationMethod.MANDATORY:
         if not has_verified_email:
-            send_email_confirmation(request, user, signup=signup)
+            try:
+                send_email_confirmation(request, user, signup=signup)
+            except Exception as e:
+                "Exception while sending mail in perform_login: " + str(e)
+                print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2]))
             if request.is_ajax():
                 response['code'] = 'email_confirmation_sent'
                 response['message'] = 'Email Confirmation Sent'
