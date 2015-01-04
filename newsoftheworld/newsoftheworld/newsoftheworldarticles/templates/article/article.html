@@ -1,8 +1,9 @@
 {% extends "index.html" %}
 {% block headblock %}
-    <meta property="og:title" content="Opinion Junction - Article - {{article.title}}" />
+    <meta property="og:title" content="{{article.title}} - Opinion Junction" />
     <meta property="og:description" content="{{article.excerpt}}" />
     <meta property="og:image" content="{{article.primary_image}}" />
+    <meta name="Description" CONTENT="{{article.excerpt}}">
     {% if article.article_metadata and article.article_metadata.robots_tag %}
     <meta name="robots" content="{{article.article_metadata.robots_tag}}" />
     {% endif %}
