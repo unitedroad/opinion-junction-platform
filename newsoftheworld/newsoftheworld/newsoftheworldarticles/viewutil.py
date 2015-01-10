@@ -157,3 +157,24 @@ def addHeaderArticle(headerArticles, articleInfos):
 
 
     
+#def set_about_us(team_object):
+#    team_authors = Team_Author.objects()
+#    if len(team_authors) > 0:
+#        team_object.team_authors = list(team_authors)
+#
+#    team_metadata_array = Team_Metadata.objects()
+#
+#    if len(team_metadata_array) > 0:
+#        team_metadata = team_metadata_array[0]
+#        #print "team_metadata: " + team_metadata
+#        team_object.team_metadata = team_metadata
+#    else:
+#        team_metadata = util.Extensible_class()
+#        team_metadata.aboutus_message = ""
+#        team_object.team_metadata =  team_metadata
+#    
+#    team_contactus = Team_ContactUs.objects()
+#    if len(team_contactus) > 0:
+#        team_object.team_contactus = list(team_contactus)
+
+

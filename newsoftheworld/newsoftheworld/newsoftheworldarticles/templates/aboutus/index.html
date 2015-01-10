@@ -1,3 +1,11 @@
+{% extends "index.html" %}
+{% block headblock %}
+    <title>Opinion Junction - About Us</title>
+    <meta property="og:title" content="Opinion Junction - About Us" />
+    <meta property="og:description" content="Opinion Junction - About Us" />
+    <meta name="Description" CONTENT="Opinion Junction - About Us">
+{% endblock %}
+{% block maincontent %}
 <style >
 /* CSS used here will be applied after bootstrap.css */
 
@@ -5,7 +13,7 @@
   font-family: 'Lato';
   font-style: normal;
   font-weight: 400;
-  src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/1bHRUMxmJHoup12DnI9XmQ.woff) format('woff');
+  src: local('Lato Regular'), local('Lato-Regular'), url(http://fonts.gstatic.com/s/lato/v11/1bHRUMxmJHoup12DnI9XmQ.woff) format('woff');
 }
 
 
@@ -13,26 +21,12 @@
 <nav id="navbar-div" class="navbar  navbar-fixed-top second-navbar">
   <div class="container aboutusview-second-navbar-container">
     <div class="col-md-3 col-md-offset-4 aboutusview-section-selector">
-      <oj-dropdown members="members" active-member="activeMember" callable-on-select="callableOnSelect"/>
-<!--
      <ul class="aboutusview-sectionul">
        <li class="active first">
-	 <a class="navbar-brand aboutusview-section-selector-link" href="#aboutus">
-	   About Us
-	 </a>
+	 <span class="navbar-brand aboutusview-section-selector-link" href="#aboutus">
+	   Opinion Junction - About Us
+	 </span>
        </li>
-       <li class="inactive-visible">
-	 <a class="navbar-brand aboutusview-section-selector-link" href="#ourteam">
-	   Our Team
-	 </a>
-       </li>
-       <li class="inactive-visible">
-	 <a class="navbar-brand aboutusview-section-selector-link" href="#contactus">
-	   Contact Us
-	 </a>
-       </li>
-     </ul>
-    -->
     </div>
   </div>
 </nav>
@@ -48,7 +42,7 @@
       </div>
       <div class="container">
 	<div class="col-md-3 col-md-offset-4 text-center">
-	  {{ team_metadata.aboutus_message }}
+	  {{ team_object.team_metadata.aboutus_message }}
 	</div>
       </div>
     </section>
@@ -63,8 +57,8 @@
       <div >
 	<div class="aboutusview-ourteam-authorimageuldiv"> 
 	  <ul class="aboutusview-ourteam-authorimageul">
-	    <li class="aboutusview-ourteam-authorimageli" 
-		ng-repeat="team_author in team_authors">
+	    {% for team_author in team_object.team_authors %}
+	    <li class="aboutusview-ourteam-authorimageli" >
 	      <div class="aboutusview-ourteam-authorimagediv">
 		<div class="aboutusview-ourteam-authorrolediv text-center">
 		  <div class="aboutusview-ourteam-authorrolerolediv" >
@@ -74,10 +68,11 @@
 		</div>
 		<div class="aboutusview-ourteam-authorimageimagedummy">
 		</div>
-		<img ng-src="{{team_author.image}}" 
+		<img src="{{team_author.image}}" 
 		     class="aboutusview-ourteam-authorimage"/>
 	      </div>
 	    </li>
+	    {% endfor %}
 	  </ul>
 	</div>
       </div>
@@ -91,16 +86,23 @@
 	</div>
       </div>
       <div class="container">
+	{% for team_contactus in team_object.team_contactus %}
 	<div ng-repeat="team_contactus in team_contactus_array" class="col col-xs12 col-md-6 text-center aboutusview-contactus-member-encompass">
 	  <div><h5>{{team_contactus.contactus_description}}</h5></div>
-	  <a class="aboutusview-contactus-email-link" ng-href="mailto:{{team_contactus.contactus_details}}" ng-if="team_contactus.contactus_type=='email'">
+	  {% if team_contactus.contactus_type == "email" %}
+	  <a class="aboutusview-contactus-email-link" href="mailto:{{team_contactus.contactus_details}}">
 	    {{team_contactus.contactus_details}}
 	  </a>
-	  <span ng-if="team_contactus.contactus_type!='email'">
+	  {% endif %}
+	  {% if team_contactus.contactus_type != "email" %}
+	  <span>
 	    {{team_contactus.contactus_details}}
 	  </span>
+	  {% endif %}
 	</div>
+	{% endfor %}
       </div>
     </section>
   </div>
 <!-- </div> -->
+{% endblock %}

@@ -1159,6 +1159,7 @@ def update_aboutus_contactus(user, **kwargs):
             else:
                 print 'team contactus not found: ' + contactus['id']
 
+
 def set_article_metadata(article, **kwargs):
     if "article_metadata" in kwargs:
         article.article_metadata = Article_Metadata() 
@@ -1177,3 +1178,51 @@ class JSONEncoder(json.JSONEncoder):
 
 class Extensible_class(object):
     pass
+
+def get_about_us(**kwargs):
+    team_object = Extensible_class()
+    team_object.team_authors = []
+    team_object.team_metadata = None
+    team_object.team_contactus = []
+    if "get_all_information" in kwargs and kwargs["get_all_information"] == "true":
+        team_authors = Team_Author.objects()
+        if len(team_authors) > 0:
+            team_object.team_authors = list(team_authors)
+        team_metadata_array = Team_Metadata.objects()
+        if len(team_metadata_array) > 0:
+            team_metadata = team_metadata_array[0]
+            #print "team_metadata: " + team_metadata
+            team_object.team_metadata = team_metadata
+        else:
+            team_metadata = util.Extensible_class()
+            team_metadata.aboutus_message = ""
+            team_object.team_metadata =  team_metadata
+        team_contactus = Team_ContactUs.objects()
+        if len(team_contactus) > 0:
+            team_object.team_contactus = list(team_contactus)
+        return team_object
+    if "get_author_information" in kwargs and kwargs["get_author_information"] == "true":
+        team_authors = Team_Author.objects.all()
+        print team_authors
+        if len(team_authors) > 0:
+            #team_authorserialisers = []
+            #team_object.team_authors = team_authorserialisers
+            team_object.team_authors = list(team_authors)
+
+    if "get_metadata_information" in kwargs  and kwargs["get_metadata_information"] == "true":
+        team_metadata_array = Team_Metadata.objects()
+        if len(team_metadata_array) > 0:
+            team_metadata = team_metadata_array[0]
+            #print "team_metadata: " + team_metadata
+            team_object.team_metadata = team_metadata
+        else:
+            team_metadata = util.Extensible_class()
+            team_metadata.aboutus_message = ""
+            team_object.team_metadata =  team_metadata
+
+    if "get_contactus_information" in kwargs  and kwargs["get_contactus_information"] == "true":
+        team_contactus = Team_ContactUs.objects()
+        if len(team_contactus) > 0:
+            team_object.team_contactus = list(team_contactus)
+
+    return team_object

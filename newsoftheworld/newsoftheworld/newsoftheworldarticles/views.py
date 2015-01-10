@@ -431,6 +431,19 @@ class Category_Traditional_View(Main_Traditional_View):
 #        context['article'] = article
         return context
 
+
+class Aboutus_Traditional_View(Main_Traditional_View):
+
+    template_name = "aboutus/index.html"
+
+
+    def get_context_data(self, **kwargs):
+        context = super(Aboutus_Traditional_View, self).get_context_data(**kwargs)
+        team_object = util.Extensible_class()
+        #viewutil.set_about_us(team_object)
+        context['team_object'] = util.get_about_us(get_all_information="true")
+        return context
+
 class Test_View(Main_Traditional_View):
 
     template_name = "account/email/password_reset_key_message.html"
