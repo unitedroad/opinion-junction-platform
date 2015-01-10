@@ -32,6 +32,7 @@ from newsoftheworldarticles.views import Category_Traditional_View
 from newsoftheworldarticles.views import Home_Traditional_View
 from newsoftheworldarticles.views import ArticlesByTag_Traditional_View
 from newsoftheworldarticles.views import AuthorsActivity_Traditional_View
+from newsoftheworldarticles.views import Aboutus_Traditional_View
 from newsoftheworldarticles.views import Error_400_Traditional_View
 from newsoftheworldarticles.views import Error_403_Traditional_View
 from newsoftheworldarticles.views import Error_404_Traditional_View
@@ -80,6 +81,8 @@ urlpatterns = patterns('',
     url(r'^(?P<server_deliver_root>ojserverdeliver)/profile/(?P<authorid>.+)/?$', AuthorsActivity_Traditional_View.as_view()),     
 
     url(r'^accounts/test$', 'newsoftheworldarticles.views.test', name='account_test'),
+
+    url(r'^(?P<server_deliver_root>ojserverdeliver)/aboutus?$', Aboutus_Traditional_View.as_view()),     
 )
 
 rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?$', PostCommentsList.as_view(), name='post-comment-list'),     
