@@ -82,6 +82,8 @@
     border-bottom: 1px solid #E0E0E0;
     margin-left: 60px;
     padding-bottom: 4px;
+    font-family: "Bitter", serif;
+    line-height: 130%;
 }
 
 .comments-encompass-container {
