@@ -4,6 +4,7 @@
     <meta property="og:description" content="{{article.excerpt}}" />
     <meta property="og:image" content="{{article.primary_image}}" />
     <meta name="Description" CONTENT="{{article.excerpt}}">
+    <link rel="canonical" href="{{protocol}}://{{domain_name}}/article/{{article.id}}/{{article.slug}}" />
     {% if article.article_metadata and article.article_metadata.robots_tag %}
     <meta name="robots" content="{{article.article_metadata.robots_tag}}" />
     {% endif %}

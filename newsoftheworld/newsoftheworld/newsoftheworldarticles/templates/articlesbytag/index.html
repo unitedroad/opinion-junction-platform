@@ -2,6 +2,7 @@
 {% block headblock %}
         <title>Opinion Junction - Tag - {{tagName}}</title>
 	<meta name="robots" content="noindex, follow">
+	<link rel="canonical" href="{{protocol}}://{{domain_name}}/tag/{{tagName}}" />
 {% endblock %}
 {% block maincontent %}
 <section class="container">

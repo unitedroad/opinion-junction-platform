@@ -142,6 +142,11 @@ class Main_Traditional_View(TemplateView):
             context['server_deliver_root'] = "/" + kwargs["server_deliver_root"]
         else:
             context['server_deliver_root'] = ''
+
+        context['domain_name'] = 'opinionjunction.com'
+
+        context['protocol'] = 'https'
+
         return context
 
 

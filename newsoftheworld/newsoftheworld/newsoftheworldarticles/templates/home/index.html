@@ -5,16 +5,19 @@
         <meta property="og:title" content="Opinion Junction" />
         <meta property="og:description" content="Opinion Junction" />
 	<meta name="Description" CONTENT="Opinion Junction - The platform for people from all walks of life to discuss their opinions about current state of affairs in diverse set of fields.">
+    <link rel="canonical" href="{{protocol}}://{{domain_name}}" />
     {% else %}
         <title>Opinion Junction - {{category.friendly_name}}</title>
         <meta property="og:title" content="Opinion Junction - {{category.friendly_name}}" />
         <meta property="og:description" content="Opinion Junction - {{category.friendly_name}}" />
 	    <meta name="Description" CONTENT="Opinion Junction - {{category.friendly_name}}">
+	    <link rel="canonical" href="{{protocol}}://{{domain_name}}/{{category.name}}" />
     {% endif %}
 
     {% if articles|length > 0 %}
         <meta property="og:image" content="{{articles.0.primary_image}}" />
     {% endif %}
+
 {% endblock %}
 {% block maincontent %}
 {% include "acentral/carousel.html" %}
