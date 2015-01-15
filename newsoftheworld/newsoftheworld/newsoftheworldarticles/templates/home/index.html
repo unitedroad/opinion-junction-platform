@@ -2,16 +2,22 @@
 {% block headblock %}
     {% if homepage %}
         <title>Opinion Junction</title>
+	<meta property="og:url" content="{{protocol}}://{{domain_name}}" />
         <meta property="og:title" content="Opinion Junction" />
         <meta property="og:description" content="Opinion Junction" />
 	<meta name="Description" CONTENT="Opinion Junction - The platform for people from all walks of life to discuss their opinions about current state of affairs in diverse set of fields.">
-    <link rel="canonical" href="{{protocol}}://{{domain_name}}" />
+	<link rel="canonical" href="{{protocol}}://{{domain_name}}" />
+        <meta property="twitter:title" content="Opinion Junction" />
+	<meta property="twitter:description" content="Opinion Junction" />
     {% else %}
         <title>Opinion Junction - {{category.friendly_name}}</title>
+	<meta property="og:url" content="{{protocol}}://{{domain_name}}/{{category.name}}" />
         <meta property="og:title" content="Opinion Junction - {{category.friendly_name}}" />
         <meta property="og:description" content="Opinion Junction - {{category.friendly_name}}" />
-	    <meta name="Description" CONTENT="Opinion Junction - {{category.friendly_name}}">
-	    <link rel="canonical" href="{{protocol}}://{{domain_name}}/{{category.name}}" />
+	<meta name="Description" CONTENT="Opinion Junction - {{category.friendly_name}}">
+	<link rel="canonical" href="{{protocol}}://{{domain_name}}/{{category.name}}" />
+        <meta property="twitter:title" content="Opinion Junction - {{category.friendly_name}}" />
+	<meta property="twitter:description" content="Opinion Junction - {{category.friendly_name}}" />
     {% endif %}
 
     {% if articles|length > 0 %}

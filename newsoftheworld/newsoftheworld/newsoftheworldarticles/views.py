@@ -143,10 +143,13 @@ class Main_Traditional_View(TemplateView):
         else:
             context['server_deliver_root'] = ''
 
-        context['domain_name'] = 'opinionjunction.com'
+        context['domain_name'] = viewutil.template_http_parameters_dict['domain_name']
+        #context['domain_name'] = 'opinionjunction.com'
 
-        context['protocol'] = 'https'
+        context['protocol'] = viewutil.template_http_parameters_dict['protocol']
+        #context['protocol'] = 'https'
 
+        context['twitter_handle'] = viewutil.template_http_parameters_dict['twitter_handle']
         return context
 
 

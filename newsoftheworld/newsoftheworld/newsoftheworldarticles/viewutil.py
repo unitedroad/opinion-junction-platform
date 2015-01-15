@@ -178,3 +178,4 @@ def addHeaderArticle(headerArticles, articleInfos):
 #        team_object.team_contactus = list(team_contactus)
 
 
+template_http_parameters_dict = {"protocol" : "https", "domain_name" : "opinionjunction.com", "twitter_handle" : "ojunction_com"}
