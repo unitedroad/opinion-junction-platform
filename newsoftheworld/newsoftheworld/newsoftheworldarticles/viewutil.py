@@ -45,7 +45,7 @@ def setCategoriesMap(categories, context):
     context['categoriesMap'] = categoriesMap
 
 def set_category_friendly_name_string(context,article):
-    if hasattr(article, "category_friendly_name"):
+    if hasattr(article, "category_friendly_names"):
         return article.category_friendly_names
     
     categories = context['categories']
@@ -146,12 +146,13 @@ def articleInList(article, articleList):
     return False
 
         
-def addHeaderArticle(headerArticles, articleInfos):
+def addHeaderArticle(headerArticles, articleInfos, category):
     for articleInfo in articleInfos:
         if articleInfo.primary_image:
             if not articleInList(articleInfo, headerArticles):
                 if not articleInfo.header_image:
                     articleInfo.header_image = articleInfo.primary_image
+                articleInfo.headerCategory = category
                 headerArticles.append(articleInfo)
                 return
 
