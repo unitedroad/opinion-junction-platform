@@ -54,6 +54,14 @@ image_format_dict = {"JPEG" : "jpg", "PNG" : "png", "GIF" : "gif"}
 category_delimiter_for_deser = "%,#@$"
 category_name_friendly_name_seperator = "%.#@$"
 
+NSMAP = {"image" : "http://www.google.com/schemas/sitemap-image/1.1",
+         "news" : "http://www.google.com/schemas/sitemap-news/0.9"}
+
+
+IMAGENS = "http://www.google.com/schemas/sitemap-image/1.1"
+NEWSNS = "http://www.google.com/schemas/sitemap-news/0.9"
+
+
 def uses_transparency_filename(filename):
     img = Image.open(filename)
     trans = img.info.get("transparency", None)
@@ -92,6 +100,8 @@ def check_article_create_permissions(user, DATA):
     if "status" not in DATA or not DATA["status"]:
         DATA["status"] = "draft"
 
+    if "articles_admin" in user_permissions:
+        return { "ok" : "true" }
 
     if "create_articles" not in user_permissions:
         if not (has_attr(user, "num_drafts") and has_attr(user, "invitation_count")):
@@ -126,7 +136,9 @@ def check_article_update_permissions(user, DATA, article):
         return {"ok" : "false", "code" : "bad_status", "message" : "Opinion cannot have blank status",
                 "status" : status.HTTP_400_BAD_REQUEST }
 
-    
+    if "articles_admin" in user_permissions:
+        return { "ok" : "true" }
+
     if author.id == user.id:
         if DATA["status"] == "published":
             check_status_permission(user_permissions, "published")
@@ -827,6 +839,32 @@ def handle_finalise_published_article(article, **kwargs):
 def finalise_published_article(article):
     published_article_finalised.send(sender=finalise_published_article, article=article)
 
+def update_article_displayed_text(article):
+    root = html.fromstring(article.storytext)
+    img_elements = root.findall('.//img')
+    for img_element in img_elements:
+        img_element.attrib.pop("primaryimage", None)
+        if img_element.attrib.get("alt") is None:
+            #img_element.attrib["alt"] = "..."
+            img_element_parent = img_element.getparent()
+            if not img_element_parent.tag or img_element_parent.tag.lower() != "div":
+                img_element.attrib["alt"] = "..."
+                continue
+            caption_container_array = img_element_parent.xpath("./div[@class='caption-container']")
+            if len(caption_container_array) > 0:
+                caption_container = caption_container_array[0]
+                if caption_container.text:
+                    img_element.attrib["alt"] = caption_container.text
+                else:
+                    img_element.attrib["alt"] = "..."
+                    
+            else:
+                img_element.attrib["alt"] = "..."
+
+
+
+    article.storydisplayedtext = html.tostring(root, pretty_print=True)
+
 
 def create_article(article=None, **kwargs):
     user = kwargs["user"]
@@ -846,6 +884,7 @@ def create_article(article=None, **kwargs):
         
     
     if article.status == "published":
+        update_article_displayed_text(article)
         article_published.send(sender=create_article,article=article)
 
     log_user_activity.send(sender=create_article, id=articleid, userid_to=user.id, userid_from=None)
@@ -871,8 +910,11 @@ def update_article(article=None, **kwargs):
         if article is not None:
             if article.status != "published" and article_state["original_article"].status == "published":
                 article_unpublished.send(sender=update_article,article=article)
-            elif article.status == "published" and article_state["original_article"].status != "published":
-                article_published.send(sender=update_article,article=article)
+            elif article.status == "published":
+                update_article_displayed_text(article)
+                if article_state["original_article"].status != "published":
+                    article_published.send(sender=update_article,article=article)
+        
         
     
     log_user_activity.send(sender=update_article, id=articleid, userid_to=user.id, userid_from=None)
@@ -928,15 +970,102 @@ def update_profile_in_author_activity(id, fields, author, **kwargs):
 
     author_activity.save()
 
+def populate_or_create_sitemap_url_element(url_element, loc,lastmod,changefreq,priority,**kwargs):
+    if url_element is None:
+        url_element = etree.Element('url')
+
+    url_element = etree.Element('url')
+    loc_element = etree.SubElement(url_element, 'loc')
+    loc_element.text = loc
+    lastmod_element = etree.SubElement(url_element, 'lastmod')
+    lastmod_element.text = lastmod
+    if changefreq is not None:
+        change_freq_element = etree.SubElement(url_element, 'changefreq')
+        change_freq_element.text = changefreq
+    if priority is not None:
+        priority_element = etree.SubElement(url_element, 'priority')
+        priority_element.text = priority
+
+    return url_element
+
+
+def check_if_article_in_sitemap_root(root, article):
+    urlset_element = root.getroot()
+    loc_element_for_article_array = urlset_element.xpath("//default:loc[text()='https://www.opinionjunction.com/article/" + str(article.id) + "/" + article.slug + "']", namespaces={"default" : "http://www.sitemaps.org/schemas/sitemap/0.9"})
+    return len(loc_element_for_article_array) > 0
+
+def populate_or_create_sitemap_url_element_for_article(article):
+    article_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/' + 'article/' + str(article.id) + "/" + article.slug, article.published_date.isoformat(), None, None)
+    article_image_element = etree.SubElement(article_element, '{%s}image' % IMAGENS)
+    article_image_loc_element = etree.SubElement(article_image_element, '{%s}loc' % IMAGENS)
+    if article.primary_image and article.primary_image[0] == '/':
+        article_image_loc_element.text = 'https://www.opinionjunction.com' + article.primary_image
+    else:
+        article_image_loc_element.text = article.primary_image
+    article_news_element = etree.SubElement(article_element, '{%s}news' % NEWSNS)
+    article_news_publication_element = etree.SubElement(article_news_element, '{%s}publication' % NEWSNS)
+    article_news_publication_name_element = etree.SubElement(article_news_publication_element, '{%s}name' % NEWSNS)
+    article_news_publication_name_element.text = "Opinion Junction"
+    article_news_publication_language_element = etree.SubElement(article_news_publication_element, '{%s}language' % NEWSNS)
+    article_news_publication_language_element.text = 'en'
+    article_news_title_element = etree.SubElement(article_news_element, '{%s}title' % NEWSNS)
+    article_news_title_element.text = article.title
+    article_news_keywords_element = etree.SubElement(article_news_element, '{%s}keywords' % NEWSNS)
+    article_news_publication_date_element = etree.SubElement(article_news_element, '{%s}publication_date' % NEWSNS)
+    article_news_publication_date_element.text = article.published_date.isoformat()
+    return article_element
+
+def add_article_to_sitemap(article):
+
+    article_not_in_sitemap = False
+
+    root = None
+    urlset_element = None
+    if not os.path.exists("/newsoftheworld/newsoftheworldusr/sitemap.xml"):
+       urlset_element = etree.Element('urlset', nsmap = NSMAP, xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")     
+       root = etree.ElementTree(urlset_element)
+       article_not_in_sitemap = True
+    else:
+        root = etree.parse("/newsoftheworld/newsoftheworldusr/sitemap.xml")
+        urlset_element = root.getroot()
+        if not check_if_article_in_sitemap_root(root, article):
+            article_not_in_sitemap = True
+
+    #print "article_not_in_sitemap: " + str(article_not_in_sitemap)
+
+    if article_not_in_sitemap == True:
+        #print "article not in sitemap, adding it to the sitemap urlset root"
+        article_element = populate_or_create_sitemap_url_element_for_article(article)
+        urlset_element.append(article_element)
+
+    
+    root.write("/newsoftheworld/newsoftheworldusr/sitemap.xml", xml_declaration=True, encoding="utf-8", pretty_print=True)
+
+def remove_article_from_sitemap(article):
+    if not os.path.exists("/newsoftheworld/newsoftheworldusr/sitemap.xml"):
+        return
+    root = etree.parse("/newsoftheworld/newsoftheworldusr/sitemap.xml")
+    urlset_element = root.getroot()
+    if not check_if_article_in_sitemap_root(root, article):
+        return
+    loc_element = urlset_element.xpath("//default:loc[text()='https://www.opinionjunction.com/article/" + str(article.id) + "/" + article.slug + "']", namespaces={"default" : "http://www.sitemaps.org/schemas/sitemap/0.9"})[0]
+
+    loc_element.getparent().getparent().remove(loc_element.getparent())
+
+    root.write("/newsoftheworld/newsoftheworldusr/sitemap.xml", xml_declaration=True, encoding="utf-8", pretty_print=True)
+
 @receiver(article_published, dispatch_uid="106")
 def handle_article_published(article, **kwargs):
     update_category_num_users_for_article(article, 1)
     update_tag_num_users_for_article(article, 1)
+    #update_article_displayed_text(article)
+    add_article_to_sitemap(article)
 
 @receiver(article_unpublished, dispatch_uid="107")
 def handle_article_unpublished(article, **kwargs):
     update_category_num_users_for_article(article, -1)
     update_tag_num_users_for_article(article, -1)
+    remove_article_from_sitemap(article)
 
 @receiver(log_user_activity, dispatch_uid="103")
 def update_article_creation_log(id, userid_to, userid_from, **kwargs):

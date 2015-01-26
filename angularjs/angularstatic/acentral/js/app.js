@@ -1,4 +1,5 @@
-var testApp = angular.module('testApp', ['ui.router', 'ui.bootstrap', 'ngCookies', 'ui.config', 'ui.tinymce', 'ui.directives', 'ui.include', 'ngSanitize', 'ngTouch']);
+var testApp = angular.module('testApp', ['ui.router', 'ui.bootstrap', 'ngCookies', 'ui.config', 'ui.tinymce', 'ui.directives', 'ui.include', 'ngSanitize', 'ngTouch',
+					'angulartics','angulartics.piwik']);
 
 tooltipTriggerMap = {
     'mouseenter': 'mouseleave',
@@ -139,7 +140,7 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	}).state('createarticlepreview', {
 	    title: "Opinion Junction - Preview Article",
 	    url: "/user/createarticle/preview",
-	    templateUrl: '/angularstatic/article/partials/article.html',
+	    templateUrl: '/angularstatic/articlepreview/partials/articlepreview.html',
 	    controller: 'createArticlePreviewController'
 	}).state('user.articles', {
 	    title: "Opinion Junction - Articles",
@@ -154,7 +155,7 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	}).state('editarticlepreview', {
 	    title: "Opinion Junction - Preview Article",
 	    url: "/user/editarticle/preview",
-	    templateUrl: '/angularstatic/article/partials/article.html',
+	    templateUrl: '/angularstatic/articlepreview/partials/articlepreview.html',
 	    controller: 'createArticlePreviewController'
 	}).state('user.editarticle', {
 	    title: "Opinion Junction - Edit Article",
@@ -2537,7 +2538,7 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
     $("title").text("Opinion Junction - Article");
     $scope.noArticle = false;
     $scope.articleInitialised = false;
-    $http.get("/api/1.0/articles/" + $scope.articleId, {headers: {"Content-Type": "application/json"}})
+    $http.get("/api/1.0/articles/" + $scope.articleId + "?for_display=true", {headers: {"Content-Type": "application/json"}})
 	    .success( function(data) {
 		if (data.length > 0) {
 		    $scope.article = data[0];
@@ -3045,10 +3046,12 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
     $scope.articleFields = ["topic","slug"];
 
     var setMetadataFieldsOnUi = function(metadata) {
-	var robots_tag = metadata.robots_tag.toLowerCase();
-	var robots_tagArray = robots_tag.split(",");
-	if (commonOJService.indexOf(robots_tagArray, "noindex") > -1) {
-	    $scope.robotnoindex = true;
+	if (metadata && metadata.hasOwnProperty("robots_tag")) {
+	    var robots_tag = metadata.robots_tag.toLowerCase();
+	    var robots_tagArray = robots_tag.split(",");
+	    if (commonOJService.indexOf(robots_tagArray, "noindex") > -1) {
+		$scope.robotnoindex = true;
+	    }
 	}
     }
 
@@ -3175,6 +3178,12 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	return null;
     }
 
+    var getPrimaryImageName = function(content) {
+
+    }
+
+
+
     $scope.checkImageChange = function() {
 	var primaryImage = getPrimaryImageBinaryData($scope.content);
 	if (primaryImage != $scope.primaryImage) {
@@ -3184,11 +3193,29 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     $scope.$watch("primaryImageChanged", function() {
 	console.log("primary image changed");
+
+	if ($scope.primaryImageChanged == null || $scope.primaryImageChanged == 0) {
+	    $scope.primaryImage = getPrimaryImageBinaryData($scope.content);
+	    $scope.primaryImageCropInput = $scope.primaryImage;
+	    if (!$scope.headerDataUri) {
+		$scope.headerImageCropInput = $scope.primaryImage;
+	    }
+	    if (!$scope.thumbnailDataUri) {
+		$scope.thumbnailImageCropInput = $scope.primaryImage;
+	    }
+	    return;
+	}
 	$scope.thumbnailCropStep = 2;
 	$scope.headerCropStep = 2;
-	//getPrimaryImageBinaryData($scope.content);
 	$scope.primaryImageCropInput = getPrimaryImageBinaryData($scope.content);
+	$scope.headerImageCropInput = $scope.primaryImageCropInput;
+	$scope.thumbnailImageCropInput = $scope.primaryImageCropInput
 	$scope.primaryImage = $scope.primaryImageCropInput;
+
+
+
+	//getPrimaryImageBinaryData($scope.content);
+
 //	if (getPrimaryImageBinaryData($scope.content)) {
 //	    $scope.primaryImageCropInput = getPrimaryImageBinaryData($scope.content)
 //	}
@@ -3239,10 +3266,12 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
 		$location.path("/message");
 
+
 	    }
 	    scope.authorWhoCanEditId = -1;
 	    //scope.editingButtonsEnabled = true;
 	    scope.editingButtonsDisabled = false;
+	    $scope.primaryImageChanged = 0;
 	}
     };
 
@@ -3308,11 +3337,22 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 	    .success( function(data) {
 		if (data.length > 0) {
 		    var article = data[0];
+		    if (article.hasOwnProperty("header_image") && article.header_image) {
+			$scope.headerCropStep=3;
+			$scope.headerDataUri = article.header_image;
+		    }
+
+		    if (article.hasOwnProperty("thumbnail_image") && article.thumbnail_image) {
+			$scope.thumbnailCropStep=3;
+			$scope.thumbnailDataUri = article.thumbnail_image;
+		    }
+
 		    $scope.topic = article.title;
 		    $scope.slug= article.slug;
 		    $scope.excerpt = article.excerpt;
 		    $scope.articleAuthor = article.author;
 		    $scope.content = article.storytext;
+		    $scope.primaryImageChanged = 0;
 		    $scope.status = article.status;
 		    $scope.originalArticle = article;
 		    //$scope.content = article.storytext;
@@ -4634,7 +4674,7 @@ angular.module('ui.tinymce', [])
 	  
 	},*/
 	link: function(scope, elm, attrs, ngModel) {
-	    scope.primaryImageChanged = 0;
+	    //scope.primaryImageChanged = 0;
 	    var expression, options, tinyInstance;
     // generate an ID if not present
 	    if (!attrs.id) {

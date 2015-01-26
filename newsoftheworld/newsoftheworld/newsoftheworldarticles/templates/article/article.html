@@ -17,10 +17,10 @@
     {% block maincontent %}
     <div class="container">
       <div  id="floating-socialbar" style="float:left;margin-top:50px;width:50px">
-	<social-sidebar article="socialShareArticle" pageurl="{{articleUrl}}"/>
+	<!-- <social-sidebar article="socialShareArticle" pageurl="{{articleUrl}}"/> -->
 	<!-- <ng-include src="'/angularstatic/acentral/partials/socialsidebar.html'"></ng-include> -->
       </div>
-      <article style="margin-left:60px" id="article-main-area">
+      <article style="margin-left:60px" id="article-main-area" itemscope itemtype="http://schema.org/Article">
 	<header >
 	  <div class="page-header">
 	    <h1> {{article.title}}</h1>
@@ -34,32 +34,32 @@
 	      </b>
 	    </small>
 	    <small class="article-published-date-small">
-	      <time datetime="{{article.published_date}}" pubdate>{{article.published_date}}</time>
+	      <time datetime="{{article.published_date|date:'Y-m-d\TH:i:sO'}}" itemProp="datePublished">{{article.published_date}}</time>
 	    </small>
 	  </h5>
 	</header>
 	<div class="article-content-section" >
-	  {{article.storytext|safe}}
+	  {{article.storydisplayedtext|safe}}
 	</div>
       </article>
-      <div class="article-page-tags-div" ng-show="articleTagsDivVisible">
+      <div class="article-page-tags-div">
 	<span class="article-page-tags-text"><b>Tags: </b></span>
 	{% for tag in article.tags %}
 	  {% if forloop.last %}
-	<a  href="{{server_deliver_root}}/tag/{{tag}}" rel="tag">{{tag}}</a>
+	<a  href="{{server_deliver_root}}/tag/{{tag|urlencode}}" rel="tag" class="article-page-tag-a">{{tag}}</a>
 	  {% else %}
-	<a  href="{{server_deliver_root}}/tag/{{tag}}" rel="tag">{{tag}}</a>, 
+	<a  href="{{server_deliver_root}}/tag/{{tag|urlencode}}" rel="tag" class="article-page-tag-a">{{tag}}</a>, 
 	  {% endif %}
 	{% endfor %}
       </div>
       <div  class="article-author-bio-section">
 	<div id="comment-author-box">
 	  <a href="/profile/{{article.author.id}}" class="comment-author-image-container">
-	    <img src="{{article.author.image}}" class="comment-author-image img-circle">
+	    <img src="{{article.author.image}}" class="comment-author-image img-circle" alt="{{ article.author.friendly_name }}'s profile image">
 	  </a>
 	  <div class="comment-author-details-container">
 	    <a href="{{server_deliver_root}}/profile/{{article.author.id}}">
-	      <h5 class="comment-author-name-text ng-binding">{{article.author.first_name}} {{article.author.last_name}}</h5>
+	      <h5 class="comment-author-name-text">{{article.author.first_name}} {{article.author.last_name}}</h5>
 	    </a>
 	    <div class="article-author-bio-text-section" >
 	      {{article.author.user_bio}}
@@ -69,7 +69,8 @@
       </div>
       <div>
 	<div  class="article-comments-header text-center"><h4>JUNCTION HOUSE</h4></div>
-	<div comments-root discussion_id="{{article.id}}"></div>
+	<!-- <div comments-root discussion_id="{{article.id}}"></div> -->
+	<div></div>
 	<!--<iframe id="iframe_comments" width="100%" frameborder="0" ng-init="comments_init" src="/comments" scrolling="no" style="overflow:visible" >-->
       </div>
 

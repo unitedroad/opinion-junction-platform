@@ -9,7 +9,7 @@
     <meta property="twitter:description" content="Opinion Junction - About Us" />
 {% endblock %}
 {% block maincontent %}
-<style >
+<style scoped>
 /* CSS used here will be applied after bootstrap.css */
 
 @font-face {
@@ -21,15 +21,16 @@
 
 
 </style>
-<nav id="navbar-div" class="navbar  navbar-fixed-top second-navbar">
+<nav id="navbar-div-second-aboutus" class="navbar  navbar-fixed-top second-navbar">
   <div class="container aboutusview-second-navbar-container">
     <div class="col-md-3 col-md-offset-4 aboutusview-section-selector">
      <ul class="aboutusview-sectionul">
        <li class="active first">
-	 <span class="navbar-brand aboutusview-section-selector-link" href="#aboutus">
+	 <span class="navbar-brand aboutusview-section-selector-link" >
 	   Opinion Junction - About Us
 	 </span>
        </li>
+     </ul>
     </div>
   </div>
 </nav>
@@ -72,7 +73,7 @@
 		<div class="aboutusview-ourteam-authorimageimagedummy">
 		</div>
 		<img src="{{team_author.image}}" 
-		     class="aboutusview-ourteam-authorimage"/>
+		     class="aboutusview-ourteam-authorimage" alt="{{team_author.first_name}} {{team_author.last_name}}'s profile image"/>
 	      </div>
 	    </li>
 	    {% endfor %}
@@ -90,7 +91,7 @@
       </div>
       <div class="container">
 	{% for team_contactus in team_object.team_contactus %}
-	<div ng-repeat="team_contactus in team_contactus_array" class="col col-xs12 col-md-6 text-center aboutusview-contactus-member-encompass">
+	<div class="col col-xs12 col-md-6 text-center aboutusview-contactus-member-encompass">
 	  <div><h5>{{team_contactus.contactus_description}}</h5></div>
 	  {% if team_contactus.contactus_type == "email" %}
 	  <a class="aboutusview-contactus-email-link" href="mailto:{{team_contactus.contactus_details}}">

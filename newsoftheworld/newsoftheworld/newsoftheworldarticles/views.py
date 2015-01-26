@@ -170,6 +170,7 @@ class Article_Traditional_View(Main_Traditional_View):
             if len(articles) > 0:
                 articles.select_related()
                 article = articles[0]
+                viewutil.setFriendlyAuthorName(article.author)
             else:
                 #article = util.get_bad_article("no_article_found")
                 raise Http404
@@ -302,7 +303,7 @@ class Home_Traditional_View(Main_Traditional_View):
 
         for category in categories:
             articlesByCategory = util.get_articles_by_category(category.name, util_kwargs)
-            viewutil.addHeaderArticle(articles, articlesByCategory)            
+            viewutil.addHeaderArticle(articles, articlesByCategory, category)            
             articleInfos.extend(articlesByCategory)
 
         for article in articleInfos:
@@ -404,7 +405,7 @@ class Category_Traditional_View(Main_Traditional_View):
             articleInfos.append(article)
 
         articles = []
-        viewutil.addHeaderArticle(articles, articleInfos)
+        viewutil.addHeaderArticle(articles, articleInfos, context['categoriesMap'][category_name])
 #        if len(articleInfos) > 0:
 #            article = articleInfos[0]
 #            if not article.header_image:

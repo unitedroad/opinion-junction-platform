@@ -23,7 +23,7 @@
       </h5>
     </header>
 
-    <div class="article-content-section" ng-bind-html="to_trusted(article.storydisplayedtext)"> <!-- http://stackoverflow.com/questions/24178316/ng-bind-html-strips-elements-attributes -->
+    <div class="article-content-section" ng-bind-html="to_trusted(article.storytext)"> <!-- http://stackoverflow.com/questions/24178316/ng-bind-html-strips-elements-attributes -->
     </div>
     <div style="font-size: 15px;padding-top:5px">
       <iframe src="//www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fpages%2FOpinion-Junction%2F944455988901836%2F&amp;width&amp;layout=button&amp;action=like" 
@@ -40,8 +40,7 @@
   
   <div class="article-page-tags-div" ng-show="articleTagsDivVisible">
     <span class="article-page-tags-text"><b>Tags: </b></span>
-    <a  href="/tag/{{firstTag}}" rel="tag" class="article-page-tag-a">{{firstTag}}</a>
-    <span ng-repeat="tag in tagsAfterFirst">, <a  href="/tag/{{tag}}" rel="tag" class="article-page-tag-a">{{tag}}</a></span>
+    <a  href="/tag/{{firstTag}}" rel="tag">{{firstTag}}</a><span ng-repeat="tag in tagsAfterFirst">, <a  href="/tag/{{tag}}" rel="tag">{{tag}}</a></span>
   </div>
   <div  class="article-author-bio-section">
     <div id="comment-author-box">

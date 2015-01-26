@@ -60,6 +60,7 @@ class Article(Document):
     status = StringField()
     storytext = StringField()
     storyplaintext = StringField()
+    storydisplayedtext = StringField()
     primary_image = StringField()
     header_image = StringField()
     thumbnail_image = StringField()

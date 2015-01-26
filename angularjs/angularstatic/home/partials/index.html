@@ -7,7 +7,7 @@
   <article ng-repeat="article in articleInfos" class="col col-md-12 col-lg-12 main-page-article-section">
       <div class="col-md-2 col-lg-2">
 	<a ng-href="/article/{{article.id}}/{{article.slug}}" class="thumbnail">
-	  <img ng-src="{{article.thumbnail_image}}" alt="...">
+	  <img ng-src="{{article.thumbnail_image}}" alt="{{article.title}}">
 	</a>
       </div>
       <div class="col-md-10 col-lg10">
@@ -16,16 +16,14 @@
 	  <h4 class="articlepreviewheadline"><a ng-href="/article/{{article.id}}/{{article.slug}}" class="articleheaderlink">{{article.title}}</a></h4>
 	</div>
 	<div class="main-page-article-excerpt-section">
-	  <h4><small><p class="main-page-article-excerpt-section-p">{{article.excerpt}}</p></small></h4>
+	  <h4><p class="main-page-article-excerpt-section-p">{{article.excerpt}}</p></h4>
 	</div>
 	<div class="main-page-article-author-section">
-	  <small>
-	    <p class="main-page-article-author-text">
+	  <p class="main-page-article-author-text">
 	          <!--[if lt IE 9]>{{article.author.first_name}} {{article.author.last_name}}<![endif]-->
 		  <!--[if gte IE 9]>{{getAuthorName(article.author)}}<![endif]-->
 		  <!--[if !IE]> -->{{getAuthorName(article.author)}}<!-- <![endif]-->
-	    </p>
-	  </small>
+	  </p>
 	</div>
       </div>      
    
@@ -38,7 +36,7 @@
   <article ng-repeat="comment in latest_comments" class="comment-main-page">
 
     <div class="comment-author-image-container-mainpp">
-      <img ng-src="{{getAuthorImage(comment.author)}}" class="comment-author-image img-circle"/>
+      <img ng-src="{{getAuthorImage(comment.author)}}" class="comment-author-image img-circle" alt="{{comment.author.name}}'s profile image"/>
     </div>
     <div>
       <div>
@@ -47,7 +45,7 @@
 	</h5>
       </div>
       <div>
-	<small><p>{{comment.author.name}}</p></small>
+	<p class="main-page-comment-author-text">{{comment.author.name}}</p>
       </div>
       <div class="clearfix"></div>
     </div>   

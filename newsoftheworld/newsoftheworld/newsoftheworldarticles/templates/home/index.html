@@ -33,10 +33,10 @@
       <h4 class="text-center">Latest Opinions</h4>
     </div>
     {% for article in articleInfos %}
-  <article ng-repeat="article in articleInfos" class="col col-md-12 col-lg-12 main-page-article-section">
+  <article class="col col-md-12 col-lg-12 main-page-article-section">
       <div class="col-md-2 col-lg-2">
 	<a href="{{server_deliver_root}}/article/{{article.id}}/{{article.slug}}" class="thumbnail">
-	  <img src="{{article.friendly_thumbnail_image}}" alt="...">
+	  <img src="{{article.friendly_thumbnail_image}}" alt="{{article.title}}">
 	</a>
       </div>
       <div class="col-md-10 col-lg10">
@@ -45,14 +45,12 @@
 	  <h4 class="articlepreviewheadline"><a href="{{server_deliver_root}}/article/{{article.id}}/{{article.slug}}" class="articleheaderlink">{{article.title}}</a></h4>
 	</div>
 	<div>
-	  <h4><small><p class="main-page-article-excerpt-section-p">{{article.excerpt}}</p></small></h4>
+	  <p class="main-page-article-excerpt-section-p">{{article.excerpt}}</p>
 	</div>
 	<div class="main-page-article-author-section">
-	  <small>
-	    <p class="main-page-article-author-text">
+	  <p class="main-page-article-author-text">
 	      {{ article.author.friendly_name }}
-	    </p>
-	  </small>
+	  </p>
 	</div>
       </div>      
    
@@ -67,7 +65,7 @@
   <article class="comment-main-page">
 
     <div class="comment-author-image-container-mainpp">
-      <img src="{{ comment.author.friendly_image }}" class="comment-author-image img-circle"/>
+      <img src="{{ comment.author.friendly_image }}" class="comment-author-image img-circle" alt="{{comment.author.name}}'s profile image"/>
     </div>
     <div>
       <div>
@@ -76,7 +74,7 @@
 	</h5>
       </div>
       <div>
-	<small><p>{{comment.author.author_name}}</p></small>
+	<p class="main-page-comment-author-text">{{comment.author.author_name}}</p>
       </div>
       <div class="clearfix"></div>
     </div>   

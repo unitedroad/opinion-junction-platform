@@ -770,7 +770,8 @@
         shape: '@',
         result: '=',
         step: '=',
-	  input: '='
+	input: '=',
+	croppedDataUri: '='
       },
       link: function (scope, element, attributes) {
         scope.step = scope.step || 1;
@@ -830,7 +831,7 @@
 
           width: (scope.width) + 'px',
           height: (scope.height) + 'px'
-
+	    
         };
 
         scope.croppingGuideStyles = {
@@ -869,6 +870,10 @@
          });
         
         
+	  scope.$watch("step", function() {
+	      console.log("Step change!");
+	  });
+
 	  scope.$watch("input", function() {
 	          scope.step = 2;
 	          if (!scope.input) {

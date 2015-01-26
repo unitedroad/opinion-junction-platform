@@ -1,10 +1,10 @@
   <carousel id="carousel" interval="10000" oj-carousel>
     <slide ng-repeat="article in articles" active="article.active">
-      <img ng-src="{{article.header_image}}" style="margin:auto;">
+      <div class="carousel-article-header-image" style="margin:auto;background-image:url({{article.header_image}})"></div>
       <div class="carousel-caption">
         <a ng-href="/article/{{article.id}}/{{article.slug}}" class="carousel-article-link"><h2>{{article.title}}</h2></a>
-        <p><h5>{{article.headerCategory.friendly_name}}</h5></p>
-	<p><h6>{{article.author.first_name}} {{article.author.last_name}}</h6></p>
+        <h5>{{article.headerCategory.friendly_name}}</h5>
+	<h6>{{article.author.first_name}} {{article.author.last_name}}</h6>
       </div>
     </slide>
   </carousel>

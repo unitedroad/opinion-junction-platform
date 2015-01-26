@@ -11,6 +11,7 @@ from .models import Team_Author
 from .models import Team_ContactUs
 from .models import Team_Metadata
 from .serialisers import ArticleSerialiser
+from .serialisers import ArticleDisplayedTextSerialiser
 from .serialisers import AuthorSerialiser
 from .serialisers import MetadataSerialiser
 from .serialisers import CategorySerialiser
@@ -50,7 +51,41 @@ class ArticlesList(APIView):
         #for comment in Comment.objects.all():
         if util.check_valid_object_id(id=articleid) is not True:
             return Response({"ok" : "false", "code" : "incorrect_id", "message" : "Incorrect Article Id", "status" : status.HTTP_400_BAD_REQUEST }, status = status.HTTP_400_BAD_REQUEST)
-        serialisedList = ArticleSerialiser(Article.objects(id=articleid).select_related(), many=True)
+
+
+        serialisedList = None
+
+        user_list = Author.objects(id=str(request.user.id))
+
+        article_array = Article.objects(id=articleid).select_related()
+
+        if len(article_array) < 1:
+            return Response({"ok" : "false", "code" : "not_found", "message" : "Article not found.", "status" : status.HTTP_403_FORBIDDEN }, status = status.HTTP_404_NOT_FOUND)
+            
+        article = article_array[0]
+
+        if article.status != "published":
+            if len(user_list) < 1:
+                return Response({"ok" : "false", "code" : "no_permission", "message" : "You have to be logged in. You have to be logged in and need correct permissions.", "status" : status.HTTP_403_FORBIDDEN }, status = status.HTTP_403_FORBIDDEN)
+            user = user_list[0]
+            user_permissions = user.user_permissions
+#            if user.id == article.author.id:
+#                if "edit_articles" not in user_permissions:
+#                    return Response({"ok" : "false", "code" : "no_permission", "message" : "You don't have the permissions to view this content.", "status" : status.HTTP_403_FORBIDDEN }, status = status.HTTP_403_FORBIDDEN)
+#            elif "edit_others_articles" not in user_permissions:
+#                return Response({"ok" : "false", "code" : "no_permission", "message" : "You don't have the permissions to view this content.", "status" : status.HTTP_403_FORBIDDEN }, status = status.HTTP_403_FORBIDDEN)
+#
+            if user.id != article.author.id and "edit_others_articles" not in user_permissions:
+                return Response({"ok" : "false", "code" : "no_permission", "message" : "You don't have the permissions to view this content.", "status" : status.HTTP_403_FORBIDDEN }, status = status.HTTP_403_FORBIDDEN)
+
+            serialisedList = ArticleSerialiser(article_array, many=True)
+
+        else:
+            if "for_display" in request.GET and request.GET["for_display"] == "true":
+                article.storytext = None
+                serialisedList = ArticleDisplayedTextSerialiser(article_array, many=True)
+            else:
+                serialisedList = ArticleSerialiser(article_array, many=True)
         
         return Response(serialisedList.data)
 

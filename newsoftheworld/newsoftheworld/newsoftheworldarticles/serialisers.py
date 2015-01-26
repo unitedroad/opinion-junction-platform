@@ -223,6 +223,25 @@ class SetField(serializers.ReadOnlyField):
         
         return returnedSet
 
+
+class ArticleDisplayedTextSerialiser(serializers.Serializer):
+    id = serializers.CharField()
+    author = RelatedAuthorDocumentField(read_only=True)
+    title = serializers.CharField(required=True)
+    published_date = serializers.DateTimeField()
+    status = serializers.CharField()
+    storytext = serializers.CharField()
+    storydisplayedtext = serializers.CharField()
+    storyplaintext = serializers.CharField()
+    primary_image = serializers.CharField()
+    header_image = serializers.CharField()
+    thumbnail_image = serializers.CharField()
+    excerpt = serializers.CharField()
+    slug = serializers.CharField()
+    tags = SetField()
+    categories = SetField()
+    article_metadata = RelatedDocumentField(read_only=True)
+
 class ArticleSerialiser(serializers.Serializer):
     id = serializers.CharField()
     author = RelatedAuthorDocumentField(read_only=True)
