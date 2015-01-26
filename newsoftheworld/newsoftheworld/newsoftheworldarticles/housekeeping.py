@@ -120,7 +120,7 @@ def create_new_sitemap():
 
     url_main_page_element = etree.Element('url')
 
-    url_main_page_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/', datetimenow.isoformat(), "daily", "1.0")
+    url_main_page_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/', datetimenow.isoformat()[0:-3], "daily", "1.0") #assumption that isoformat will contain 6 microsecond decimal places
 
     urlset_element.insert(0, url_main_page_element)
 
@@ -130,13 +130,13 @@ def create_new_sitemap():
     categories = Category.objects()
 
     for category in categories:
-        category_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/'+ category.name, datetimenow.isoformat(), "daily", "0.9")
+        category_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/'+ category.name, datetimenow.isoformat()[0:-3], "daily", "0.9") #assumption that isoformat will contain 6 microsecond decimal places
         urlset_element.append(category_element)
 
     articles = Article.objects(status="published")
 
     for article in articles:
-        article_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/' + 'article/' + str(article.id) + "/" + article.slug, article.published_date.isoformat(), None, None)
+        article_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/' + 'article/' + str(article.id) + "/" + article.slug, article.published_date.isoformat()[0:-3], None, None) #assumption that isoformat will contain 6 microsecond decimal places
         article_image_element = etree.SubElement(article_element, '{%s}image' % IMAGENS)
         article_image_loc_element = etree.SubElement(article_image_element, '{%s}loc' % IMAGENS)
         if article.primary_image and article.primary_image[0] == '/':
@@ -153,7 +153,7 @@ def create_new_sitemap():
         article_news_title_element.text = article.title
         article_news_keywords_element = etree.SubElement(article_news_element, '{%s}keywords' % NEWSNS)
         article_news_publication_date_element = etree.SubElement(article_news_element, '{%s}publication_date' % NEWSNS)
-        article_news_publication_date_element.text = article.published_date.isoformat()
+        article_news_publication_date_element.text = article.published_date.isoformat()[0:-3] #assumption that isoformat will contain 6 microsecond decimal places 
         #article_image_element.append(article_image_loc_element)
         #article_element.append(article_image_element)
         urlset_element.append(article_element)
