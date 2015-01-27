@@ -54,8 +54,10 @@ image_format_dict = {"JPEG" : "jpg", "PNG" : "png", "GIF" : "gif"}
 category_delimiter_for_deser = "%,#@$"
 category_name_friendly_name_seperator = "%.#@$"
 
-NSMAP = {"image" : "http://www.google.com/schemas/sitemap-image/1.1",
-         "news" : "http://www.google.com/schemas/sitemap-news/0.9"}
+#NSMAP = {"image" : "http://www.google.com/schemas/sitemap-image/1.1",
+#         "news" : "http://www.google.com/schemas/sitemap-news/0.9"}
+
+NSMAP = {"image" : "http://www.google.com/schemas/sitemap-image/1.1"}
 
 
 IMAGENS = "http://www.google.com/schemas/sitemap-image/1.1"
@@ -1002,17 +1004,17 @@ def populate_or_create_sitemap_url_element_for_article(article):
         article_image_loc_element.text = 'https://www.opinionjunction.com' + article.primary_image
     else:
         article_image_loc_element.text = article.primary_image
-    article_news_element = etree.SubElement(article_element, '{%s}news' % NEWSNS)
-    article_news_publication_element = etree.SubElement(article_news_element, '{%s}publication' % NEWSNS)
-    article_news_publication_name_element = etree.SubElement(article_news_publication_element, '{%s}name' % NEWSNS)
-    article_news_publication_name_element.text = "Opinion Junction"
-    article_news_publication_language_element = etree.SubElement(article_news_publication_element, '{%s}language' % NEWSNS)
-    article_news_publication_language_element.text = 'en'
-    article_news_title_element = etree.SubElement(article_news_element, '{%s}title' % NEWSNS)
-    article_news_title_element.text = article.title
-    article_news_keywords_element = etree.SubElement(article_news_element, '{%s}keywords' % NEWSNS)
-    article_news_publication_date_element = etree.SubElement(article_news_element, '{%s}publication_date' % NEWSNS)
-    article_news_publication_date_element.text = article.published_date.isoformat()
+#    article_news_element = etree.SubElement(article_element, '{%s}news' % NEWSNS)
+#    article_news_publication_element = etree.SubElement(article_news_element, '{%s}publication' % NEWSNS)
+#    article_news_publication_name_element = etree.SubElement(article_news_publication_element, '{%s}name' % NEWSNS)
+#    article_news_publication_name_element.text = "Opinion Junction"
+#    article_news_publication_language_element = etree.SubElement(article_news_publication_element, '{%s}language' % NEWSNS)
+#    article_news_publication_language_element.text = 'en'
+#    article_news_title_element = etree.SubElement(article_news_element, '{%s}title' % NEWSNS)
+#    article_news_title_element.text = article.title
+#    article_news_keywords_element = etree.SubElement(article_news_element, '{%s}keywords' % NEWSNS)
+#    article_news_publication_date_element = etree.SubElement(article_news_element, '{%s}publication_date' % NEWSNS)
+#    article_news_publication_date_element.text = article.published_date.isoformat()
     return article_element
 
 def add_article_to_sitemap(article):
