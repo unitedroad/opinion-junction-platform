@@ -215,15 +215,22 @@ body { padding-top: 50px; }
     font-weight: 500;
 }
 
-.main-page-articles-header, .tag-articles-header {
+.tag-articles-header {
     width:100%;
     border-bottom:1px solid #A0A0A0;
 }
 
-.main-page-comments-header {
-    width: 100%;
-    border-bottom:1px solid #A0A0A0;
 
+
+.main-page-articles-div, .main-page-comments-div {
+    padding-top: 15px;
+}
+
+.main-page-comments-header, .main-page-articles-header {
+    width: 100%;
+    border-top:1px solid #BBB;
+    border-bottom:1px solid #BBB;
+    font-family: "Bitter";
 }
 
 .article-comments-header {
