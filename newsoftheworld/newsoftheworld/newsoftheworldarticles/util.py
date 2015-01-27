@@ -887,6 +887,7 @@ def create_article(article=None, **kwargs):
     
     if article.status == "published":
         update_article_displayed_text(article)
+        article.save()
         article_published.send(sender=create_article,article=article)
 
     log_user_activity.send(sender=create_article, id=articleid, userid_to=user.id, userid_from=None)
@@ -914,6 +915,7 @@ def update_article(article=None, **kwargs):
                 article_unpublished.send(sender=update_article,article=article)
             elif article.status == "published":
                 update_article_displayed_text(article)
+                article.save()
                 if article_state["original_article"].status != "published":
                     article_published.send(sender=update_article,article=article)
         
