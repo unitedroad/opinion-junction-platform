@@ -119,7 +119,7 @@ def getImageForProvider(provider_name, image, size=200):
 
 def setAuthorImage(author):
     if not author.image:
-        author.friendly_image =  "https://upload.wikimedia.org/wikipedia/commons/a/aa/Blank_user.svg"
+        author.friendly_image =  "/static/Blank_user.svg"
     else:
         if isUploadedImage(author.image):
             author.friendly_image = author.image

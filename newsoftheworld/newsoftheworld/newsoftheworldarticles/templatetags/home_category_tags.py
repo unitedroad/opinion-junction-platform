@@ -78,7 +78,7 @@ def getImageForProvider(provider_name, image, size=200):
 @register.simple_tag
 def getAuthorImage(author):
     if not author.image:
-        return "https://upload.wikimedia.org/wikipedia/commons/a/aa/Blank_user.svg"
+        return "/static/Blank_user.svg"
 
     if isUploadedImage(author.image):
         return author.image

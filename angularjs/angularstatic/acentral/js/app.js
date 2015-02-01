@@ -1342,14 +1342,14 @@ testApp.factory('profileService', function() {
     }
     serviceInstance.getProfileImage = function(author) {
 	if (!author.image ) {
-	    return "http://upload.wikimedia.org/wikipedia/commons/a/aa/Blank_user.svg";
+	    return "/static/Blank_user.svg";
 	}
 	return author.image;
     }
 
     serviceInstance.getProfileImageForCommentsAndDisplay = function(author, size) {
 	if (!author.image ) {
-	    return "https://upload.wikimedia.org/wikipedia/commons/a/aa/Blank_user.svg";
+	    return "/static/Blank_user.svg";
 	}
 
 	if (serviceInstance.isUploadedImage(author.image)) {
