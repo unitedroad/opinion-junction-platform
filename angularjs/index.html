@@ -7,6 +7,33 @@
 <!-- Piwik -->
 <script src="/static/piwikt.js">
 </script>
+    <script>
+      lazyScriptsLoaded = false;
+      var cb = function() {
+        var cssFileLocations = ["//fonts.googleapis.com/css?family=Bitter", "/static/comments.css",
+                                "/angularstatic/external/angular-crop/css/image-crop-styles.css"];
+        var numCssLocations = cssFileLocations.length;
+        for (var i = 0; i < numCssLocations; i++) {
+            var l = document.createElement('link'); l.rel = 'stylesheet';
+            l.href = cssFileLocations[i];
+            var h = document.getElementsByTagName('head')[0]; 
+            h.parentNode.insertBefore(l, h);
+            //h.appendChild(l);
+			   
+        }     
+      };
+      try {
+          var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+              webkitRequestAnimationFrame || msRequestAnimationFrame;
+      } catch(e) {
+
+      }
+
+      if (!raf) {
+          cb();
+          lazyScriptsLoaded = true;
+      }
+    </script>
 <!--<style>
 @font-face {
   font-family: 'Bitter';
@@ -174,7 +201,6 @@ Will implement this later, we owe it the privacy of our users.
     </script>
 </head>
 <body>
-<div class="ng-app:testApp" id="ng-app" ng-app="testApp" xmlns:ng="http://angularjs.org">
     <script>
       var cb = function() {
         var cssFileLocations = ["//fonts.googleapis.com/css?family=Bitter", "/static/comments.css",
@@ -183,14 +209,19 @@ Will implement this later, we owe it the privacy of our users.
         for (var i = 0; i < numCssLocations; i++) {
             var l = document.createElement('link'); l.rel = 'stylesheet';
             l.href = cssFileLocations[i];
-            var h = document.getElementsByTagName('head')[0]; h.parentNode.insertBefore(l, h);
+            var h = document.getElementsByTagName('head')[0]; 
+            h.parentNode.insertBefore(l, h);
+            //h.appendChild(l);
+			   
         }     
       };
       var raf = requestAnimationFrame || mozRequestAnimationFrame ||
           webkitRequestAnimationFrame || msRequestAnimationFrame;
-      if (raf) raf(cb);
+      if (!lazyScriptsLoaded && raf) raf(cb);
       else window.addEventListener('load', cb);
     </script>
+<div class="ng-app:testApp" id="ng-app" ng-app="testApp" xmlns:ng="http://angularjs.org">
+
 
 <div ng-init="initFunction()" ng-controller="mainController">
 <script type="text/ng-template" id="loginModalContent.html">
