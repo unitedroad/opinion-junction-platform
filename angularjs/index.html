@@ -30,7 +30,7 @@
 
       }
 
-      if (!raf) {
+      if (!raf && !window.addEventListener) {
           cb();
           lazyScriptsLoaded = true;
       }
