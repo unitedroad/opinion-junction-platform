@@ -224,8 +224,10 @@ Will implement this later, we owe it the privacy of our users.
 
       }
 
-      if (!lazyScriptsLoaded && raf) raf(cb);
-      else window.addEventListener('load', cb);
+      if (!lazyScriptsLoaded) {
+          if (raf) raf(cb);
+          else window.addEventListener('load', cb);
+      }
     </script>
 <div class="ng-app:testApp" id="ng-app" ng-app="testApp" xmlns:ng="http://angularjs.org">
 
