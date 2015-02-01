@@ -22,8 +22,9 @@
 			   
         }     
       };
+      var raf;
       try {
-          var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+          raf = requestAnimationFrame || mozRequestAnimationFrame ||
               webkitRequestAnimationFrame || msRequestAnimationFrame;
       } catch(e) {
 
@@ -215,8 +216,14 @@ Will implement this later, we owe it the privacy of our users.
 			   
         }     
       };
-      var raf = requestAnimationFrame || mozRequestAnimationFrame ||
-          webkitRequestAnimationFrame || msRequestAnimationFrame;
+      var raf;
+      try {
+          raf = requestAnimationFrame || mozRequestAnimationFrame ||
+              webkitRequestAnimationFrame || msRequestAnimationFrame;
+      } catch (e) {
+
+      }
+
       if (!lazyScriptsLoaded && raf) raf(cb);
       else window.addEventListener('load', cb);
     </script>
