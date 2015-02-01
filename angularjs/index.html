@@ -17,7 +17,7 @@
 </style>
 Will implement this later, we owe it the privacy of our users.
 -->
-<link href='//fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'>
+<!-- <link href='//fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'> -->
 
 <noscript><p><img src="//analytics.guerillamachines.com/?idsite=2" style="border:0;" alt="" /></p></noscript>
 <!-- End Piwik Code -->
@@ -60,7 +60,7 @@ Will implement this later, we owe it the privacy of our users.
   <!-- <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"> -->
   <link rel="stylesheet" href="/angularstatic/external/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
-  <link rel="stylesheet" href="/static/comments.css">
+<!--  <link rel="stylesheet" href="/static/comments.css"> -->
   <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.min.js"></script>
@@ -77,8 +77,8 @@ Will implement this later, we owe it the privacy of our users.
   <script src="/angularstatic/external/angular-crop/js/image-crop.js"></script> 
   <script src="/angularstatic/external/angulartics/js/angulartics-piwik.js"></script> 
   <script src="/angularstatic/external/angulartics/js/angulartics.js"></script> 
-  <link rel="stylesheet" href="/angularstatic/external/angular-crop/css/image-crop-styles.css"
-	type="text/css"></link>
+<!--  <link rel="stylesheet" href="/angularstatic/external/angular-crop/css/image-crop-styles.css"
+	type="text/css"></link> -->
   <!-- <script src="js/controllers.js"></script> -->
   <script type="text/javascript">
     function submitTest(){
@@ -175,6 +175,23 @@ Will implement this later, we owe it the privacy of our users.
 </head>
 <body>
 <div class="ng-app:testApp" id="ng-app" ng-app="testApp" xmlns:ng="http://angularjs.org">
+    <script>
+      var cb = function() {
+        var cssFileLocations = ["//fonts.googleapis.com/css?family=Bitter", "/static/comments.css",
+                                "/angularstatic/external/angular-crop/css/image-crop-styles.css"];
+        var numCssLocations = cssFileLocations.length;
+        for (var i = 0; i < numCssLocations; i++) {
+            var l = document.createElement('link'); l.rel = 'stylesheet';
+            l.href = cssFileLocations[i];
+            var h = document.getElementsByTagName('head')[0]; h.parentNode.insertBefore(l, h);
+        }     
+      };
+      var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+          webkitRequestAnimationFrame || msRequestAnimationFrame;
+      if (raf) raf(cb);
+      else window.addEventListener('load', cb);
+    </script>
+
 <div ng-init="initFunction()" ng-controller="mainController">
 <script type="text/ng-template" id="loginModalContent.html">
   <!--<script src="//connect.facebook.net/en_US/all.js" async="" id="facebook-jssdk"></script>
