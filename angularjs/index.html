@@ -11,7 +11,9 @@
       lazyScriptsLoaded = false;
       var cb = function() {
         var cssFileLocations = ["//fonts.googleapis.com/css?family=Bitter", "/static/comments.css",
-                                "/angularstatic/external/angular-crop/css/image-crop-styles.css"];
+                                "/angularstatic/external/angular-crop/css/image-crop-styles.css"
+                                //,"/angularstatic/acentral/css/acentral.min.css"
+                               ];
         var numCssLocations = cssFileLocations.length;
         for (var i = 0; i < numCssLocations; i++) {
             var l = document.createElement('link'); l.rel = 'stylesheet';
@@ -87,7 +89,9 @@ Will implement this later, we owe it the privacy of our users.
   <script src="https://code.angularjs.org/1.2.18/angular-cookies.min.js"></script>
   <!-- <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"> -->
   <link rel="stylesheet" href="/angularstatic/external/bootstrap/css/bootstrap.min.css">
+  
   <link rel="stylesheet" href="/angularstatic/acentral/css/acentral.css">
+  
 <!--  <link rel="stylesheet" href="/static/comments.css"> -->
   <!--<script src="/static/ui-bootstrap-tpls-0.10.0.js"></script>-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
@@ -205,7 +209,9 @@ Will implement this later, we owe it the privacy of our users.
     <script>
       var cb = function() {
         var cssFileLocations = ["//fonts.googleapis.com/css?family=Bitter", "/static/comments.css",
-                                "/angularstatic/external/angular-crop/css/image-crop-styles.css"];
+                                "/angularstatic/external/angular-crop/css/image-crop-styles.css"
+                                //,"/angularstatic/acentral/css/acentral.min.css"
+                               ];
         var numCssLocations = cssFileLocations.length;
         for (var i = 0; i < numCssLocations; i++) {
             var l = document.createElement('link'); l.rel = 'stylesheet';
@@ -379,7 +385,7 @@ Will implement this later, we owe it the privacy of our users.
 	  
 	</li>
 
-	<li class="rightnavbar-preceder"><a class="navbar-link" ng-click="navbarCollapsed=true"><span class="glyphicon glyphicon-search"></span></a></li>
+	<li class="rightnavbar-preceder"><a class="navbar-link" ng-click="navbarCollapsed=true;openSearchModal()"><span class="glyphicon glyphicon-search"></span></a></li>
       </ul>
       <!--<ul id="navbar-right" class="nav navbar-right ng-scope"><li><a href="/user/settings" class="navbar-link">Settings</a></li></ul>-->
     </div>
