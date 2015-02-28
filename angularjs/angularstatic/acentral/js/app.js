@@ -172,6 +172,11 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    url: "/tag/:tagName",
 	    templateUrl: '/angularstatic/articlesbytag/partials/index.html',
 	    controller: 'articlesByTagController'
+	}).state('search', {
+	    title: "Opinion Junction",
+	    url: "/search?searchString",
+	    templateUrl: '/angularstatic/search/partials/index.html',
+	    controller: 'searchController'
 	}).state('default', {
 	    title: "Opinion Junction",
 	    url: "/default",
@@ -454,6 +459,50 @@ testApp.factory('commonOJService', function($http, $location) {
 	
     }
 
+    serviceInstance.createCategoriesMap = function(categories) {
+	var categoriesMap = {};
+	if (categories == null) {
+	    return; // not the end of the world
+	}
+	var numCategories = categories.length;
+	for (i = 0; i < numCategories; i++) {
+	    category = categories[i];
+	    categoriesMap[category.name] = category;
+	}
+	return categoriesMap;
+    }
+
+    serviceInstance.get_category_friendly_name_string = function(scope, article){
+	if (article.category_friendly_names) {
+	    return article.category_friendly_names;
+	}
+	articleCategories = article.categories;
+	numArticleCategories = articleCategories.length;
+
+	if (scope.categories == null) {
+
+	    return;
+	}
+	if (!scope.categoriesMapCreated) {
+	    scope.categoriesMap = serviceInstance.createCategoriesMap(scope.categories);
+	    scope.categoriesMapCreated = true;
+	}
+	
+	var category_friendly_names = "";
+	if (numArticleCategories > 0) {
+	    category_friendly_names = scope.categoriesMap[articleCategories[0]].friendly_name;
+	}
+	
+	for (i = 1; i < numArticleCategories; i++) {
+	    category_friendly_names = category_friendly_names + ", " + scope.categoriesMap[articleCategories[i]].friendly_name;
+	    //if (category.localCompare
+	}
+
+	article.category_friendly_names = category_friendly_names;
+
+	return category_friendly_names;
+
+    }
     
     serviceInstance.convertWhiteSpaceToHtml = function(text) {
 	if (!text) {
@@ -1375,7 +1424,7 @@ testApp.controller('articlesByTagController', function($scope, commonOJService, 
 
     $("title").text("Opinion Junction - Tag - " + $scope.tagName);	    
 
-    createCategoriesMap = function(categories) {
+    var createCategoriesMap = function(categories) {
 	var categoriesMap = {};
 	if (categories == null) {
 	    return; // not the end of the world
@@ -1388,20 +1437,20 @@ testApp.controller('articlesByTagController', function($scope, commonOJService, 
 	return categoriesMap;
     }
 
-    setCategories = function() {
+    var setCategories = function() {
 	$scope.categories = commonOJService.categories;
     }
 
     commonOJService.registerCategoryListener(setCategories);	
 
-    get_category_non_friendly_name_string_for_tag_article = function(article) {
-	if (!(categories in article) || !article,categories) {
+    var get_category_non_friendly_name_string_for_tag_article = function(article) {
+	if (!(categories in article) || !article.categories) {
 	    return "";
 	}
-	return article.categories.split("%,#@$").join(",");
+	return article.categories.split("%,#@$").join(", ");
     }
 
-    get_category_friendly_name_string_for_tag_article = function(article) {
+    var get_category_friendly_name_string_for_tag_article = function(article) {
 	if (!article.categories) {
 	    return "";
 	}
@@ -1470,6 +1519,71 @@ testApp.controller('articlesByTagController', function($scope, commonOJService, 
     
 
 
+});
+
+testApp.controller('searchController', function($scope, $http, $stateParams, $location, profileService, commonOJService) {
+    $scope.searchString = decodeURIComponent($stateParams.searchString);
+    $scope.searchStringEncoded = $stateParams.searchString;
+    
+    var createCategoriesMap = function(categories) {
+	var categoriesMap = {};
+	if (categories == null) {
+	    return; // not the end of the world
+	}
+	var numCategories = categories.length;
+	for (i = 0; i < numCategories; i++) {
+	    category = categories[i];
+	    categoriesMap[category.name] = category;
+	}
+	return categoriesMap;
+    }
+
+    var setCategories = function() {
+	$scope.categories = commonOJService.categories;
+    }
+
+    commonOJService.registerCategoryListener(setCategories);	
+
+    var searchResults = function(searchStringEncoded, searchString) {
+	if (!searchStringEncoded) {
+	    searchStringEncoded = $scope.searchStringEncoded;
+	}
+	$http.get("/api/1.0/search/?searchString=" + searchStringEncoded, {headers: {"Content-Type": "application/json"}})
+	    .success( function(data) {
+		$scope.articleInfos = data;
+		if (!$scope.categoriesMapCreated) {
+		    var categoriesMap = commonOJService.createCategoriesMap($scope.categories);
+		}
+		var numArticles = $scope.articleInfos.length;
+		if (categoriesMap != null) {
+		    for (var i = 0; i < numArticles; i++) {
+			var article = $scope.articleInfos[i];
+			article.friendly_categories = commonOJService.get_category_friendly_name_string($scope, article);
+			article.author_name = profileService.getAuthorName(article.author);
+		    }
+		} else {
+		    for (var i = 0; i < numArticles; i++) {
+			var article = $scope.articleInfos[i];
+			article.friendly_categories = article.categories.join(", ");
+			article.author_name = profileService.getAuthorName(article.author);
+		    }
+		}
+
+		if (searchString) {
+		    $scope.searchString = searchString;
+		}
+	    });
+
+    };
+
+    $scope.search = function() {
+	//var searchStringEncoded = encodeURIComponent($scope.searchStringNew);
+	$location.url("/search?searchString=" + encodeURIComponent($scope.searchStringNew));
+
+	//searchResults(searchStringEncoded, $scope.searchStringNew);
+    };
+
+    searchResults();
 });
 
 testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, profileService, $stateParams) {
@@ -1933,6 +2047,28 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 
     };
 
+
+    $scope.openSearchModal = function() {
+	var modalInstance = $modal.open({
+	    templateUrl: '/angularstatic/acentral/partials/search-modal.html',
+	    controller: SearchModalInstanceController,
+	    windowClass: 'search-modal-window',
+	    resolve: {
+		items: function () {
+		    return $scope.items;
+		}
+            }
+	});
+
+/*	modalInstance.opened.then(function(obj) {
+	    $('#search-modal').parent().css("background-color","transparent");
+
+	});*/
+        modalInstance.result.then(function (isLoggedIn) {
+
+        });
+    }
+    
     openSigninModal = function() {
 	if ($scope.userData!=null) {
 	    return;
@@ -4420,6 +4556,21 @@ testApp.controller('messageViewController', function($scope, $location, commonOJ
 	$scope.showSuccess = false;
     }
 });
+
+var SearchModalInstanceController = function($scope, $modalInstance, $http, $location) {
+  
+    $scope.formData = {};
+
+    $scope.closeModal = function() {
+	$modalInstance.close();
+    };
+
+    $scope.goToSearchPage = function() {
+	$modalInstance.close();
+	$location.url("/search?searchString=" + encodeURIComponent($scope.formData.searchString));
+    };
+
+};
 
 var ModalInstanceCtrl = function($scope, $modalInstance, $http, $cookies, commonOJService, fbService, fieldPropertiesService) {
 
