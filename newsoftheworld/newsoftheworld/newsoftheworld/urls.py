@@ -26,6 +26,7 @@ from newsoftheworldarticles.api import ArticlesByTag
 from newsoftheworldarticles.api import TagsList
 from newsoftheworldarticles.api import CategoriesList
 from newsoftheworldarticles.api import AboutUs
+from newsoftheworldarticles.api import Search
 
 from newsoftheworldarticles.views import Article_Traditional_View
 from newsoftheworldarticles.views import Category_Traditional_View
@@ -33,6 +34,7 @@ from newsoftheworldarticles.views import Home_Traditional_View
 from newsoftheworldarticles.views import ArticlesByTag_Traditional_View
 from newsoftheworldarticles.views import AuthorsActivity_Traditional_View
 from newsoftheworldarticles.views import Aboutus_Traditional_View
+from newsoftheworldarticles.views import Search_Traditional_View
 from newsoftheworldarticles.views import Error_400_Traditional_View
 from newsoftheworldarticles.views import Error_403_Traditional_View
 from newsoftheworldarticles.views import Error_404_Traditional_View
@@ -69,6 +71,9 @@ urlpatterns = patterns('',
 
     url(r'^profile/(?P<authorid>.+)/?$', AuthorsActivity_Traditional_View.as_view()),     
 
+    url(r'^aboutus/?$', Aboutus_Traditional_View.as_view()),     
+
+    url(r'^search/?$', Search_Traditional_View.as_view()),     
 
     url(r'^(?P<server_deliver_root>ojserverdeliver)/?$', 
         Home_Traditional_View.as_view()),
@@ -83,6 +88,8 @@ urlpatterns = patterns('',
     url(r'^accounts/test$', 'newsoftheworldarticles.views.test', name='account_test'),
 
     url(r'^(?P<server_deliver_root>ojserverdeliver)/aboutus?$', Aboutus_Traditional_View.as_view()),     
+
+    url(r'^(?P<server_deliver_root>ojserverdeliver)/search/?$', Search_Traditional_View.as_view()),     
 )
 
 rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?$', PostCommentsList.as_view(), name='post-comment-list'),     
@@ -108,6 +115,7 @@ rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?
     url(r'^api/1.0/tags/?$', TagsList.as_view(), name='tags-list'),     
     url(r'^api/1.0/categories/?$', CategoriesList.as_view(), name='categories-list'),
     url(r'^api/1.0/aboutus/?$', AboutUs.as_view(), name='about-us'),
+    url(r'^api/1.0/search/?$', Search.as_view(), name='search'),
 
     url(r'comments/login/?$', 'newsoftheworldcomments.views.commentslogin' ),
 )

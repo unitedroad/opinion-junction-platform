@@ -1,0 +1,15 @@
+<div class="search-modal" id="search-modal">
+  <div>
+    <form ui-keypress="{13:'goToSearchPage($event)'}">
+      <div class="search-modal-top-taskbar"><span class="glyphicon glyphicon-remove search-modal-top-taskbar-close-button" ng-click="closeModal()"/></div>
+      <div class="input-group search-modal-input-group">
+	<input type="text" class="form-control" placeholder="Search for..." ng-model="formData.searchString">
+	<span class="input-group-btn">
+          <button class="btn btn-primary" type="button" ng-click="goToSearchPage()" ng-disabled="formData.searchString == '' || formData.searchString == null" >
+	    <span class="glyphicon glyphicon-search"/>
+	  </button>
+	</span>
+      </div>
+    </form>
+  </div>
+</div>

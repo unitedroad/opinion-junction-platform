@@ -750,3 +750,9 @@ class AboutUs(APIView):
             print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2]))
             return Response({"ok" : "false",  "message" : str(e) }, status = status.HTTP_500_INTERNAL_SERVER_ERROR )
         return Response({"ok" : "true"})
+
+class Search(APIView):
+    def get(self, request, format=None):
+        articles = util.article_search(**request.GET)
+        serialisedList = ArticleSerialiser(articles, many=True)
+        return Response(serialisedList.data)

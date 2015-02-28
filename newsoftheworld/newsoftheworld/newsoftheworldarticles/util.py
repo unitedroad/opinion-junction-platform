@@ -33,6 +33,7 @@ from lxml import etree, html
 from PIL import Image, ImageOps, ImageChops
 from django.core.exceptions import PermissionDenied
 from bson.objectid import ObjectId
+from mongoengine import Q
 
 LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
 LOCATION_ARTICLE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojarticleimages')
@@ -465,7 +466,7 @@ def change_profile(user, data):
         user.save()
         author.save()
 
-        profile_updated.send(sender=change_profile, id=author.id, fields=updated_fields, author=author)
+        profile_updated.send_robust(sender=change_profile, id=author.id, fields=updated_fields, author=author)
         return author
 
 
@@ -839,7 +840,7 @@ def handle_finalise_published_article(article, **kwargs):
     update_tag_users_for_article(article)
 
 def finalise_published_article(article):
-    published_article_finalised.send(sender=finalise_published_article, article=article)
+    published_article_finalised.send_robust(sender=finalise_published_article, article=article)
 
 def update_article_displayed_text(article):
     root = html.fromstring(article.storytext)
@@ -888,9 +889,9 @@ def create_article(article=None, **kwargs):
     if article.status == "published":
         update_article_displayed_text(article)
         article.save()
-        article_published.send(sender=create_article,article=article)
+        article_published.send_robust(sender=create_article,article=article)
 
-    log_user_activity.send(sender=create_article, id=articleid, userid_to=user.id, userid_from=None)
+    log_user_activity.send_robust(sender=create_article, id=articleid, userid_to=user.id, userid_from=None)
 
 def update_article(article=None, **kwargs):
     user = kwargs["user"]
@@ -912,16 +913,16 @@ def update_article(article=None, **kwargs):
         article_state = kwargs["article_state"]
         if article is not None:
             if article.status != "published" and article_state["original_article"].status == "published":
-                article_unpublished.send(sender=update_article,article=article)
+                article_unpublished.send_robust(sender=update_article,article=article)
             elif article.status == "published":
                 update_article_displayed_text(article)
                 article.save()
                 if article_state["original_article"].status != "published":
-                    article_published.send(sender=update_article,article=article)
+                    article_published.send_robust(sender=update_article,article=article)
         
         
     
-    log_user_activity.send(sender=update_article, id=articleid, userid_to=user.id, userid_from=None)
+    log_user_activity.send_robust(sender=update_article, id=articleid, userid_to=user.id, userid_from=None)
 
 
 def update_category_num_users_for_article(article, increment_number=1):
@@ -1359,3 +1360,13 @@ def get_about_us(**kwargs):
             team_object.team_contactus = list(team_contactus)
 
     return team_object
+
+def article_search(**kwargs):
+    if "searchString" in kwargs and kwargs["searchString"]:
+        searchString = kwargs["searchString"]
+        if isinstance(searchString, list):
+            if len(searchString) > 0:
+                searchString = searchString[0]
+        articles = Article.objects.filter(Q(storytext__icontains = searchString) & Q(status="published"))
+        return list(articles)
+    return []

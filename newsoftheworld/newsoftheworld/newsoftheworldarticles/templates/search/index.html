@@ -1,0 +1,60 @@
+{% extends "index.html" %}
+{% block headblock %}
+        <title>Opinion Junction - Search - {{searchString}}</title>
+	<meta property="og:url" content="{{protocol}}://{{domain_name}}/search?searchString={{searchString}}" />
+        <meta property="og:title" content="Opinion Junction - Search - {{searchString}}" />
+        <meta property="og:description" content="Opinion Junction - Search - Articles containing '{{searchString}}'" />
+	<meta name="Description" CONTENT="Opinion Junction - Search - Articles containing '{{searchString}}'">
+	<meta name="robots" content="noindex, follow">
+	<link rel="canonical" href="{{protocol}}://{{domain_name}}/search?searchString={{searchString}}" />
+	<meta name="twitter:card" content="summary" />
+	<meta property="twitter:title" content="Opinion Junction - Search - {{searchString}}" />
+	<meta property="twitter:description" content="Opinion Junction - Search - Articles containing '{{searchString}}'" />
+{% endblock %}
+{% block maincontent %}
+<section class="container">
+<!--  <div class="col-md-10 col-lg-9"> -->
+  <div >
+
+    <div class="tag-articles-header">
+      <h4 >Search: {{searchString}}</h4>
+    </div>
+    <form>
+      <div class="input-group search-modal-input-group search-modal-input-group-search-page">
+	<input name="searchString" type="text" class="form-control" placeholder="Search for..." >
+	<span class="input-group-btn">
+          <button class="btn btn-primary" type="submit" >
+	    <span class="glyphicon glyphicon-search"/>
+	  </button>
+	</span>
+      </div>
+    </form>
+    {% for article in articleInfos %}
+    <article class="col col-md-12 col-lg-12 main-page-article-section">
+      <div class="col-md-2 col-lg-2">
+	<a href="{{server_deliver_root}}/article/{{article.id}}/{{article.slug}}" class="thumbnail">
+	  <img src="{{article.thumbnail_image}}" alt="...">
+	</a>
+      </div>
+      <div class="col-md-10 col-lg10">
+	<div><small>{{article.category_friendly_names}}</small></div>
+	<div>
+	  <h4 class="articlepreviewheadline"><a href="{{server_deliver_root}}/article/{{article.id}}/{{article.slug}}" class="articleheaderlink">{{article.title}}</a></h4>
+	</div>
+	<div class="main-page-article-excerpt-section">
+	  <h4><small><p class="main-page-article-excerpt-section-p">{{article.excerpt}}</p></small></h4>
+	</div>
+	<div class="main-page-article-author-section">
+	  <small>
+	    <p class="main-page-article-author-text">
+	      {{article.author.friendly_name}}
+	    </p>
+	  </small>
+	</div>
+      </div>      
+      
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

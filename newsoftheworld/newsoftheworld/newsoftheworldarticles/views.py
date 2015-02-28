@@ -458,3 +458,34 @@ class Test_View(Main_Traditional_View):
     template_name = "account/email/password_reset_key_message.html"
 
 test = Test_View.as_view()
+
+class Search_Traditional_View(Main_Traditional_View):
+
+    template_name = "search/index.html"
+
+
+    def get_context_data(self, **kwargs):
+        context = super(Search_Traditional_View, self).get_context_data(**kwargs)
+        request_params_object = None
+        if self.request.method == 'GET':
+            request_params_object = self.request.GET
+        elif self.request.method == 'POST':
+            request_params_object = self.request.POST
+
+        if request_params_object is not None:
+            articleInfos = util.article_search(**request_params_object)
+            context['articleInfos'] = articleInfos
+
+        if "searchString" in request_params_object:
+            context['searchString'] = request_params_object['searchString']
+
+        for article in articleInfos:
+            viewutil.set_category_friendly_name_string(context, article)
+            viewutil.setFriendlyAuthorName(article.author)
+            #viewutil.setAuthorImage(article.author)
+            viewutil.setFriendlyThumbnailImage(article)
+
+
+        return context
+
+
