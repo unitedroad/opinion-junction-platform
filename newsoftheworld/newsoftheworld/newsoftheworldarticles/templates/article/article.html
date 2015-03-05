@@ -13,11 +13,20 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:title" content="{{article.title}} - Opinion Junction" />
     <meta property="twitter:description" content="{{article.excerpt}}" />
-    {% if article.primary_image|slice:":1" == '/' %}
-        <meta property="twitter:image:src" content="{{protocol}}://{{domain_name}}{{article.primary_image}}" />
-    {% else %}
-        <meta property="twitter:image:src" content="{{article.primary_image}}" />
-    {% endif %} 
+    {% if article.header_image %}
+        {% if article.header_image|slice:":1" == '/' %}
+            <meta property="twitter:image:src" content="{{protocol}}://{{domain_name}}{{article.header_image}}" />
+        {% else %}
+            <meta property="twitter:image:src" content="{{article.header_image}}" />
+        {% endif %} 
+    {% elif article.primary_image %}
+        {% if article.primary_image|slice:":1" == '/' %}
+            <meta property="twitter:image:src" content="{{protocol}}://{{domain_name}}{{article.primary_image}}" />
+        {% else %}
+            <meta property="twitter:image:src" content="{{article.primary_image}}" />
+        {% endif %} 
+    {% endif %}
+
     {% if article.article_metadata and article.article_metadata.robots_tag %}
     <meta name="robots" content="{{article.article_metadata.robots_tag}}" />
     {% endif %}
