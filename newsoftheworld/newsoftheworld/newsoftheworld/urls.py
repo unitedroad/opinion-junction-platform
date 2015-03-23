@@ -1,4 +1,6 @@
 from django.conf.urls import patterns, include, url
+from django.contrib import admin
+
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from django.contrib import admin
@@ -44,13 +46,15 @@ from newsoftheworldarticles.views import view_for_404
 
 from django.http import HttpResponse
 
+
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'newsoftheworld.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /", mimetype="text/plain")),
+    (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /", content_type="text/plain")),
     url(r'^admin/', include(admin.site.urls)),
+
     url(r'^accounts/facebook_social_callback$', 'newsoftheworldcomments.views.facebook_social_callback'),
     url(r'^accounts/login_successful_mw$', 'newsoftheworldcomments.views.login_successful_mw', name='login_successful_mw'),
     url(r'^accounts/login$', 'newsoftheworldarticles.views.login', name='login_article'),
@@ -58,6 +62,7 @@ urlpatterns = patterns('',
     url(r'^accounts/facebook/login/token/?$', 'newsoftheworldarticles.socialaccount.providers.facebook.views.login_by_token', 
         name='facebook_login_by_token'),
     url(r'^accounts/signup/?$', 'newsoftheworldarticles.views.signup', name='account_signup_rest'),
+    url(r'^accounts/signout/?$', 'newsoftheworldarticles.views.signout', name='account_signout_rest'),
     url(r'^accounts/login_callback$', 'newsoftheworldcomments.views.login_callback', name='login_callback'),
     url(r'^accounts/', include('allauth.urls')),
 
@@ -87,10 +92,12 @@ urlpatterns = patterns('',
 
     url(r'^accounts/test$', 'newsoftheworldarticles.views.test', name='account_test'),
 
-    url(r'^(?P<server_deliver_root>ojserverdeliver)/aboutus?$', Aboutus_Traditional_View.as_view()),     
+    url(r'^(?P<server_deliver_root>ojserverdeliver)/aboutus/?$', Aboutus_Traditional_View.as_view()),     
 
     url(r'^(?P<server_deliver_root>ojserverdeliver)/search/?$', Search_Traditional_View.as_view()),     
+
 )
+
 
 rest_patterns=patterns('', url(r'^api/1.0/posts/(?P<postid>[0-9a-f]+)/comments/?$', PostCommentsList.as_view(), name='post-comment-list'),     
     url(r'^api/1.0/posts/comments/?$', CommentsList.as_view(), name='post-comment-test-list'),     
@@ -132,3 +139,4 @@ handler403 = Error_403_Traditional_View.as_view()
 handler404 = Error_404_Traditional_View.as_view()
 
 handler500 = Error_500_Traditional_View.as_view()
+

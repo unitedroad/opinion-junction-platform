@@ -295,6 +295,27 @@ testApp.factory('commonOJService', function($http, $location) {
 
     serviceInstance.userData = null;
 
+    serviceInstance.convertYoutubeIframeToHtml5 = function(articleContent) {
+	var wrapper= document.createElement('div');
+	wrapper.innerHTML= articleContent;
+	var iframes = $(wrapper).find('iframe');
+	iframes.each(function() {
+	    var thisJq = $(this);
+	    var src = thisJq.attr('src');
+	    if (src.indexOf('youtube.com/v') > -1 && src.indexOf('html5=1') <=-1) {
+		src = src.replace(/youtube\.com\/v/g, 'youtube.com/embed');
+		if (src.indexOf('?') > -1 ) {
+		    $(this).attr('src', src + '&html5=1') ;
+		} else {
+		    $(this).attr('src', src + '?html5=1') ;
+		}
+		var style = $(this).attr('style');
+		$(this).attr('style', style + ';max-width:100%') ;
+	    }
+	});
+	return wrapper.innerHTML;
+	
+    }
 
     serviceInstance.sidebarArticlePermissions = 
 	{"create_articles" : [{"id" : "create_articles", "title" : "Create Article", "content" : "Create Article", "url" : "/user/createarticle" }]
@@ -629,6 +650,11 @@ testApp.factory('commonOJService', function($http, $location) {
 	});
 
 	pushAndInvokeCallables(callablesMapForController);
+    }
+
+    serviceInstance.invalidateUserData = function() {
+	serviceInstance.userData = null;
+	invokeListeners("userData");
     }
 
     serviceInstance.unique = function(dataArray) {
@@ -2131,6 +2157,10 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 	if (commonOJService.isUserLoggedIn()) {
 	    $scope.rightNavBar = "loggedInNavBar.html";
 	}
+	else {
+	    $scope.rightNavBar = "signinNavBar.html";
+	    $scope.userData = null;
+	}
     };
 
     $scope.initFunction = function() {
@@ -2678,6 +2708,7 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
 	    .success( function(data) {
 		if (data.length > 0) {
 		    $scope.article = data[0];
+		    $scope.article.storydisplayedtext = commonOJService.convertYoutubeIframeToHtml5($scope.article.storydisplayedtext)
 		    commonOJService.activateHeaderNavLink($scope.article.categories[0]);
 		    $scope.socialShareArticle = $scope.article;
 		    $scope.showFooter=true;
@@ -3548,15 +3579,24 @@ testApp.controller('createArticleController', function($scope, $http, commonOJSe
 
     $scope.setPageLeaveBehaviour = function (commonOJService, scope) {
 
+
             scope.$on('$locationChangeStart', function (event, next, current) {
+		if (scope.handling) { //Hate this hack but it seems I can't do without it. SHARE!!
+	            return;
+		} else {
+		    scope.handling = true;
+		}
 		if (scope.pageLeaveBehaviourDisabled != true) {
 		    var answer = confirm("Are you sure you want to leave this page?")
 		    if (!answer) {
     			event.preventDefault();
 		    }
+		    scope.handling = false;
 		}
+
             });
 	
+
 
 
     };
@@ -4243,8 +4283,19 @@ testApp.controller('viewArticlesController', function($scope, commonOJService, $
     }
 
 });
+var SignoutModalInstanceController = function($scope, $modalInstance, $location, $http, commonOJService) {
 
-testApp.controller('userController', function($scope, $location, commonOJService) {
+    $scope.signout = function() {
+	    $http.post("/accounts/logout/", {headers: {"Content-Type": "application/json"}})
+		.success(function(data){commonOJService.invalidateUserData();$modalInstance.close(true);});
+    }
+
+    $scope.closeModal = function() {
+	$modalInstance.close();
+    }
+};
+
+testApp.controller('userController', function($scope, $location, $http, $modal, commonOJService) {
 
     $scope.sidebarArticleCapabilities = [];
     $scope.sidebarOtherMainCapabilities = [];
@@ -4306,6 +4357,34 @@ testApp.controller('userController', function($scope, $location, commonOJService
                
         $scope.isArticleDivCollapsed = collapse;
     }
+
+    $scope.signout = function() {
+	if ($location.url() && 
+	    ($location.url() === "/user/createarticle" || $location.url().indexOf("/user/editarticle/") == 0 )) {
+	    	var modalInstance = $modal.open({
+		    templateUrl: '/angularstatic/acentral/partials/signout-modal.html',
+		    controller: SignoutModalInstanceController,
+		    windowClass: 'signout-modal-window',
+		    resolve: {
+			items: function () {
+			    return $scope.items;
+			}
+		    }
+		});
+
+	    modalInstance.result.then(function (signedOut) {
+		if (signedOut) {
+		    $scope.pageLeaveBehaviourDisabled = true;
+		    $location.url("/");
+		}
+	    });
+
+	} else {
+	    $http.post("/accounts/logout/", {headers: {"Content-Type": "application/json"}})
+		.success(function(data){commonOJService.invalidateUserData();$location.url("/");});
+	}
+    }
+
 
 });
 

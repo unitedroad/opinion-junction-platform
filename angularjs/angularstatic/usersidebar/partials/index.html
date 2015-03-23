@@ -15,7 +15,7 @@
     	  <a ng-href="{{capability.url}}">{{capability.title}}</a>
     	</li>
 	<li id="aboutusli" ng-click="activateItem('aboutusli'); isAboutusDivCollapsed = !isAboutusDivCollapsed" data-ng-class="navClass('aboutusli')"
-	    >
+	    ng-show="aboutusCapabilitiesAvailable">
           
           <a ng-href=""> About Us</a>
 	</li>
@@ -44,9 +44,11 @@
             </ul>
           </div>
 	</div>
+	<li id="signoutli" data-ng-class="navClass('signoutli')">        
+	  <a ng-click="signout()"> Signout</a>
+	</li>
       </ul>
     </div>
-
   <div class="col">
     <ui-view></ui-view>
   </div>

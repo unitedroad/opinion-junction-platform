@@ -21,7 +21,7 @@ from django.shortcuts import render
 
 from allauth.account import app_settings
 
-from allauth.account.views import RedirectAuthenticatedUserMixin, AjaxCapableProcessFormViewMixin, FormView, SignupView
+from allauth.account.views import RedirectAuthenticatedUserMixin, AjaxCapableProcessFormViewMixin, FormView, SignupView, LogoutView
 
 from allauth.account.forms import SignupForm
 
@@ -121,7 +121,26 @@ class RestSignupView(SignupView):
     
 signup = RestSignupView.as_view()
 
+class RestLogoutView(LogoutView):
+    template_name = "account/signup.html"
+    def post(self, *args, **kwargs):
+        url = self.get_redirect_url()
+        if self.request.user.is_authenticated():
+            self.logout()
+        if request.is_ajax():
+            response = {}
+            response['ok'] = 'true'
+            response['code'] = 'logged_out'
+            response['message'] = 'Logged Out'
+            c = RequestContext(request,{'response':json.dumps(response)})
+            t = Template("{% autoescape off %}{{response}}{% endautoescape %}") # A dummy template
+            return HttpResponse(t.render(c), content_type="application/json")
+        
+        return redirect(url)
 
+signout = RestLogoutView.as_view()
+
+    
 class Main_Traditional_View(TemplateView):
     
     template_name = "index.html"

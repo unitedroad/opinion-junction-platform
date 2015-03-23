@@ -1000,7 +1000,7 @@ def check_if_article_in_sitemap_root(root, article):
     return len(loc_element_for_article_array) > 0
 
 def populate_or_create_sitemap_url_element_for_article(article):
-    article_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/' + 'article/' + str(article.id) + "/" + article.slug, article.published_date.isoformat(), None, None)
+    article_element = populate_or_create_sitemap_url_element(None, 'https://www.opinionjunction.com/' + 'article/' + str(article.id) + "/" + article.slug, article.published_date.isoformat()[0:-16], None, None)
     article_image_element = etree.SubElement(article_element, '{%s}image' % IMAGENS)
     article_image_loc_element = etree.SubElement(article_image_element, '{%s}loc' % IMAGENS)
     if article.primary_image and article.primary_image[0] == '/':
