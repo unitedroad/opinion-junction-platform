@@ -180,9 +180,18 @@ body { padding-top: 50px; }
     min-height:503px;
 }
 
+@media (max-width : 1023px) {
+    .rightnavbar-preceder {
+	display: none !important;
+    }
+}
+
+
 .rightnavbar-preceder {
     padding-right: 5px;
 }
+
+
 
 .navbar-category-link-focussed {
     color: #FFF !important;
@@ -763,6 +772,29 @@ div[data-attribution-label] {
 
 .navbar-collapse {
     max-height:450px !important;
+}
+
+@media (max-width : 1023px) {
+    .navbar-collapsed-search {
+        display: block !important;
+    }
+}
+
+@media (max-width : 1023px) {
+    .navbar-toggle-oj {
+	margin-left: 5px;
+    }
+}
+
+
+.navbar-collapsed-search {
+
+    
+    height: 50px;
+    padding: 15px;
+    font-size: 18px;
+    line-height: 20px; 
+    display: none ;
 }
 
 .collapsing-width {

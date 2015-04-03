@@ -314,13 +314,14 @@ Will implement this later, we owe it the privacy of our users.
 <nav id="navbar-div" class="navbar navbar-inverse  navbar-fixed-top">
   <div class="container" >
     <div class="navbar-header">
-      <a class="navbar-brand" ng-click="collapseNavbar();" href="/">Opinion Junction</a>
-      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse" ng-click="navbarCollapsed=!navbarCollapsed">
+      <button class="navbar-toggle pull-left navbar-toggle-oj" type="button" data-toggle="collapse" data-target=".navbar-collapse" ng-click="navbarCollapsed=!navbarCollapsed">
 	<span class="sr-only">Toggle navigation</span>
 	<span class="icon-bar"></span>
 	<span class="icon-bar"></span>
 	<span class="icon-bar"></span>
       </button>
+      <a class="navbar-brand" ng-click="collapseNavbar();" href="/">Opinion Junction</a>
+      <a class="navbar-link navbar-collapsed-search pull-right" ng-click="navbarCollapsed=true;openSearchModal()"><span class="glyphicon glyphicon-search"></span></a>
     </div>
     <div class="navbar-collapse collapse oj-navbar-main" collapse="navbarCollapsed">
       <ul class="nav navbar-nav">
@@ -343,46 +344,17 @@ Will implement this later, we owe it the privacy of our users.
 	    <svg-replace svg-replace class="navbar-socialinvite-icons navbar-socialinvite-icons-facebook"  src="/static/facebook.svg" alt="Our Facebook Page"></svg-replace>
 	  </a>
 	</li>
-	<li class="rightnavbar-preceder">
-	  <div class="rightnavbar-social-div"  hover-social collapse-width="headerFacebookLikeCollapse" id="headerFacebookLikeCollapse"
-	       iframe-collapse="headerFacebookLikeCollapse" iframe-collapse-element="headerFacebookCommunity">      
-	    <iframe 
-	       src="//www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fpages%2FOpinion-Junction%2F944455988901836%2F&amp;width&amp;layout=button&amp;action=like" 
-	       scrolling="no" style="border: medium none; overflow: hidden; height: 20px; width: 50px;" allowtransparency="true" frameborder="0"></iframe>
-	  </div>
-
-	  
-	</li>
 	<li class="rightnavbar-preceder" id="headerTwitterCommunity"
 	    hover-social iframe-collapse="headerTwitterFollowCollapse" iframe-collapse-element="headerTwitterFollowCollapse">
 	  <a class="navbar-link navbar-socialinvite-link-twitter navbar-socialinvite-link navbar-link" href="https://twitter.com/ojunction_com" target="_blank" ng-click="navbarCollapsed=true">
 	    <svg-replace svg-replace class="navbar-socialinvite-icons navbar-socialinvite-icons-twitter"  src="/static/twitter_alt.svg" alt="Our Twitter Handle"></svg-replace>
 	  </a>
 	</li>
-	<li class="rightnavbar-preceder rightnavbar-preceder-twitter-follow">
-	  <div class="rightnavbar-social-div rightnavbar-social-div-twitter" collapse-width="headerTwitterFollowCollapse" hover-social id="headerTwitterFollowCollapse"
-	       iframe-collapse="headerTwitterFollowCollapse" iframe-collapse-element="headerTwitterCommunity ">      
-	    <iframe src="//platform.twitter.com/widgets/follow_button.html?screen_name=ojunction_com&amp;show_count=false" 
-		    style="width: 60px; height: 20px;" allowtransparency="true" scrolling="no" frameborder="0">
-	    </iframe>
-	  </div>
-	</li>
 	<li class="rightnavbar-preceder rightnavbar-preceder-googleplus" id="headerGoogleplusCommunity"
 	    hover-social iframe-collapse="headerGoogleplusLikeCollapse" iframe-collapse-element="headerGoogleplusLikeCollapse">
 	  <a class="navbar-link navbar-socialinvite-link navbar-socialinvite-link-gplus" href="https://www.facebook.com/pages/Opinion-Junction/944455988901836" target="_blank" ng-click="navbarCollapsed=true">
 	    <svg-replace svg-replace class="navbar-socialinvite-icons navbar-socialinvite-icons-googleplus"  src="/static/gplus-1.svg" alt="Our Google Plus Page"></svg-replace>
 	  </a>
-	</li>
-	<li class="rightnavbar-preceder">
-	  <div class="rightnavbar-social-div"  hover-social collapse-width="headerGoogleplusLikeCollapse" id="headerGoogleplusLikeCollapse"
-	       iframe-collapse="headerGoogleplusLikeCollapse" iframe-collapse-element="headerGoogleplusCommunity">      
-      <iframe title="+1" data-gapiattached="true" 
-	      src="https://apis.google.com/se/0/_/+1/fastbutton?usegapi=1&amp;width=300&amp;annotation=none&amp;origin=http%3A%2F%2Fwww.opinionjunction.com&amp;url=https%3A%2F%2Fplus.google.com%2F%2BOpinionjunction_com&amp;gsrc=3p&amp;jsh=m%3B%2F_%2Fscs%2Fapps-static%2F_%2Fjs%2Fk%3Doz.gapi.en_GB.M7rn0dEeiSs.O%2Fm%3D__features__%2Fam%3DAQ%2Frt%3Dj%2Fd%3D1%2Ft%3Dzcms%2Frs%3DAGLTcCP_5vKm8dRoaRs9FeoAHGfMyabhPA#_methods=onPlusOne%2C_ready%2C_close%2C_open%2C_resizeMe%2C_renderstart%2Concircled%2Cdrefresh%2Cerefresh&amp;id=I1_1414033342544&amp;parent=http%3A%2F%2Fwww.opinionjunction.com&amp;pfname=&amp;rpctoken=30683583" 
-	      name="I1_1414033342544" id="I1_1414033342544" vspace="0" tabindex="0" style="position: static; top: 0px; width: 38px; margin: 0px; border-style: none; left: 0px; visibility: visible; height: 24px;" scrolling="no" marginwidth="0" marginheight="0" hspace="0" width="100%" frameborder="0">
-      </iframe>
-	  </div>
-
-	  
 	</li>
 
 	<li class="rightnavbar-preceder"><a class="navbar-link" ng-click="navbarCollapsed=true;openSearchModal()"><span class="glyphicon glyphicon-search"></span></a></li>
