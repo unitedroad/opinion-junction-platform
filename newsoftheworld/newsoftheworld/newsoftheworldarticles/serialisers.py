@@ -355,3 +355,13 @@ class Team_All_DataSerialiser(serializers.Serializer):
     team_authors = Team_AuthorSerialiser(many=True)
     team_metadata = Team_MetadataSerialiser(many=False)
     team_contactus = Team_ContactUsSerialiser(many=True)
+
+class Roles_And_PermissionsSerialiser(serializers.Serializer):
+    role_name = serializers.CharField()
+    permissions = serializers.ListField(child=serializers.CharField())
+
+class Roles_And_PermissionsAllSerialiser(serializers.Serializer):
+    created_roles = Roles_And_PermissionsSerialiser(many=True)
+    updated_roles = Roles_And_PermissionsSerialiser(many=True)
+    deleted_roles = Roles_And_PermissionsSerialiser(many=True)
+    ok = serializers.CharField()
