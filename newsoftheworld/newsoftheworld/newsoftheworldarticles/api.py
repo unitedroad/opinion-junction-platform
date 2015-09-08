@@ -20,6 +20,8 @@ from .serialisers import Author_SettingsSerialiser
 from .serialisers import Author_ActivitySerialiser
 from .serialisers import Team_All_DataSerialiser
 from .serialisers import Team_AuthorSerialiser
+from .serialisers import Roles_And_PermissionsSerialiser
+from .serialisers import Roles_And_PermissionsAllSerialiser
 from . import util
 #from . import db
 #from .serialisers import AuthorSerialiser2
@@ -37,6 +39,17 @@ from django.core.exceptions import PermissionDenied
 import bson
 
 import copy 
+
+def serialise_update_authors(return_dict):
+    new_return_dict = {}
+    new_return_dict["ok"] = return_dict["ok"]
+    if "changed_authors" in return_dict:
+        changed_authors = return_dict["changed_authors"]
+        changed_authors = AuthorSerialiser(changed_authors, many=True).data
+        new_return_dict["changed_authors"] = changed_authors
+
+    return new_return_dict
+
 
 class ArticlesList(APIView):
     model = Article
@@ -421,7 +434,8 @@ class AuthorsList(APIView):
 #        
 #        author.save()
 #    
-        return Response({"ok" : "true"})
+
+        pass
 
 class AuthorListCurrent(APIView):
     model = Article
@@ -457,16 +471,73 @@ class AuthorsListAll(APIView):
         #for comment in Comment.objects.all():
         authors = Author.objects().all()
 
+        authors = authors.order_by("id")
+
         rargs = request.GET
         if "author_name" in rargs and rargs["author_name"] is not None:
-            if "use_contains" in rargs and rargs["use_contains"] == "true":
-                authors = authors.filter(author_name__contains=rargs["author_name"])
+            if "use_icontains" in rargs and rargs["use_icontains"] == "true":
+                authors = authors.filter(author_name__icontains=rargs["author_name"])
             else:
                 authors = authors.filter(author_name=rargs["author_name"])
+
+        if "first_name" in rargs and rargs["first_name"] is not None:
+            if "use_icontains" in rargs and rargs["use_icontains"] == "true":
+                authors = authors.filter(first_name__icontains=rargs["first_name"])
+            else:
+                authors = authors.filter(first_name=rargs["first_name"])
+
+        if "last_name" in rargs and rargs["last_name"] is not None:
+            if "use_icontains" in rargs and rargs["use_icontains"] == "true":
+                authors = authors.filter(last_name__icontains=rargs["last_name"])
+            else:
+                authors = authors.filter(last_name=rargs["last_name"])
+
+        if "user_role" in rargs and rargs["user_role"] is not None:
+            if "use_icontains" in rargs and rargs["use_icontains"] == "true":
+                authors = authors.filter(user_role__icontains=rargs["user_role"])
+            else:
+                authors = authors.filter(user_role=rargs["user_role"])
+
+
+        if "use_pagination" not in rargs or rargs["use_pagination"] != "false":
+            limit = 50
+            
+            if "limit" in rargs and util.is_number(rargs["limit"]):
+                limit = int(rargs["limit"])
+            
+
+
+
+            
+            if "fromId" in rargs and rargs["fromId"] is not None:
+                if limit >=0:
+                    authors = authors.filter(id__gt=str(request.GET["fromId"]))
+                else:
+                    authors = authors.filter(id__lt=str(request.GET["fromId"]))
+                    authors = authors.order_by("-id")
+
+
+            authors = authors.limit(limit)
+
+            if limit < 0 :
+                new_authors = []
+                new_authors.extend(authors)
+                authors = new_authors[::-1]
 
         serialisedList = AuthorSerialiser(authors, many=True)
         return Response(serialisedList.data)
 
+
+    def post(self, request, format=None):
+        try:
+            result = util.update_authors_all_modes(request.user, **request.DATA)
+
+            result = serialise_update_authors(result)
+
+            #print "str(result): " + str(result)
+            return Response(result)
+        except PermissionDenied as e:
+            return Response({"ok" : "false",  "message" : str(e), "code" : "permission_denied"  }, status = status.HTTP_403_FORBIDDEN )
 
 class AuthorsPostPut(APIView):
 
@@ -755,4 +826,24 @@ class Search(APIView):
     def get(self, request, format=None):
         articles = util.article_search(**request.GET)
         serialisedList = ArticleSerialiser(articles, many=True)
+        return Response(serialisedList.data)
+
+
+
+
+class AuthorRolesListPost(APIView):
+    def post(self, request, format=None):
+        try:
+            returned_dict = util.create_author_roles_all_modes(request.user, **request.DATA)
+            returned_dict_to_object = util.serialised_list_for_roles(returned_dict)
+            serialisedList = Roles_And_PermissionsAllSerialiser(returned_dict_to_object)
+            return Response(serialisedList.data)
+        except ValueError as e:
+            return Response({"ok" : "false",  "message" : str(e), "code" : "permission_denied"  }, status = status.HTTP_400_BAD_REQUEST )
+        except PermissionDenied as e:
+            return Response({"ok" : "false",  "message" : str(e), "code" : "permission_denied"  }, status = status.HTTP_403_FORBIDDEN )
+
+    def get(self, request, format=None):
+        roles = util.get_all_roles_permissions(**request.GET)
+        serialisedList = Roles_And_PermissionsSerialiser(roles, many=True)
         return Response(serialisedList.data)

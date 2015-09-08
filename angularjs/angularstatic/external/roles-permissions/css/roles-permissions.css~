@@ -1,0 +1,82 @@
+.createuserroles-role-permission-remove-a:before {
+    background: 0 0;
+    color: #bbb;
+    /*content: '&times;';*/
+    display: block!important;
+    font: 400 16px/1 dashicons;
+    speak: none;
+    height: 20px;
+    text-align: center;
+    width: 20px;
+    -webkit-font-smoothing: antialiased!important;
+    margin: 2px 0;
+}
+
+.createuserroles-role-permission-remove-a:hover:before {
+    color: #c00;
+}
+
+.createuserroles-role-permission-remove-a {
+    
+    margin: 1px 0 0 -17px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    display: block;
+    float: left;
+    text-indent: 0;
+    overflow: hidden;
+    position: absolute;
+    font-weight: 700;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    color: inherit;
+}
+
+.createuserroles-role-permission-remove-a, .createuserroles-role-permission-remove-a:hover {
+    background: none!important;
+}
+    
+
+.createuserroles-role-permission-div {
+    margin-left: 14px;
+    font-size: 12px;
+    overflow: auto;
+}
+.createuserroles-role-permission-div br {
+    display: none;
+}
+.createuserroles-role-permission-div strong {
+    margin-left: -8px;
+    position: absolute;
+}
+.createuserroles-role-permission-remove-span {
+    margin-right: 35px;
+    display: block;
+    float: left;
+    font-size: 13px;
+    line-height: 1.8em;
+    white-space: nowrap;
+    cursor: default;
+}
+.createuserroles-role-permission-remove-a {
+    margin: 1px 0 0 -17px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    display: block;
+    float: left;
+    text-indent: 0;
+    overflow: hidden;
+    position: absolute;
+}
+
+.createuserroles-role-permission-div {
+    /*margin: 25px 10px;*/
+    margin-bottom: 25px
+}
+.createuserroles-role-permission-remove-span {
+    font-size: 16px;
+    line-height: 120%
+}

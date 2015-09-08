@@ -1,4 +1,4 @@
-var testApp = angular.module('testApp', ['ui.router', 'ui.bootstrap', 'ngCookies', 'ui.config', 'ui.tinymce', 'ui.directives', 'ui.include', 'ngSanitize', 'ngTouch',
+var testApp = angular.module('testApp', ['ngAnimate', 'ui.router', 'ui.bootstrap', 'ngCookies', 'ui.config', 'ui.tinymce', 'ui.directives', 'ui.include', 'ngSanitize', 'ngTouch',
 					'angulartics','angulartics.piwik']);
 
 tooltipTriggerMap = {
@@ -177,6 +177,17 @@ testApp.config(function($stateProvider, $urlRouterProvider, $locationProvider, $
 	    url: "/search?searchString",
 	    templateUrl: '/angularstatic/search/partials/index.html',
 	    controller: 'searchController'
+	}).state('user.authorroles', {
+	    title: "Opinion Junction",
+	    url: "/authorroles",
+	    templateUrl: '/angularstatic/authorroles/partials/index.html',
+	    controller: 'assignAuthorRolesController'
+	}).state('user.createroles', {
+	    title: "Opinion Junction",
+	    url: "/createroles",
+	    templateUrl: '/angularstatic/createroles/partials/index.html',
+	    controller: 'createAuthorRolesController',
+	    css: '/angularstatic/external/angular-crop/css/image-crop-styles.css'
 	}).state('default', {
 	    title: "Opinion Junction",
 	    url: "/default",
@@ -219,6 +230,7 @@ function initSidebarCapabilities(commonOJService, scope) {
 	var sidebarArticlePermissionkeys = commonOJService.getKeys(commonOJService.sidebarArticlePermissions);
         var sidebarOtherMainPermissionkeys = commonOJService.getKeys(commonOJService.sidebarOtherMainPermissions);
         var sidebarAboutusPermissionkeys = commonOJService.getKeys(commonOJService.sidebarAboutusPermissions);
+	var sidebarRolesPermissionkeys = commonOJService.getKeys(commonOJService.sidebarRolesPermissions);
 
 	if (permissions!=null && commonOJService.isArray(permissions)) {
 	    var numPermissions = permissions.length;
@@ -249,6 +261,13 @@ function initSidebarCapabilities(commonOJService, scope) {
 		    }
 		}
 
+		if (commonOJService.indexOf(sidebarRolesPermissionkeys, permission) > -1) {
+		    if (permission != null) {
+			var linksForPermission = commonOJService.sidebarRolesPermissions[permission];
+			addCapabilitiesForPermission(commonOJService, scope.sidebarRolesCapabilities, linksForPermission);
+		    }
+		}
+
 	    }
 	    if (scope.sidebarArticleCapabilities.length > 0) {
 		scope.articleCapabilitiesAvailable = true;
@@ -259,6 +278,11 @@ function initSidebarCapabilities(commonOJService, scope) {
 		scope.aboutusCapabilitiesAvailable = true;
 	    } else {
 		scope.aboutusCapabilitiesAvailable = false;
+	    }
+	    if (scope.sidebarRolesCapabilities.length > 0) {
+		scope.rolesCapabilitiesAvailable = true;
+	    } else {
+		scope.rolesCapabilitiesAvailable = false;
 	    }
 	} else {
 	    scope.aboutusCapabilitiesAvailable = false;
@@ -295,6 +319,7 @@ testApp.factory('commonOJService', function($http, $location) {
 
     serviceInstance.userData = null;
 
+
     serviceInstance.convertYoutubeIframeToHtml5 = function(articleContent) {
 	var wrapper= document.createElement('div');
 	wrapper.innerHTML= articleContent;
@@ -330,6 +355,9 @@ testApp.factory('commonOJService', function($http, $location) {
 	{"set_aboutus" : [{"id" : "set_aboutus", "title" : "Change About Us", "content" : "Change About Us", "url" : "/user/setaboutus" },
 			  {"id" : "set_contactus", "title" : "Change Contact Us", "content" : "Change Contact Us", "url" : "/user/setcontactus" },
 			 {"id" : "set_ourteam", "title" : "Change Our Team", "content" : "Change Our Team", "url" : "/user/setourteam" }]};
+
+    serviceInstance.sidebarRolesPermissions = { "assign_permissions" : [{"id" : "assign_permissions", "title" : "Assign Roles", "content" : "Assign Roles", "url" : "/user/authorroles" }],
+						"create_roles" : [{"id" : "create_roles", "title" : "Create Roles", "content" : "Create Roles", "url" : "/user/createroles" }]};
 
     serviceInstance.isUserLoggedIn = function() {
 	return serviceInstance.userData && (serviceInstance.userData.id || (serviceInstance.userData.code === "user_not_setup_for_oj"));
@@ -391,6 +419,46 @@ testApp.factory('commonOJService', function($http, $location) {
 	}
 	return false;
     }
+
+    var compareObjects = function(object1, object2) {
+	var same = true;
+	for (var key in object1) {
+	    if (object1.hasOwnProperty(key) && object2.hasOwnProperty(key)) {
+		var field1 = object1[key];
+		var field2 = object2[key];
+		if (serviceInstance.isArray(field1) && serviceInstance.isArray(field2)) {
+		    if (!serviceInstance.compareArrays(field1, field2)) {
+			same = false;
+			break;
+		    };
+		    continue;
+		}
+		if (object1[key] !== object2[key]) {
+		    same = false;
+		    break;
+		}
+	    }
+	}
+	return same;
+    }
+
+    serviceInstance.compareArrays = function(array1, array2) {
+	var numElements = array1.length;
+	if (numElements != array2.length) {
+	    return false;
+	}
+
+	for (var i = 0; i < numElements; i++) {
+	    if (!compareObjects(array1[i], array2[i])) {
+		return false;
+	    }
+	}
+	
+	return true;
+	
+    };
+    
+    serviceInstance.compareObjects = compareObjects;
 
   
     if(typeof Array.prototype.indexOf === 'function') {
@@ -469,7 +537,7 @@ testApp.factory('commonOJService', function($http, $location) {
 		if (listeners != null) {
 		    numListeners = listeners.length;
 		    //console.log("numListeners: " + numListeners);
-		    for (i = 0; i < numListeners; i++) { listeners[i](data) };
+		    for (i = 0; i < numListeners; i++) { try { listeners[i](data)} catch (exception) { console.log("exception while invoking listener " + listeners[i] + " exception: " + exception);} };
 		}
 		
 	    }
@@ -1612,6 +1680,608 @@ testApp.controller('searchController', function($scope, $http, $stateParams, $lo
     searchResults();
 });
 
+
+testApp.controller('createAuthorRolesController', function($scope, $http, $timeout, commonOJService) {
+    $("title").text("Opinion Junction - Create Roles");
+    $scope.permissionSuggestions = [];
+    $scope.permissionSuggestionsMap = {};
+    $scope.allowEditing = false;
+    $scope.roles = [];
+
+    $scope.existingRoles = [];
+
+    $scope.existingRolesMap = {};
+
+    $scope.newRoles = [];
+
+    $scope.modifiedRoles = [];
+
+    $scope.newRolesToggleLinkText = "+";
+    $scope.newRolesCollapse = true;
+
+
+    /*
+    var resetNewRoles = function() {
+
+	$scope.highestNewRoleIndex = 0;
+	
+	$scope.newRoleIndexMap = {};
+
+    }
+
+
+    var updateIndexAndNewRole = function(newRole) {
+	
+	$scope.newRoleIndexMap[$scope.highestNewRoleIndex] = newRole;
+
+	newRole.viewIndex = $scope.highestNewRoleIndex;
+
+	$scope.highestNewRoleIndex = $scope.highestNewRoleIndex + 1;
+	
+    }
+
+    */
+
+    //$scope.modifiedRolesMap = {};
+
+    var getCruftLessRole = function(role) {
+	var newRole = {};
+
+	newRole.role_name = role.role_name;
+	newRole.permissions = role.permissions;
+	return newRole;
+    }
+
+    var resetRoles = function(result) {
+	var updatedRoles = result.updated_roles;
+	if (updatedRoles != null) {
+	    var numUpdatedRoles = updatedRoles.length;
+	    for (var i = 0; i < numUpdatedRoles; i++) {
+		var role = getCruftLessRole(updatedRoles[i]);
+		$scope.existingRolesMap[role.role_name] = role;
+	    }
+	}
+	
+	var createdRoles = result.created_roles;
+	if (createdRoles != null) {
+	    var numcreatedRoles = createdRoles.length;
+	    for (var i = 0; i < numcreatedRoles; i++) {
+		var role = getCruftLessRole(createdRoles[i]);
+		$scope.existingRolesMap[role.role_name] = role;
+	    }
+	}
+
+	$scope.existingRolesCollapse = true;
+
+	$scope.existingRoles = [];
+	$scope.newRoles = [];
+
+	for (var role_name in $scope.existingRolesMap) {
+	    if ($scope.existingRolesMap.hasOwnProperty(role_name)) {
+		var role = JSON.parse(JSON.stringify($scope.existingRolesMap[role_name]));
+		role.roleToggleLinkText = "+";
+		role.divCollapsed = true;		
+		$scope.existingRoles.push(role);
+	    }
+	}
+
+	$timeout(function() { 
+	    $scope.existingRolesCollapse = false;
+	}, 500);
+
+    }
+
+    $scope.newRoleIndex = -1;
+
+    $scope.existingRolesCollapse = true;
+    $scope.existingRolesToggleLinkText = "-";
+    $http.get('/api/1.0/roles', {headers: {"Content-Type": "application/json"}}).success(function(data) {
+	$scope.roles = data;
+	$scope.existingRoles = $scope.roles.slice();
+
+	for (var i = 0; i < $scope.existingRoles.length; i++) {
+	    var role = $scope.existingRoles[i];
+	    $scope.existingRolesMap[role.role_name] = JSON.parse(JSON.stringify(role));
+	    role.roleToggleLinkText = "+";
+	    role.divCollapsed = true;
+	}
+	if ($scope.roles.length > 0) {
+	    $scope.existingRolesCollapse = false;
+	}
+
+	addPermissionSuggestionsFromExistingRoles($scope.existingRoles);
+	$scope.allowEditing = true;
+    });
+
+    $scope.checkRoleChanged = function($event, role) {
+	if (!commonOJService.compareObjects($scope.existingRolesMap[role.role_name], role)) {
+	    role.hasChanged = true;
+	    role.changedText = "(Changed)";
+	} else {
+	    role.hasChanged = false;
+	    role.changedText = "";
+
+	};
+    }
+
+    $scope.toggleRoleDetails = function(role) {
+	if (role.divCollapsed) {
+	    role.divCollapsed = false;
+	    role.roleToggleLinkText = "-";
+	} else {
+	    role.divCollapsed = true;
+	    role.roleToggleLinkText = "+";
+	}
+    }
+
+    $scope.toggleExistingRoles = function() {
+	if ($scope.existingRolesCollapse == false) {
+	    $scope.existingRolesCollapse = true;
+	    $scope.existingRolesToggleLinkText = "+";
+	} else {
+	    $scope.existingRolesCollapse = false;
+	    $scope.existingRolesToggleLinkText = "-";
+	}
+    }
+
+    $scope.validateRoleName = function($event, role) {
+	if (!role.role_name) {
+	    role.roleNameErrorMessage = "Enter Role Name";
+	    role.roleNameError = true;
+	    return;
+	} else if (role.role_name.indexOf("\\") > -1) {
+	    role.roleNameErrorMessage = "Role Name cannot contain '\\'";
+	    role.roleNameError = true;
+	    return;
+	}
+	role.roleNameError = false;
+    }
+
+    var addPermissionSuggestionsFromExistingRoles = function(existingRoles) {
+	var permissionsMap = {};
+	var numExistingRoles = existingRoles.length;
+	for (var i = 0; i < numExistingRoles; i++) {
+	    var role = existingRoles[i];
+	    var permissions = role.permissions;
+	    for (var j = 0; j < permissions.length; j++) {
+		permissionsMap[permissions[j]] = null;
+	    }
+	}
+
+	for (var permission in permissionsMap) {
+	    if (permissionsMap.hasOwnProperty(permission)) {
+		$scope.permissionSuggestions.push(permission);
+	    }
+	}
+	
+    }
+
+    $scope.toggleNewRoles = function() {
+	if ($scope.newRolesCollapse == false) {
+	    $scope.newRolesCollapse = true;
+	    $scope.newRolesToggleLinkText = "+";
+	} else {
+	    $scope.newRolesCollapse = false;
+	    $scope.newRolesToggleLinkText = "-";
+	}
+    }
+
+    $scope.getFilterPermissionSuggestions = function(role) {
+	
+	if (role.newPermission && (endsWith(role.newPermission, " ")||
+	   endsWith(role.newPermission, "\t")||
+	   endsWith(role.newPermission, "\n")||
+	    endsWith(role.newPermission, "\r"))) {
+	    return [];
+	}
+
+	var returnedSuggestions = [];
+	var rolePermissions = role.permissions.slice().sort();
+	var permissionSuggestions = $scope.permissionSuggestions.slice().sort();
+	
+	
+	var jStart = 0;
+	for (var i = 0,j=0;i < permissionSuggestions.length; i++) {
+	    var rolePermission = null;
+	    var permissionSuggestion = permissionSuggestions[i];
+	    for (j=jStart; j <  rolePermissions.length; j++) {
+		rolePermission = rolePermissions[j]; 
+		if (permissionSuggestion.localeCompare(rolePermission) >  0) {
+		    jStart = j;
+		    continue;
+		}
+		if (permissionSuggestion.localeCompare(rolePermission) == 0) {
+		    permissionSuggestions.splice(i,1);
+		    jStart = j;
+		    i = i - 1;
+		}
+
+		break;
+		//returnedSuggestions.push(rolePermission);
+	    }
+	}
+	return permissionSuggestions;
+	
+    }
+
+    $scope.hideError = function() {
+	$scope.showError = false;
+    }
+
+    $scope.hideSuccess = function() {
+	$scope.showSuccess = false;
+    }
+    
+    var getValuesListFromMap = function(map) {
+	var list = [];
+	for (var key in map) {
+	    if (map.hasOwnProperty(key)) {
+		list.push(map[key]);
+	    }
+	}
+    }
+
+
+    var getChangedRoles = function(list, map) {
+	if (list == null ) {
+	    return [];
+	}
+
+	var numElements = list.length;
+
+	var changedRoles = [];
+
+	for (var i = 0; i < numElements; i++) {
+	    var role = list[i];
+	    if (!commonOJService.compareObjects(role, map[role.role_name])) {
+		changedRoles.push(role);
+	    }
+	}
+	return changedRoles;
+
+    }
+ 
+    var checkBlankRoleNames = function() {
+	var numNewRoles = $scope.newRoles.length;
+
+	for (var i = 0; i < numNewRoles; i++) {
+	    var role = $scope.newRoles[i];
+	    if (!role.role_name) {
+		$timeout(function() { 
+		    $("#" + role.uiId + "-role-name-input-field" ).focus(); 
+		    $("#" + role.uiId + "-role-name-input-field" ).goTo(-100); 
+		}, 1000);		
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    $scope.removeNewRole = function(role) {
+	var roleIndex = commonOJService.indexOf($scope.newRoles, role);
+	$scope.newRoles.splice(roleIndex,1);	
+    }
+
+    $scope.submitRoles = function() {
+	if (!checkBlankRoleNames()) {
+	    return;
+	}
+	var modifiedRoles = getChangedRoles($scope.existingRoles, $scope.existingRolesMap);
+	if ($scope.newRoles.length ==0 && modifiedRoles.length ==0) {
+	    $scope.successMessage = "Roles successfully updated";
+	    $scope.showSuccess = true;
+	    $scope.showError = false;
+	    return;
+	}
+
+	var submittedObject = {};
+	submittedObject.new_roles = $scope.newRoles;
+	submittedObject.modified_roles = modifiedRoles;
+	submittedObject.all_information = true;
+	submittedObject.return_changes = true;
+	$http.post('/api/1.0/roles', JSON.stringify(submittedObject), {headers: {"Content-Type": "application/json"}}).success(function(data) {
+	    $scope.showSuccess = true;
+	    $scope.showError = false;
+	    $scope.successMessage = "Roles successfully updated";
+	    resetRoles(data);
+	    $timeout(function() { 
+		$("#submitSuccess" ).goTo(-100); 
+	    }, 1000);
+	}).error(function(data) {
+	    $scope.showSuccess = false;
+	    $scope.showError = true;
+	    if (data.hasOwnProperty("message")) {
+		$scope.errorMessage = data.message;
+	    } else {
+		$scope.errorMessage = "Error while submitting Roles";
+		console.log(data);
+	    }
+	    $timeout(function() { 
+		$("#submitError" ).goTo(-100); 
+	    }, 1000);
+
+	});
+    };
+    
+    
+    $scope.removePermissionFromRole = function(role,permission){
+	var index = commonOJService.indexOf(role.permissions, permission);
+	if (index > -1) {
+	    role.permissions.splice(index,1);
+	}
+	$scope.checkRoleChanged(null, role);
+    }
+
+    $scope.addNewRole = function() {
+	if (!$scope.allowEditing) {
+	    return;
+	}
+	if ($scope.newRoles.length == 0) {
+	    $scope.newRolesToggleLinkText = "-";
+	    $scope.newRolesCollapse = false;
+	}
+	var role = {};
+	role.role_name = "";
+	role.permissions = [];
+	role.roleToggleLinkText = "-";
+	role.roleNameErrorMessage = "Enter Role Name";
+	role.roleNameError = true;
+	$scope.roles.push(role);
+	$scope.newRoles.push(role);
+	$scope.newRoleIndex = $scope.newRoleIndex + 1;
+	role.uiId = "newrole-" + $scope.newRoleIndex;
+	$timeout(function() { 
+	    $("#" + role.uiId + '-role-name-input-field' ).goTo(); 
+	}, 200);
+    };
+
+    $scope.addPermissionToRole = function(role) {
+
+	if (role.newPermission) {
+	    if (commonOJService.indexOf(role.permissions, role.newPermission) <= -1) {
+		role.permissions.push(role.newPermission);
+		if (commonOJService.indexOf($scope.permissionSuggestions, role.newPermission) <= -1) {
+		    $scope.permissionSuggestions.push(role.newPermission);
+		}
+		role.newPermission = "";
+	    } else {
+		//role.newPermission = "";
+		role.incorrectPermissionText = "Entered permission already exists in the role!";
+	    }
+	} else {
+	    role.incorrectPermissionClass = "";
+	    role.incorrectPermissionText = "You have entered blank permission!";
+	}
+	$scope.checkRoleChanged(null, role);
+    }
+
+    $scope.newPermissionKeyup = function($event, role) {
+	if (role.newPermission) {
+	    //role.incorrectPermissionClass = "hide";
+	    role.incorrectPermissionText = " ";
+	} else {
+	    role.incorrectPermissionClass = "";
+	    role.incorrectPermissionText = "";
+	}
+    }
+
+
+    
+});
+
+
+testApp.controller('assignAuthorRolesController', function($scope, $http) {
+
+    $("title").text("Opinion Junction - Assign Roles");
+
+    $scope.showTable = true;
+
+    $scope.errorMessage = "";
+    $scope.successMessage = "";
+
+    $scope.showError = false;
+    $scope.showSuccess = false;
+
+    $scope.hideError = function() {
+	$scope.showError = false;
+    }
+
+    $scope.hideSuccess = function() {
+	$scope.showSuccess = false;
+    }
+
+    var getChangedAuthors = function(list, map) {
+	if (list == null ) {
+	    return [];
+	}
+
+	var numElements = list.length;
+
+	var changedAuthors = [];
+
+	for (var i = 0; i < numElements; i++) {
+	    var author = list[i];
+	    if (author.user_role.localeCompare(map[author.author_name].user_role) != 0) {
+		changedAuthors.push(author);
+	    }
+	}
+	return changedAuthors;
+
+    }
+
+    $scope.authorsPerPage = 30;
+
+    $scope.latestAuthorId = "";
+
+    $scope.firstAuthorId = "";
+
+    $scope.firstMostAuthorId = "";
+
+    $scope.temporaryListForNewAuthors = null;
+
+    $scope.returnBack = function() {
+	$scope.showTable = true;
+	$scope.temporaryListForNewAuthors = null;
+    }
+
+    $scope.continueNextPrevious = function() {
+	setAuthorsOnRestGet($scope.temporaryListForNewAuthors)
+	$scope.showTable = true;
+	$scope.temporaryListForNewAuthors = null;
+    }
+
+    var setAuthorsOnRestGetAfterCheckingChanges = function(data) {
+	if (data.length > 0) {
+	    if (getChangedAuthors($scope.displayed_authors, $scope.originalAuthorsMap).length == 0) {
+		setAuthorsOnRestGet(data);
+	    } else {
+		$scope.temporaryListForNewAuthors = data;
+		$scope.showTable = false;
+	    }
+	}
+
+    }
+    var setAuthorsOnRestGetInitial = function(data) {
+	$scope.firstMostAuthorId = data[0].id;
+	setAuthorsOnRestGet(data);
+    }
+
+    var setAuthorsOnRestGet = function(data) {
+	$scope.displayed_authors = data;
+	setBackingInformation(data);
+	$scope.firstAuthorId = data[0].id;;
+	$scope.latestAuthorId = data[data.length-1].id;
+    }
+
+    $scope.nextPage = function() {
+	$http.get('/api/1.0/authors?limit=' + $scope.authorsPerPage + '&fromId=' + $scope.latestAuthorId, {headers: {"Content-Type": "application/json"}}).success(setAuthorsOnRestGetAfterCheckingChanges);	
+    }
+
+    $scope.previousPage = function() {
+	if ($scope.firstMostAuthorId && ($scope.firstMostAuthorId != $scope.firstAuthorId)) {
+	    $http.get('/api/1.0/authors?limit=-' + $scope.authorsPerPage + '&fromId=' + $scope.firstAuthorId, {headers: {"Content-Type": "application/json"}}).success(setAuthorsOnRestGetAfterCheckingChanges);	
+	}
+	
+    }
+
+
+
+    $http.get('/api/1.0/authors?limit=' + $scope.authorsPerPage, {headers: {"Content-Type": "application/json"}}).success(setAuthorsOnRestGetInitial);
+
+    $scope.originalAuthorsMap = {};
+
+
+    $scope.setRole = function(author, role) {
+	author.user_role = role;
+    }
+
+    var getListForFieldFromList = function(list, fieldName) {
+	var returnedList = [];
+	var numMembers = list.length;
+	for (var i = 0; i < numMembers; i++) {
+	    returnedList.push(list[i][fieldName]);
+	}
+	return returnedList;
+    }
+
+    $http.get('/api/1.0/roles?fields=role_name',{headers: {"Content-Type": "application/json"}}).success(function(data) {
+	$scope.roles = getListForFieldFromList(data, "role_name");
+    });
+
+
+    var setBackingInformation = function(authorList) {
+	var numAuthors = authorList.length;
+	$scope.originalAuthorsMap = {};
+	for (var i = 0; i < numAuthors; i++) {
+	    var author = authorList[i];
+	    $scope.originalAuthorsMap[author.author_name] = JSON.parse(JSON.stringify(author));
+	}
+    }
+    
+    var resetAuthors = function(changedAuthors) {
+	if (changedAuthors == null) {
+	    return;
+	}
+	var numChangedAuthors = changedAuthors.length;
+
+	for (var i = 0 ; i < numChangedAuthors; i++) {
+	    var changedAuthor = changedAuthors[i];
+	    $scope.originalAuthorsMap[changedAuthor.author_name] = changedAuthor;
+	    
+	}
+
+	var displayed_authors = [];
+
+	for (var key in $scope.originalAuthorsMap) {
+	    if ($scope.originalAuthorsMap.hasOwnProperty(key)) {
+		displayed_authors.push($scope.originalAuthorsMap[key]);
+	    }
+	}
+
+	$scope.displayed_authors = displayed_authors;
+
+	
+    }
+
+    $scope.searchAuthors = function() {
+	var searchString = "?use_icontains=true";
+
+	if ($scope.searchAuthorName) {
+	    searchString = searchString + "&author_name=" +  $scope.searchAuthorName;
+	}
+
+	if ($scope.searchFirstName) {
+	    searchString = searchString + (searchString?"&":"?") + "first_name=" +  $scope.searchFirstName;
+	}
+
+	if ($scope.searchLastName) {
+	    searchString = searchString + (searchString?"&":"?") + "last_name=" +  $scope.searchLastName;
+	}
+
+	if ($scope.searchRoleName) {
+	    searchString = searchString + (searchString?"&":"?") + "user_role=" +  $scope.searchRoleName;
+	}
+
+	$http.get('/api/1.0/authors'+ searchString,{headers: {"Content-Type": "application/json"}}).success(setAuthorsOnRestGetAfterCheckingChanges);
+
+
+    }
+
+    $scope.submitAuthorChanges = function() {
+	var changedAuthors = getChangedAuthors($scope.displayed_authors, $scope.originalAuthorsMap);
+	if (changedAuthors.length == 0) {
+	    $scope.successMessage = "Author Roles Changed Successfully";
+	    $scope.showSuccess = true;
+	}
+	console.log("got changed authors correctly");
+
+	var submittedObject = {};
+	submittedObject.all_information = true;
+	submittedObject.changed_authors = changedAuthors;
+	submittedObject.return_changes = true;
+	$http.post('/api/1.0/authors',submittedObject,{headers: {"Content-Type": "application/json"}}).success(function(data) {
+	    console.log("need to implement author update feature");
+	    resetAuthors(data.changed_authors);
+	    $scope.successMessage = "Author Roles Changed Successfully";
+	    $scope.showSuccess = true;
+	}).error(function(data) {
+	    if ((typeof data) === "string" || data instanceof String) {
+		$scope.errorMessage = "Something went wrong while submitting your changes, here are the details, please contact the site administrators with it: " + data;
+	    }
+	    if ("message" in data) {
+		$scope.errorMessage = data.message;
+	    } else {
+		$scope.errorMessage = "Something went wrong while submitting your changes.";
+	    }
+
+	    $scope.showError = true;
+
+	});	
+    }
+
+
+});
+
 testApp.controller('mainPageController', function($scope, $http, $modal, commonOJService, profileService, $stateParams) {
     $scope.category = $stateParams.category;
 
@@ -2181,6 +2851,8 @@ testApp.controller('mainController', function($scope, $http, $modal, commonOJSer
 });
 
 testApp.controller('setAboutusController', function($scope, $http  ) {
+    $("title").text("Opinion Junction - Set About Us");
+
     //$scope.form.aboutusMessage = "";
     $scope.originalData = null;
 
@@ -2230,6 +2902,9 @@ testApp.controller('setAboutusController', function($scope, $http  ) {
 });
 
 testApp.controller('setContactusController', function($scope, $http  ) {
+
+    $("title").text("Opinion Junction - Set Contact Us");
+
     $scope.message = "Reach us in Axlotopia";
 //    var contactUs_row_test = {};
 //    contactUs_row_test.contactus_details = "";
@@ -2377,6 +3052,8 @@ testApp.controller('setContactusController', function($scope, $http  ) {
 });
 
 testApp.controller('setOurTeamController', function($scope, $http, authorCacheService, commonOJService ) {
+
+    $("title").text("Opinion Junction - Set Our Team");
 
     $scope.added_team_authors_map = {};
     $scope.removed_team_authors_map = {};
@@ -2871,17 +3548,20 @@ testApp.controller('userProfileController', function($scope, $http, profileServi
     }
 
     $scope.populateForm = function() {
-	$scope.profileForm.first_name = $scope.userData.first_name;
-	$scope.profileForm.last_name = $scope.userData.last_name;
-	$scope.profileForm.gender = $scope.userData.gender;
-	if ($scope.profileForm.gender && $scope.profileForm.gender in genderDict) {
-	    $scope.profilePreview.genderText = genderDict[$scope.profileForm.gender]["text"];
-	}
+	if ($scope.userData) {
+	    $scope.profileForm.first_name = $scope.userData.first_name;
+	    $scope.profileForm.last_name = $scope.userData.last_name;
+	    $scope.profileForm.gender = $scope.userData.gender;
+	    if ($scope.profileForm.gender && $scope.profileForm.gender in genderDict) {
+		$scope.profilePreview.genderText = genderDict[$scope.profileForm.gender]["text"];
+	    }
 
-	imageData = profileService.getProfileImage($scope.userData);
-	//$scope.profileForm.image = imageData;
-	$scope.setPreviewImageOnInit(imageData);
-	$scope.profileForm.user_bio = $scope.userData.user_bio;
+	    imageData = profileService.getProfileImage($scope.userData);
+	    //$scope.profileForm.image = imageData;
+	    $scope.setPreviewImageOnInit(imageData);
+	    $scope.profileForm.user_bio = $scope.userData.user_bio;
+
+	}
 	//$scope.profilePreview.selectedImage = profileService.getProfileImage($scope.userData);
     }
 
@@ -4300,6 +4980,7 @@ testApp.controller('userController', function($scope, $location, $http, $modal, 
     $scope.sidebarArticleCapabilities = [];
     $scope.sidebarOtherMainCapabilities = [];
     $scope.sidebarAboutusCapabilities = [];
+    $scope.sidebarRolesCapabilities = [];
 
 
     $scope.init = function() {
@@ -4325,6 +5006,7 @@ testApp.controller('userController', function($scope, $location, $http, $modal, 
     $scope.capabilities = getCapabilities();
     $scope.isArticleDivCollapsed = true;
     $scope.isAboutusDivCollapsed = true;
+    $scope.isRolesDivCollapsed = true;
     $scope.activeItem = "";
 
 

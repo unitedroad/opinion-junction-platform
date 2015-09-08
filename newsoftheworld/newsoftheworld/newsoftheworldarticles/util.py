@@ -23,6 +23,7 @@ from .models import ArticleForTagCategory
 from .models import Team_Author
 from .models import Team_Metadata
 from .models import Team_ContactUs
+from .models import Role_And_Permissions
 from .db import db
 from rest_framework import status
 from allauth.account.signals import user_logged_in, user_signed_up
@@ -34,6 +35,8 @@ from PIL import Image, ImageOps, ImageChops
 from django.core.exceptions import PermissionDenied
 from bson.objectid import ObjectId
 from mongoengine import Q
+from mongoengine.errors import DoesNotExist
+
 
 LOCATION_PROFILE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojprofileimages')
 LOCATION_ARTICLE_IMAGES = os.path.join(settings.MEDIA_ROOT, 'ojarticleimages')
@@ -47,6 +50,7 @@ log_user_activity = django.dispatch.Signal(providing_args=["type", "id", "userid
 published_article_finalised = django.dispatch.Signal(providing_args=["article"])
 article_published = django.dispatch.Signal(providing_args=["article"])
 article_unpublished = django.dispatch.Signal(providing_args=["article"])
+roles_updated = django.dispatch.Signal(providing_args=["roles"])
 
 crop_image_dimensions_dict = {"header_image" : (0,0,1280, 400), "thumbnail_image" : (0,0,180, 180)}
 fit_image_dimensions_dict = {"header_image" : (1280, 400), "thumbnail_image" : (180, 180)}
@@ -1098,6 +1102,16 @@ def update_article_creation_log(id, userid_to, userid_from, **kwargs):
                                        }, 
                                        upsert=True)
     
+@receiver(roles_updated, dispatch_uid="111")
+def update_article_creation_log(roles, **kwargs):
+    for role in roles:
+        print "role_name: " + role.role_name
+        authors = Author.objects(user_role=role.role_name)
+        for author in authors:
+            print "author_name: " + author.author_name
+            author.user_permissions = role.permissions
+            author.save()
+
 #    activity_records = Author_Activity.objects(author_id=id)
 #    activity_record = None
 #    if len(activity_records) > 0:
@@ -1370,3 +1384,323 @@ def article_search(**kwargs):
         articles = Article.objects.filter(Q(storytext__icontains = searchString) & Q(status="published"))
         return list(articles)
     return []
+
+def get_user_permissions(**kwargs):
+    authors = Author.objects(id=str(user.id))
+    
+    author = None
+    if len(authors) > 0:
+        author = authors[0]
+    else:
+        raise PermissionDenied()
+
+    user_permissions = author.user_permissions
+
+
+    if "assign_permissions" not in user_permissions and "create_roles" not in user_permissions:
+        raise PermissionDenied()
+
+    return Roles_And_Permissions.objects.all()
+
+
+
+def compare_object_and_dict(mongoengine_object, rest_dict, ignore_missing_fields):
+    object_dict = mongoengine_object._data
+    for key in object_dict:
+        if key not in rest_dict:
+            if ignore_missing_fields:
+                continue
+            else:
+                return False
+        if object_dict[key] != rest_dict[key]:
+            return False
+
+    return True
+
+def get_required_permissions_for_author_update(changed_authors):
+    required_permissions = set()
+    for changed_author in changed_authors:
+        authors = Author.objects(id=changed_author["id"])
+        author = None
+        if len(authors) == 1:
+            author = authors[1]
+
+        
+        #compatibility break-prone check
+        if compare_object_and_dict(author,changed_author, True):
+            continue
+
+        print "str(changed_author): " + str(changed_author)
+
+        print "str(author._data): " + str(author._data)
+ 
+
+
+        if author.user_role != changed_author['user_role']:
+            required_permissions.add("assign_permissions")
+
+
+        author.user_role = changed_author["user_role"]
+
+        print "str(author._data): " + str(author._data)
+        
+        if not compare_object_and_dict(author,changed_author, True):
+            raise PermissionDenied("You need 'assign_permissions' permission to changed author roles, no other changes to authors are permitted")
+            
+    return required_permissions
+
+def check_user_permissions(user, permissions_to_compare):
+    
+    if not user.is_authenticated():
+        raise PermissionDenied("You are not authenticated.")
+
+    authors = Author.objects(id=str(user.id))
+    
+    author = None
+    if len(authors) > 0:
+        author = authors[0]
+    else:
+        raise PermissionDenied("You are not authenticated.")
+
+    user_permissions = author.user_permissions
+
+    for permission_to_compare in permissions_to_compare:
+        if permission_to_compare not in user_permissions:
+            raise PermissionDenied("You don't have the permissions to perform this operation.")
+    
+
+def set_if_missing_failed_updates_authors(returned_dict, **kwargs):
+    if "failed_updates" not in returned_dict:
+        failed_updates = {}
+        failed_updates["missing_author_role_names"] = {}
+        returned_dict["failed_updates"] = failed_updates
+
+
+def update_authors(user, changed_author_details, return_changes, **kwargs):
+    roles_map = {}
+    return_dict = {"ok" : "true"}
+    changed_authors_return = None
+    missing_roles = set()
+    print "str(return_changes): " + str(return_changes)
+    if return_changes:
+        changed_authors_return = []
+        return_dict["changed_authors"] = changed_authors_return
+    for changed_author in changed_author_details:
+        authors = Author.objects(id=changed_author["id"])
+        
+        if len(authors) == 1:
+            author = authors[0]
+            new_role = changed_author["user_role"]
+
+            
+            if new_role not in roles_map:
+                if new_role not in missing_roles:
+                    try:
+                        role = Role_And_Permissions.objects.get(role_name = new_role)
+                        roles_map[role.role_name] = role
+                    except DoesNotExist as e:
+                        missing_roles.add(new_role)
+                        set_if_missing_failed_updates_authors(return_dict)
+                        returned_dict["failed_updates"]["missing_author_role_names"][author.author_name] = new_role
+                        continue
+                else:
+                    set_if_missing_failed_updates_authors(return_dict)
+                    returned_dict["failed_updates"]["missing_author_role_names"][author.author_name] = new_role
+                    continue
+                    
+
+            role = roles_map[new_role]
+            author.user_role = new_role
+            author.user_permissions = role.permissions
+
+            author.save()
+            if return_changes:
+                changed_authors_return.append(author)
+    return return_dict
+
+def update_authors_all_modes(user, **kwargs):
+    if "all_information" not in kwargs or kwargs["all_information"] is not True:
+        raise PermissionDenied("This operation only supports 'all_information' as of now")
+    return_dict = {}
+    return_changes = False
+    required_permissions = None
+    changed_authors = None
+    if "changed_authors" in kwargs:
+        changed_authors = kwargs["changed_authors"]
+    
+    if changed_authors is not None and len(changed_authors) > 0:
+        required_permissions = get_required_permissions_for_author_update(changed_authors)
+    
+
+        
+        check_user_permissions(user, required_permissions)
+        
+        print "str(kwargs): " + str(kwargs)
+        if "return_changes" in kwargs and (kwargs["return_changes"] == "true" or kwargs["return_changes"] is True):
+            return_changes = True    
+    
+            print "str(return_changes): " + str(return_changes)
+            
+        return_dict.update(update_authors(user, changed_authors, return_changes))
+
+    return return_dict
+    
+    pass
+
+def validate_role_dicts (**kwargs):
+    new_role_details = kwargs['new_roles']
+    for role_detail in new_role_details:
+        validate_role_dict(role_detail)
+
+def validate_role_dict(role):
+    if "\\" in role["role_name"]:
+        raise ValueError("Role name cannot contain letter '\\'")
+        
+
+def validate_role(role):
+    if "\\" in role.role_name:
+        raise ValueError("Role name cannot contain letter '\\'")
+
+def get_all_roles_permissions(**kwargs):
+    if "fields" in kwargs:
+        fields = kwargs["fields"]
+        if isinstance(fields, basestring):
+            fields = fields.split(",")
+        
+        return Role_And_Permissions.objects.all().only(*fields)
+        
+    return Role_And_Permissions.objects.all()
+    
+
+
+def create_author_roles_all_modes(user, **kwargs):
+    #validate_role_dicts(**kwargs)
+
+    check_user_permissions(user, ["create_roles"])
+
+    returned_dict = {}
+    print "str(kwargs): " + str(kwargs) 
+    return_changes = False
+    if 'return_changes' in kwargs and ((kwargs['return_changes'] == "true") or (kwargs['return_changes'] is True)):
+        print "str(type(kwargs['return_changes'])): " + str(type(kwargs['return_changes']))
+        print "str(kwargs['return_changes']): " + str(kwargs['return_changes'])
+        return_changes = True
+    if 'all_information' in kwargs and (kwargs['all_information'] == 'true' or kwargs['all_information'] is True):
+        if 'new_roles' in kwargs:
+            returned_dict_create = create_author_roles(user, kwargs['new_roles'], return_changes)
+            returned_dict.update(returned_dict_create)
+        if 'modified_roles' in kwargs:
+            returned_dict_update = update_author_roles(user, kwargs['modified_roles'], return_changes)
+            returned_dict.update(returned_dict_update)
+        return returned_dict
+
+    else:
+        return create_author_roles(kwargs['new_roles'])
+        
+
+
+def set_if_missing_failed_updates(returned_dict, **kwargs):
+    if "failed_updates" not in returned_dict:
+        failed_updates = {}
+        failed_updates["duplicate_role_names"] = {}
+        failed_updates["missing_role_names"] = {}
+        failed_updates["new_blank_role_names"] = False
+        returned_dict["failed_updates"] = failed_updates
+        
+
+def create_author_roles(user, new_role_details, return_changes, **kwargs):
+    returned_dict = {"ok" : "true"}
+    check_user_permissions(user, ["create_roles"])
+    created_roles = []
+    for role_detail in new_role_details:
+        role_name_from_detail  = role_detail["role_name"]
+        roles = Role_And_Permissions.objects(role_name=role_name_from_detail)
+        if len(roles) > 0:
+            set_if_missing_failed_updates(returned_dict)
+            returned_dict["failed_updates"]["new_blank_role_names"] = True
+
+        role = Role_And_Permissions()
+        role.role_name = role_name_from_detail
+        print 'role_detail["permissions"]: ' + str(role_detail["permissions"])
+        permissions = role_detail["permissions"]
+        if isinstance(permissions, basestring):
+            role.permissions = role_detail["permissions"].split(",")
+        else:
+            role.permissions = role_detail["permissions"]
+        role.save()
+        created_roles.append(role)
+
+    #print "created_roles: " + str(created_roles)
+    
+    print "str(return_changes): " + str(return_changes)
+    if return_changes is True:
+        returned_dict["created_roles"] = created_roles
+        return returned_dict
+    else:
+        return returned_dict
+
+
+
+
+def update_author_roles(user, changed_role_details, return_changes, **kwargs):
+    check_user_permissions(user, ["create_roles"])
+    changed_roles = []
+    returned_dict = {"ok" : "true"}
+    for role_detail in changed_role_details:
+        role_name_from_detail = None
+        try:
+            role_name_from_detail = role_detail["role_name"]
+            role = Role_And_Permissions.objects.get(role_name=role_name_from_detail)
+            permissions = role_detail["permissions"]
+            if isinstance(permissions, basestring):
+                role.permissions = role_detail["permissions"].split(",")
+            else:
+                role.permissions = role_detail["permissions"]
+            role.save()
+            changed_roles.append(role)
+        except DoesNotExist as e:
+            set_if_missing_failed_updates(returned_dict)
+            missing_role_names = returned_dict["failed_updates"]["missing_role_names"]
+            missing_role_names.append(role_name_from_detail)
+
+    roles_updated.send_robust(sender=update_author_roles, roles=changed_roles)
+
+
+    if return_changes is True:
+        returned_dict["updated_roles"] = changed_roles
+        return returned_dict
+    else:
+        return returned_dict
+        
+
+
+
+#http://stackoverflow.com/questions/38987/how-can-i-merge-two-python-dictionaries-in-a-single-expression
+def merge_two_dicts(x, y, **kwargs):
+    '''Given two dicts, merge them into a new dict as a shallow copy.'''
+    z = x
+    if "shallow_copy" in kwargs and kwargs["shallow_copy"] == True:
+        z = x.copy()
+    z.update(y)
+    return z
+
+def serialised_list_for_roles(roles_dict, **kwargs):
+    returned_serialised_list = {}
+    returned_object = Extensible_class()
+    if "created_roles" in roles_dict:
+        returned_object.created_roles = roles_dict["created_roles"]
+        #print 'roles_dict["created_roles"]: ' + str(roles_dict["created_roles"])
+    else:
+        returned_object.created_roles = []
+    if "updated_roles" in roles_dict:
+        returned_object.updated_roles = roles_dict["updated_roles"]
+    else:
+        returned_object.updated_roles = []
+    if "deleted_roles" in roles_dict:
+        returned_object.deleted_roles = roles_dict["deleted_roles"]
+    else:
+        returned_object.deleted_roles = []
+
+    returned_object.ok = roles_dict["ok"]
+    return returned_object
+

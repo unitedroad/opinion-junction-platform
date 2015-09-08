@@ -49,6 +49,11 @@ class Author(Document):
     invitation_count = IntField()
     num_draft = IntField()
 
+    def __cmp__(self, other): 
+        return self.__dict__ == other.__dict__
+
+    def __eq__(self, other): 
+        return self.__dict__ == other.__dict__
 
 class Article_Metadata(EmbeddedDocument):
     robots_tag = StringField()
@@ -194,3 +199,8 @@ class Team_ContactUs(Document):
     contactus_description = StringField()
     contactus_details = StringField()
     contactus_type = StringField()
+
+class Role_And_Permissions(Document):
+    role_name = StringField(primary_key=True, max_length=128)
+    permissions = ListField(StringField(), required=False)
+
