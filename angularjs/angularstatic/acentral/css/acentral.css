@@ -425,7 +425,7 @@ body { padding-top: 50px; }
     vertical-align: top;*/
 }
 
-.profile-encompass, .articleslist-encompass, .usersettings-encompass, .aboutus-encompass {
+.profile-encompass, .articleslist-encompass, .usersettings-encompass, .aboutus-encompass, .assignauthorroles-encompass, .createauthorroles-encompass {
     float: none;
     overflow: hidden;
     max-width: 1400px;
@@ -688,6 +688,14 @@ div[data-attribution-label] {
 	display:none;
     }
 
+}
+
+.create-roles-add-permission-form-control {
+    padding-bottom:25px;
+}
+
+.create-roles-add-permission-form-fieldset-first {
+    padding-bottom: 25px;
 }
 
 [ng-click],
@@ -1012,6 +1020,80 @@ div[data-attribution-label] {
 .aboutuso-contactus-row-checkbox {
     float:left;
     width: 0px;
+}
+
+.createauthorroles-form-group {
+    padding-top:30px;
+}
+
+.createauthorroles-role-div {
+    padding: 20px;
+}
+
+.createauthorroles-existingrole-div-odd {
+    background-color: pink;
+}
+
+.createauthorroles-existingrole-div-even {
+    background-color: #EE99AA;
+}
+
+.createauthorroles-span-enter-rolename {
+    color: red;
+}
+
+.createauthorroles-newrole-div-even {
+    background-color: #BBBBAF;
+}
+.createauthorroles-newrole-div-odd {
+    background-color: #DDDDB0;
+}
+
+.createauthorroles-role-toggle-and-heading {
+    font-size:16px;
+    padding-bottom:10px;
+    margin-left:-10px;
+}
+
+.createauthorroles-role-incorrect-permission-div {
+    min-height: 20px;
+    padding: 0px;
+    font-size: 14px;
+}
+
+.createauthorroles-new-role-remove-button {
+    color : red;
+}
+
+.assignauthorroles-dropdown-menu{
+    overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+    .assignauthorroles-encompass {
+	padding-bottom: 600px;
+    }
+    .assignauthorroles-dropdown-menu{
+	max-height: 300px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .assignauthorroles-encompass {
+	padding-bottom: 700px;
+    }
+    .assignauthorroles-dropdown-menu{
+	max-height: 400px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .assignauthorroles-encompass {
+	padding-bottom: 880px;
+    }
+    .assignauthorroles-dropdown-menu{
+	max-height: 556px;
+    }
 }
 
 .has-error select {
