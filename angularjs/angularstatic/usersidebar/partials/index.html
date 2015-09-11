@@ -3,10 +3,10 @@
     <div id="usersidebar" data-spy="affix" data-offset-top="60" data-offset-bottom="200" class="usersidebar">
 
       <ul class="nav nav-pills nav-stacked">
-	<li id="profileli" ng-click="activateItem('profileli');setArticleDivCollapse(true);isArticleDivCollapsed = true;isAboutusDivCollapsed = true" data-ng-class="navClass('profileli')">        
+	<li id="profileli" ng-click="activateItem('profileli');setArticleDivCollapse(true);isArticleDivCollapsed = true;isAboutusDivCollapsed = true;isRolesDivCollapsed = true" data-ng-class="navClass('profileli')">        
           <a ng-href="/user/profile"> Profile</a>
 	</li>
-	<li id="settingsli" ng-click="activateItem('settingsli');isArticleDivCollapsed = true;isAboutusDivCollapsed = true" data-ng-class="navClass('settingsli')">        
+	<li id="settingsli" ng-click="activateItem('settingsli');isArticleDivCollapsed = true;isAboutusDivCollapsed = true;isRolesDivCollapsed = true" data-ng-class="navClass('settingsli')">        
           <a ng-href="/user/settings"> Settings</a>
 	</li>
 	<li ng-repeat="capability in sidebarOtherMainCapabilities"
@@ -34,9 +34,25 @@
           
           <a ng-href=""> Article</a>
 	</li>
+
 	<div collapse="isArticleDivCollapsed" ng-show="articleCapabilitiesAvailable">
           <div class="well well-sm">
             <ul class="nav nav-pills nav-stacked" ng-repeat="capability in sidebarArticleCapabilities">
+              <li id="{{capability.id}}" ng-click="activateItem(capability.id)" 
+		  data-ng-class="navClass(capability.id)">
+    		<a ng-href="{{capability.url}}">{{capability.title}}</a>
+    	      </li>
+            </ul>
+          </div>
+	</div>
+	<li id="rolesli" ng-click="activateItem('rolesli'); isRolesDivCollapsed = !isRolesDivCollapsed" data-ng-class="navClass('rolesli')"
+	    ng-show="rolesCapabilitiesAvailable">
+          
+          <a ng-href=""> Roles and Permissions</a>
+	</li>
+	<div collapse="isRolesDivCollapsed" ng-show="rolesCapabilitiesAvailable">
+          <div class="well well-sm">
+            <ul class="nav nav-pills nav-stacked" ng-repeat="capability in sidebarRolesCapabilities">
               <li id="{{capability.id}}" ng-click="activateItem(capability.id)" 
 		  data-ng-class="navClass(capability.id)">
     		<a ng-href="{{capability.url}}">{{capability.title}}</a>
