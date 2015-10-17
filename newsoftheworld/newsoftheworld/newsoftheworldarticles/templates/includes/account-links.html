@@ -1,0 +1,31 @@
+<div class="account-home-main-section-div">
+  <div class="account-home-main-section-heading-div">
+    <h3>You can use the following links to explore Opinion Junction.</h3> 
+  </div>
+  <ul class="list-group">
+    <li class="list-group-item">
+      <a href="/">Home</a>
+    </li>
+    <li class="list-group-item">
+      <a href="/user/profile">Profile</a>
+    </li>
+    <li class="list-group-item">
+      <a href="/user/settings">Settings</a>
+    </li>
+  </ul>
+  <div class="account-home-main-section-manage-account-heading-div">
+    <h4>Manage Account.</h4> 
+  </div>
+  <ul class="list-group">
+    <li class="list-group-item"><a href="{% url 'account_email' %}">Change E-mail</a></li>
+  </ul>
+
+  <div class="account-home-main-section-signout-heading-div">
+    <h4>Sign out of Opinion Junction.</h4> 
+  </div>
+  <ul class="list-group">
+    <li class="list-group-item">
+      <a href="{% url 'account_logout' %}">Sign Out</a>
+    </li>
+  </ul>
+</div>
