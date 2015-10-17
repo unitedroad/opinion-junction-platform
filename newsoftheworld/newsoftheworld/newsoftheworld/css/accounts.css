@@ -1,0 +1,29 @@
+.login-or {
+    font-weight: 700;
+    font-size: 14px;
+    /* margin-left: 18px; */
+    margin-bottom: 14px;
+}
+
+body {
+    margin-left: 14px !important;
+    margin-right: 14px !important;
+}
+
+.account-home-main-section-div {
+    padding-top: 12px;
+}
+
+.account-home-main-section-heading-div {
+    padding-bottom: 8px;
+}
+
+.account-home-main-section-signout-heading-div, .account-home-main-section-manage-account-heading-div {
+    margin-top: 32px;
+}
+
+.account-signin-signout-message-li {
+    display: block;
+    color: #8B0000;
+    font-weight: 700;
+} 
