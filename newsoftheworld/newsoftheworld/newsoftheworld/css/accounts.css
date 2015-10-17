@@ -27,3 +27,9 @@ body {
     color: #8B0000;
     font-weight: 700;
 } 
+
+.account-signup-heading-p {
+    font-weight: 700;
+    padding-top: 8px;
+    padding-bottom: 4px;
+}
