@@ -6,6 +6,11 @@
 {% block head_title %}{% trans "Signup" %}{% endblock %}
 
 {% block content %}
+{% if user.is_authenticated %}
+{% include "includes/account-links.html" %}
+
+{% else %}
+
 <h1>Opinion Junction - {% trans "Sign Up" %}</h1>
 
 <p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
@@ -21,5 +26,5 @@
 
 
 {% endblock %}
-
+{% endif %}
 
