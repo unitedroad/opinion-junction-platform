@@ -3374,18 +3374,47 @@ testApp.controller('setOurTeamController', function($scope, $http, authorCacheSe
     }
 });
 
-testApp.controller('articleController', function($scope, $http, $stateParams, $sce, commonOJService, dateService) {
+testApp.controller('articleController', function($scope, $http, $stateParams, $sce, commonOJService, dateService, profileService) {
 
     $scope.message = "Welcome to Opinion Junction's First Article";
     $scope.articleId = $stateParams.articleId;
     $("title").text("Opinion Junction - Article");
     $scope.noArticle = false;
     $scope.articleInitialised = false;
+
+    var getOthersArticlesByAuthor = function(authorId) {
+	$http.get("/api/1.0/articles?no_content=true&limit=5&authorId=" + authorId, {headers: {"Content-Type": "application/json"}})
+	.success(function(data) {
+	    if (data.length > 0) {
+		$scope.otherAuthorArticles = data;
+		for (var i = 0; i < $scope.otherAuthorArticles.length; i++) {
+		    var article = $scope.otherAuthorArticles[i];
+		    if (article.id == $scope.article.id) {
+			$scope.otherAuthorArticles.splice(i, 1);
+			i = i - 1;
+			continue;
+		    }
+		    article.author.displayed_name = $scope.article.author.displayed_name;
+		    article.friendly_categories = commonOJService.get_category_friendly_name_string($scope, article);
+		}
+	    }
+	});
+    };
+
     $http.get("/api/1.0/articles/" + $scope.articleId + "?for_display=true", {headers: {"Content-Type": "application/json"}})
 	    .success( function(data) {
 		if (data.length > 0) {
 		    $scope.article = data[0];
+		    $scope.article.author.displayed_name = ((($scope.article.author.first_name == null || $scope.article.author.first_name.trim().length == 0)
+						     && ($scope.article.author.last_name == null || $scope.article.author.last_name.trim().length == 0)) ?
+						    $scope.article.author.author_name : $scope.article.author.first_name + " " + $scope.article.author.last_name);
+		    getOthersArticlesByAuthor($scope.article.author.id);
 		    $scope.article.storydisplayedtext = commonOJService.convertYoutubeIframeToHtml5($scope.article.storydisplayedtext)
+		    $scope.article.author.image = profileService.getProfileImage($scope.article.author);
+		    
+		    if ($scope.article.author.user_bio == null || $scope.article.author.user_bio.trim().length == 0 ) {
+			$scope.article.author.user_bio = $scope.article.author.displayed_name + " hasn't provided any description.";
+		    }
 		    commonOJService.activateHeaderNavLink($scope.article.categories[0]);
 		    $scope.socialShareArticle = $scope.article;
 		    $scope.showFooter=true;
@@ -3668,11 +3697,26 @@ testApp.controller('publicProfileController', function($scope, commonOJService, 
 		if ($scope.authorActivity.author_bio) {
 		    $scope.authorActivity.author_bio = commonOJService.convertWhiteSpaceToHtml($scope.authorActivity.author_bio);
 		} else {
-		    $scope.authorActivity.author_bio = ". . .";
+		    //$scope.authorActivity.author_bio = ". . .";
+		    $scope.authorActivity.author_bio = $scope.authorActivity.author_name + " hasn't provided any description.";;
 		}
 		$scope.authorActivity.image = profileService.getProfileImage($scope.authorActivity);
 		$("title").text("Opinion Junction - Profile - " + $scope.authorActivity.author_name);
 	    });
+    };
+
+    var getOthersArticlesByAuthor = function(commonOJService, scope) {
+	$http.get("/api/1.0/articles?no_content=true&limit=5&authorId=" + scope.userid, {headers: {"Content-Type": "application/json"}})
+	.success(function(data) {
+	    if (data.length > 0) {
+		$scope.otherAuthorArticles = data;
+		for (var i = 0; i < $scope.otherAuthorArticles.length; i++) {
+		    var article = $scope.otherAuthorArticles[i];
+		    article.author.displayed_name = $scope.authorActivity.author_name;
+		    article.friendly_categories = commonOJService.get_category_friendly_name_string($scope, article);
+		}
+	    }
+	});
     };
 
     if ("userid" in $stateParams && $stateParams.userid) {
@@ -3683,14 +3727,17 @@ testApp.controller('publicProfileController', function($scope, commonOJService, 
 		if ($scope.authorActivity.author_bio) {
 		    $scope.authorActivity.author_bio = commonOJService.convertWhiteSpaceToHtml($scope.authorActivity.author_bio);
 		} else {
-		    $scope.authorActivity.author_bio = ". . .";
+		    //$scope.authorActivity.author_bio = ". . .";
+		    $scope.authorActivity.author_bio = $scope.authorActivity.author_name + " hasn't provided any description.";;
 		}
 		$scope.authorActivity.image = profileService.getProfileImage($scope.authorActivity);
 		$("title").text("Opinion Junction - Profile - " + $scope.authorActivity.author_name);
+		getOthersArticlesByAuthor(commonOJService, $scope);
 	    });
     } else {
-	commonOJService.controllerInitOrRedirect([initUserid],$scope);
+	commonOJService.controllerInitOrRedirect([initUserid, getOthersArticlesByAuthor],$scope);
     }
+
 });
 
 testApp.controller('createArticleFrontPagePreviewController', function($scope, $location) {

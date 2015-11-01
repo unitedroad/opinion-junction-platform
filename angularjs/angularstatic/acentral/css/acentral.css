@@ -142,6 +142,14 @@ body { padding-top: 50px; }
     margin-right:8px;
 }
 
+.article-other-articles-article-section {
+    padding-top:18px;
+}
+
+.article-other-articles-header {
+    padding-top:10px;
+}
+
 .user-container {
 
     padding-top:20px;
@@ -308,7 +316,7 @@ body { padding-top: 50px; }
     width:100%;
     border-bottom:1px solid #A0A0A0;
     border-top:1px solid #A0A0A0;
-    margin-top:10px;
+    margin-top:20px;
     margin-bottom:10px;
 }
 
@@ -342,6 +350,7 @@ body { padding-top: 50px; }
 
 .author-activity-bio-text-container {
     margin-left:80px;
+    padding-bottom:20px;
 }
 
 .public-profile-main-area {

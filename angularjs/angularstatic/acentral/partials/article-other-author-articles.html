@@ -1,0 +1,31 @@
+<section class="container">
+<!--  <div class="col-md-10 col-lg-9"> -->
+  <div >
+    <article ng-repeat="article in otherAuthorArticles" class="col col-xs-12 col-sm-6 article-other-articles-article-section">
+      <div class="col-md-2 col-lg-2">
+	<a ng-href="/article/{{article.article_id}}/{{article.slug}}" class="thumbnail">
+	  <img ng-src="{{article.thumbnail_image}}" alt="...">
+	</a>
+      </div>
+      <div class="col-md-10 col-lg10">
+	<div><small>{{article.friendly_categories}}</small></div>
+	<div>
+	  <h4 class=""><a ng-href="/article/{{article.article_id}}/{{article.slug}}" class="articleheaderlink">{{article.title}}</a></h4>
+	</div>
+	<div class="main-page-article-excerpt-section">
+	  <h4><small><p class="main-page-article-excerpt-section-p">{{article.excerpt}}</p></small></h4>
+	</div>
+	<div class="main-page-article-author-section">
+	  <small>
+	    <p class="main-page-article-author-text">
+	      <!--[if lt IE 9]>{{article.author.first_name}} {{article.author.last_name}}<![endif]-->
+	      <!--[if gte IE 9]>{{getAuthorName(article.author)}}<![endif]-->
+	      <!--[if !IE]> -->{{article.author.displayed_name}}<!-- <![endif]-->
+	    </p>
+	  </small>
+	</div>
+      </div>      
+      
+    </article>
+  </div>
+</section>
