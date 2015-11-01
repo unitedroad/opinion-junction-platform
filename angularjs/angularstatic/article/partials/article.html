@@ -49,12 +49,19 @@
 	<img ng-src="{{article.author.image}}" class="comment-author-image img-circle">
       </a>
       <div class="comment-author-details-container">
-	<a href="/profile/{{article.author.id}}"><h5 class="comment-author-name-text ng-binding">{{article.author.first_name}} {{article.author.last_name}}</h5></a>
-	<div class="article-author-bio-text-section" ng-bind-html="to_trusted(article.author.user_bio)">
+	<a href="/profile/{{article.author.id}}">
+	  <h5 class="comment-author-name-text ng-binding" ng-show="article.author.first_name || article.author.last_name ">{{article.author.first_name}} {{article.author.last_name}}</h5>
+	  <h5 class="comment-author-name-text ng-binding" ng-hide="article.author.first_name  || article.author.last_name  ">{{article.author.author_name}}</h5>
+	</a>
+	<div class="article-author-bio-text-section" ng-bind-html="to_trusted(article.author.user_bio)" >
 	 
 	</div>
       </div>
     </div>
+  </div>
+  <div class="article-other-author-articles" ng-show="otherAuthorArticles && otherAuthorArticles.length > 0">
+    <h3 class="article-other-articles-header">Other Opinions by this Author.</h3>
+    <ui-include src="'/angularstatic/acentral/partials/article-other-author-articles.html'" fragment="otherAuthorArticlesFragment"></ui-include>
   </div>
   <div>
     <div  class="article-comments-header text-center"><h4>JUNCTION HOUSE</h4></div>
