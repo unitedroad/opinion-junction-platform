@@ -3401,7 +3401,7 @@ testApp.controller('articleController', function($scope, $http, $stateParams, $s
 	});
     };
 
-    $http.get("/api/1.0/articles/" + $scope.articleId + "?for_display=true", {headers: {"Content-Type": "application/json"}})
+    $http.get("/api/1.0/articles/" + $scope.articleId + "?for_display=true&status=published", {headers: {"Content-Type": "application/json"}})
 	    .success( function(data) {
 		if (data.length > 0) {
 		    $scope.article = data[0];
@@ -3706,7 +3706,7 @@ testApp.controller('publicProfileController', function($scope, commonOJService, 
     };
 
     var getOthersArticlesByAuthor = function(commonOJService, scope) {
-	$http.get("/api/1.0/articles?no_content=true&limit=5&authorId=" + scope.userid, {headers: {"Content-Type": "application/json"}})
+	$http.get("/api/1.0/articles?no_content=true&limit=5&status=published&authorId=" + scope.userid, {headers: {"Content-Type": "application/json"}})
 	.success(function(data) {
 	    if (data.length > 0) {
 		$scope.otherAuthorArticles = data;
