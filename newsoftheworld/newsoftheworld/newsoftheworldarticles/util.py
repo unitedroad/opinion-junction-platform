@@ -1648,7 +1648,7 @@ def get_articles_all(request, **kwargs):
         serialisedList = None
         articleslist = None
         if "fromId" in kwargs and kwargs["fromId"]:
-            articlesList =  Article.objects(id__gt=bson.objectid.ObjectId(kwargs["fromId"]))
+            articlesList =  Article.objects(id__gt=ObjectId(kwargs["fromId"]))
         else:
             articlesList = Article.objects()
 
