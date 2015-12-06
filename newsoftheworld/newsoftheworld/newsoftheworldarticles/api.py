@@ -223,48 +223,56 @@ class ArticlesList(APIView):
 class ArticlesPost(APIView):
     def get(self, request, format=None):
 
-        try:
-            serialisedList = None
-            articleslist = None
-            if "fromId" in request.GET and request.GET["fromId"]:
-                articlesList =  Article.objects(id__gt=bson.objectid.ObjectId(request.GET["fromId"]))
-            else:
-                articlesList = Article.objects()
+        result = util.get_articles_all(request, **request.GET)
 
+        if "status" in result and result["status"] and result["status"] != status.HTTP_200_OK:
+            return Response(result, status = result["status"])
+        else:
+            serialisedList = ArticleSerialiser(result, many=True)
 
-            articlesList = articlesList.order_by("published_date")
-    
-            authorId = -1
-            if "authorId" in request.GET and request.GET["authorId"]:
-                articlesList = articlesList.filter(author=request.GET["authorId"])
-                authorId = int(request.GET["authorId"])
-
-            #need to look into the following logic (currently 6 lines), so as to make this API the one to use for main page
-            if "status" not in request.GET or not request.GET["status"] or request.GET["status"] != "published":
-                if not request.user.is_authenticated() or (not util.check_permissions(request.user, ["publish_others_articles", "edit_others_articles"]) and request.user.id != authorId):
-                    return Response({"ok" : "false",  "message" : "You do not have required permissions, either set status=published or authorId=your-author-id", "code" : "permission_denied"  }, status = status.HTTP_403_FORBIDDEN )
-            else:
-                articlesList = articlesList.filter(status=request.GET["status"])
-
-#            if not util.check_permissions(request.user, ["publish_others_articles", "edit_others_articles"]):
-#                articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
-#                articlesList.filter(status="published")
-
-
-            #return Response({"ok" : "False", "Message" : "Get is not supported for this API" })
-            if "no_content" in request.GET and request.GET["no_content"] == "true":
-                articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
-    
-            if "limit" in request.GET and util.is_number(request.GET["limit"]):
-                articlesList = articlesList.limit(int(request.GET["limit"]))
-    
-    
-            serialisedList = ArticleSerialiser(articlesList.select_related(), many=True)
             return Response(serialisedList.data)
-        except Exception as e:
-            "Exception in ArticlesPost: " + str(e)
-            return Response({"ok":"false", "message": str(e)})
-    
+#        try:
+#            serialisedList = None
+#            articleslist = None
+#            if "fromId" in request.GET and request.GET["fromId"]:
+#                articlesList =  Article.objects(id__gt=bson.objectid.ObjectId(request.GET["fromId"]))
+#            else:
+#                articlesList = Article.objects()
+#
+#
+#            articlesList = articlesList.order_by("published_date")
+#    
+#            authorId = -1
+#            if "authorId" in request.GET and request.GET["authorId"]:
+#                articlesList = articlesList.filter(author=request.GET["authorId"])
+#                authorId = int(request.GET["authorId"])
+#
+#            #need to look into the following logic (currently 6 lines), so as to make this API the one to use for main page
+#            if "status" not in request.GET or not request.GET["status"] or request.GET["status"] != "published":
+#                if not request.user.is_authenticated() or (not util.check_permissions(request.user, ["publish_others_articles", "edit_others_articles"]) and request.user.id != authorId):
+#                    return Response({"ok" : "false",  "message" : "You do not have required permissions, either set status=published or authorId=your-author-id", "code" : "permission_denied"  }, status = status.HTTP_403_FORBIDDEN )
+#            else:
+#                articlesList = articlesList.filter(status=request.GET["status"])
+#
+##            if not util.check_permissions(request.user, ["publish_others_articles", "edit_others_articles"]):
+##                articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
+##                articlesList.filter(status="published")
+#
+#
+#            #return Response({"ok" : "False", "Message" : "Get is not supported for this API" })
+#            if "no_content" in request.GET and request.GET["no_content"] == "true":
+#                articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
+#    
+#            if "limit" in request.GET and util.is_number(request.GET["limit"]):
+#                articlesList = articlesList.limit(int(request.GET["limit"]))
+#    
+#    
+#            serialisedList = ArticleSerialiser(articlesList.select_related(), many=True)
+#            return Response(serialisedList.data)
+#        except Exception as e:
+#            print "Exception in ArticlesPost: " + str(e)
+#            return Response({"ok":"false", "message": str(e)})
+#    
 
     
     def post(self, request, format=None):

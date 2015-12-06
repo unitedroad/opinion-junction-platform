@@ -1,4 +1,5 @@
 import sys
+import traceback
 import os
 import re
 import hashlib
@@ -1641,7 +1642,75 @@ def create_author_roles(user, new_role_details, return_changes, **kwargs):
 
 
 
+def get_articles_all(request, **kwargs):
+    kwargs = delistify_all_parameters(kwargs)
+    try:
+        serialisedList = None
+        articleslist = None
+        if "fromId" in kwargs and kwargs["fromId"]:
+            articlesList =  Article.objects(id__gt=bson.objectid.ObjectId(kwargs["fromId"]))
+        else:
+            articlesList = Article.objects()
 
+
+        articlesList = articlesList.order_by("published_date")
+            
+        authorId = -1
+        if "authorId" in kwargs and kwargs["authorId"]:
+            articlesList = articlesList.filter(author=kwargs["authorId"])
+            authorId = int(kwargs["authorId"])
+        
+        #need to look into the following logic (currently 6 lines), so as to make this API the one to use for main page
+        if "status" not in kwargs or not kwargs["status"] or kwargs["status"] != "published":
+            if not request.user.is_authenticated() or (not check_permissions(str(request.user.id), ["publish_others_articles", "edit_others_articles"]) and request.user.id != authorId):
+                return {"ok" : "false",  "message" : "You do not have required permissions, either set status=published or authorId=your-author-id", "code" : "permission_denied", "status": status.HTTP_403_FORBIDDEN  }
+        else:
+            articlesList = articlesList.filter(status=kwargs["status"])
+
+#            if not util.check_permissions(request.user, ["publish_others_articles", "edit_others_articles"]):
+#                articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
+#                articlesList.filter(status="published")
+
+
+            #return Response({"ok" : "False", "Message" : "Get is not supported for this API" })
+        if "no_content" in kwargs and kwargs["no_content"] == "true":
+            articlesList = articlesList.exclude("storytext","storyplaintext","excerpt","tags")
+            
+        if "limit" in kwargs and is_number(kwargs["limit"]):
+            print 'kwargs["limit"]: '
+            print kwargs["limit"]
+            articlesList = articlesList.limit(int(kwargs["limit"]))
+                
+    
+        return articlesList.select_related()
+
+    except Exception as e:
+        print "Exception in ArticlesPost: " + str(e)
+        print " exception stacktrace: " + str(traceback.extract_tb(sys.exc_info()[2]))
+        return {"ok":"false", "message": str(e), "status": status.HTTP_500_INTERNAL_SERVER_ERROR }
+
+def delistify_all_parameters(parameters, **kwargs):
+    returned_parameters = {}
+    
+    dont_delistify = None
+
+    if "dont_delistify" in kwargs and kwargs["dont_delistify"] is not None:
+        dont_delistify = kwargs["dont_delistify"]
+    else:
+        dont_delistify = []
+
+    for parameter in parameters:
+        if parameter in dont_delistify or not hasattr(parameters[parameter], '__iter__'):
+            returned_parameters[parameter] = parameters[parameter]
+        else:
+            values = parameters[parameter]
+            if values is not None and len(values) > 0:
+                returned_parameters[parameter] = values[0]
+            else:
+                returned_parameters[parameter] = None
+
+    return returned_parameters
+                    
 def update_author_roles(user, changed_role_details, return_changes, **kwargs):
     check_user_permissions(user, ["create_roles"])
     changed_roles = []
