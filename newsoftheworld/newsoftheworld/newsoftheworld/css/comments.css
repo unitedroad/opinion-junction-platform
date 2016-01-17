@@ -98,3 +98,12 @@
 /*.comment-reply-creation-container {
     height:69px !important;
 }*/
+
+.comment-text-container p {
+    line-height:1.8;
+}
+
+.comments-no-comments-div {
+    margin-top: 20px;
+    margin-bottom:20px;
+}

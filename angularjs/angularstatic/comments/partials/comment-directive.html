@@ -7,7 +7,7 @@
 	</a>
       </div>
       <div class="text-center"><h4>{{comment.num_votes? comment.num_votes : 0}}</h4></div>
-      <div class="text-center" tooltip="{{comment.downvoteTooltip}}" id="downvote-container-{{comment.id}}"tooltip-placement="left">
+      <div class="text-center" tooltip="{{comment.downvoteTooltip}}" id="downvote-container-{{comment.id}}" tooltip-placement="left">
 	<a ng-click="downvoteComment(comment)" ng-class="comment.downvoteClass"> <span class="glyphicon glyphicon-chevron-down"></span></a>
       </div>
     </div>
@@ -22,7 +22,7 @@
 	</div>
       </div>
       <div id="comment-text-container-{{comment.id}}" class="comment-text-container comment-form-group" >
-	<p style="white-space: pre;">{{comment.text}}</p>
+	<p style="">{{comment.text}}</p>
       </div>
       <div class="comment-button-container">
 	<button id="comment-reply-button-{{comment.id}}" class="comment-reply-button btn btn-primary" ng-click="loadToggleReplyContainer(comment)">
